@@ -561,6 +561,17 @@ html,body{overflow-x:clip}
 .project-dashboard-cover{height:210px;border-radius:14px;overflow:hidden;margin-bottom:14px;background:#f1e7d7}
 .project-dashboard-cover img{width:100%;height:100%;object-fit:cover;display:block}
 @media(max-width:600px){.project-cover-thumb{height:100px}.project-dashboard-cover{height:160px}}
+
+/* V20.7 — Dashboard: Próximos 7 dias + Saúde da reforma responsivos */
+.dashboard-health-row{display:grid;grid-template-columns:minmax(300px,.7fr) minmax(0,1.3fr);gap:14px;margin-top:14px;align-items:stretch}
+.dashboard-health-row>.card{min-width:0;height:100%}
+.dashboard-health-card{display:flex;flex-direction:column}
+.dashboard-health-card .health{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:stretch}
+.dashboard-health-card .health-item{min-width:0;min-height:105px;padding:16px;display:flex;flex-direction:column;justify-content:center}
+.dashboard-health-card .health-item b{line-height:1.35;overflow-wrap:anywhere}
+.dashboard-health-card .mini-note{margin-top:12px;width:100%;overflow-wrap:anywhere}
+@media(max-width:1100px){.dashboard-health-row{grid-template-columns:1fr}.dashboard-health-card .health{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}}
+@media(max-width:650px){.dashboard-health-card .health{grid-template-columns:1fr}.dashboard-health-card .health-item{min-height:auto}}
 </style>
 
 
@@ -779,8 +790,8 @@ page=function(k){
     <div class='alert-card ${attention.length?'alert-warn':'alert-ok'}'><small>Atividades em atenção</small><strong>${attention.length}</strong><span class='hint'>Prazo em até 3 dias</span></div>
     <div class='alert-card ${openIssues.length?'alert-bad':'alert-ok'}'><small>Imprevistos abertos</small><strong>${openIssues.length}</strong><span class='hint'>${money(openIssues.reduce((a,x)=>a+(+x.valor||0),0))}</span></div>
    </div></div>`;
-   const nextBlock=`<div class='grid two'><div class='card section'><h3>Próximos 7 dias</h3><div class='timeline'>${next7.length?next7.map(x=>`<div class='timeline-item'><div class='timeline-date'>${fmt(x.inicio).slice(0,5)}</div><div class='timeline-title'><b>${esc(x.nome)}</b><small>${esc((typeof profissionaisResponsaveisEtapa==='function'?profissionaisResponsaveisEtapa(x.id).map(p=>p.nome).join(', '):'')||x.responsavel||'Responsável não informado')}</small></div>${badge(x.status)}</div>`).join(''):`<div class='empty'>Nenhuma atividade programada para os próximos 7 dias.</div>`}</div></div>
-   <div class='card section'><h3>Saúde da reforma</h3><div class='health'>
+   const nextBlock=`<div class='dashboard-health-row'><div class='card section dashboard-next-card'><h3>Próximos 7 dias</h3><div class='timeline'>${next7.length?next7.map(x=>`<div class='timeline-item'><div class='timeline-date'>${fmt(x.inicio).slice(0,5)}</div><div class='timeline-title'><b>${esc(x.nome)}</b><small>${esc((typeof profissionaisResponsaveisEtapa==='function'?profissionaisResponsaveisEtapa(x.id).map(p=>p.nome).join(', '):'')||x.responsavel||'Responsável não informado')}</small></div>${badge(x.status)}</div>`).join(''):`<div class='empty'>Nenhuma atividade programada para os próximos 7 dias.</div>`}</div></div>
+   <div class='card section dashboard-health-card'><h3>Saúde da reforma</h3><div class='health'>
     <div class='health-item'><small>ORÇAMENTO</small><b><span class='dot ${over?'bad':'ok'}'></span>${over?'Acima do planejado':'Dentro do planejado'}</b></div>
     <div class='health-item'><small>PRAZO</small><b><span class='dot ${late.length?'bad':attention.length?'warn':'ok'}'></span>${late.length?late.length+' atividade(s) atrasada(s)':attention.length?'Atenção ao prazo':'Dentro do prazo'}</b></div>
     <div class='health-item'><small>ENTREGA</small><b><span class='dot ${finalPct===100?'ok':'warn'}'></span>${finalPct}% do checklist final</b></div>
