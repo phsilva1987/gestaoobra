@@ -1405,6 +1405,12 @@ finishWork = function(id){
 /* Substitui somente a página Cronograma para incluir o checklist único */
 const pageChecklistBase = page;
 page = function(k){
+  if(k==='dashboard'){
+    const html = pageChecklistBase(k);
+    const total=db.checklist.length, done=db.checklist.filter(x=>x.feito).length;
+    const pct = total?Math.round(done/total*100):0;
+    return html.replace(/(\\d+)% do checklist final/, pct+'% do checklist final');
+  }
   if(k!=='cronograma') return pageChecklistBase(k);
 
   syncChecklistFromStages();
@@ -1440,16 +1446,6 @@ page = function(k){
     ${itemsHtml}
     ${st.total>0 && st.done===st.total ? `<div class='mini-note' style='margin-top:14px;color:#55765f;font-weight:800'>✓ CHECKLIST CONCLUÍDO — todos os itens foram finalizados.</div>`:''}
   </div>`;
-};
-
-/* Dashboard: o indicador "ENTREGA" da Saúde da reforma agora lê do checklist único */
-const pageDashChecklistBase = page;
-page = function(k){
-  const html = pageDashChecklistBase(k);
-  if(k!=='dashboard') return html;
-  const total=db.checklist.length, done=db.checklist.filter(x=>x.feito).length;
-  const pct = total?Math.round(done/total*100):0;
-  return html.replace(/(\d+)% do checklist final/, pct+'% do checklist final');
 };
 
 /* Primeira sincronização ao abrir a versão */
