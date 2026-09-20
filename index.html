@@ -416,6 +416,48 @@ table tbody tr:hover{background:rgba(212,175,55,.08)}
  .finance-v19 .finance-kpis{grid-template-columns:1fr}
  .finance-v19 .finance-kpi{min-height:94px}
 }
+
+/* V19.1 — navegação fixa e correção de sobreposição do menu lateral */
+@media(min-width:901px){
+  .side{
+    position:sticky;
+    top:0;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#d8c7aa transparent;
+  }
+  .side .nav{flex:0 0 auto}
+  .side .footer-brand{
+    position:static;
+    left:auto;
+    bottom:auto;
+    margin:18px 16px 4px;
+    padding-top:14px;
+    flex:0 0 auto;
+  }
+  .appbar{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:rgba(255,253,248,.96);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 5px 18px rgba(95,67,29,.035);
+  }
+}
+@media(min-width:901px) and (max-height:820px){
+  .side{padding-top:12px;padding-bottom:12px}
+  .brand{padding-bottom:12px;margin-bottom:8px}
+  .brand img{width:160px}
+  .nav button{padding-top:9px;padding-bottom:9px;margin:1px 0}
+  .nav .nav-section{margin-top:10px}
+  .side .footer-brand{margin-top:10px;padding-top:8px}
+}
 </style>
 
 
