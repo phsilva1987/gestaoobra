@@ -610,6 +610,56 @@ table tbody tr:hover{background:rgba(212,175,55,.08)}
   table::-webkit-scrollbar{height:6px}
   table::-webkit-scrollbar-thumb{background:rgba(45,36,28,.25);border-radius:6px}
 }
+
+/* V19 — Financeiro e Configurações: layout alinhado, compacto e responsivo */
+.finance-v19 .finance-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.finance-v19 .finance-kpi{min-width:0;min-height:108px;padding:16px}
+.finance-v19 .finance-kpi strong{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-v19 .finance-main-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr);gap:14px;margin-top:14px;align-items:stretch}
+.finance-v19 .finance-panel{min-width:0}
+.finance-v19 .finance-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.finance-v19 .finance-panel-head h3{margin:0 0 3px}
+.finance-v19 .finance-category-head,.finance-v19 .finance-category-row{display:grid;grid-template-columns:minmax(110px,1.25fr) minmax(95px,.85fr) minmax(95px,.85fr) minmax(130px,1fr) 56px 76px;gap:10px;align-items:center}
+.finance-v19 .finance-category-head{padding:8px 10px;background:#f5ecde;border-radius:9px 9px 0 0;color:var(--gold-dark);font-size:11px;font-weight:800}
+.finance-v19 .finance-category-row{padding:9px 10px;border-bottom:1px solid var(--line);font-size:12px}
+.finance-v19 .finance-category-row:last-child{border-bottom:0}
+.finance-v19 .finance-cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.finance-v19 .finance-cat-money{white-space:nowrap}
+.finance-v19 .finance-consumption{display:flex;align-items:center;gap:8px;min-width:0}
+.finance-v19 .finance-consumption .chart-track{flex:1;min-width:55px}
+.finance-v19 .finance-status{display:inline-flex;justify-content:center;white-space:nowrap;padding:4px 7px;border-radius:999px;background:#e5f4e9;color:#477458;font-size:10px;font-weight:800}
+.finance-v19 .finance-status.limit{background:#f8e9c9;color:#9a6a16}
+.finance-v19 .finance-empty{min-height:190px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}
+.finance-v19 .finance-empty b{display:block;color:var(--text);margin-bottom:5px}
+.config-v19-section{margin-top:26px}
+.config-v19-title{margin:0 0 4px}
+.config-v19-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;align-items:stretch}
+.config-v19-card{min-width:0;display:flex;flex-direction:column}
+.config-v19-card .actions{margin-top:auto}
+.config-v19-note{margin-top:14px}
+.config-v19-chips{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;min-height:74px}
+.config-v19-chip{display:inline-flex;align-items:center;gap:6px;margin:0}
+.config-v19-add{display:flex;gap:8px;align-items:stretch;margin-top:14px}
+.config-v19-add input{flex:1;min-width:0;background:#fffaf3;border:1px solid var(--line);border-radius:9px;padding:10px}
+@media(max-width:1180px){
+ .finance-v19 .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .finance-v19 .finance-main-grid{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+ .finance-v19 .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .config-v19-grid{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+ .finance-v19 .finance-category-table{overflow-x:auto;padding-bottom:4px}
+ .finance-v19 .finance-category-head,.finance-v19 .finance-category-row{min-width:720px}
+ .finance-v19 .finance-panel-head{align-items:flex-start;flex-direction:column}
+ .config-v19-add{flex-direction:column}
+ .config-v19-add .btn{width:100%}
+}
+@media(max-width:520px){
+ .finance-v19 .finance-kpis{grid-template-columns:1fr}
+ .finance-v19 .finance-kpi{min-height:94px}
+}
 </style>
 
 
@@ -3380,6 +3430,100 @@ function custoEtapaHtml(x){
   };
 
   saveDB();
+})();
+</script>
+
+<script id="v19-finance-config-ui">
+/* V19 — refinamento visual solicitado para Financeiro e Configurações.
+   Mantém dados, cálculos, ações e persistência existentes. */
+(function(){
+  function financeStatus(prev, real){
+    if(!prev && !real) return {label:'OK',cls:''};
+    if(!prev && real>0) return {label:'Sem previsto',cls:'limit'};
+    if(real>prev) return {label:'Acima',cls:'limit'};
+    if(real===prev && prev>0) return {label:'No limite',cls:'limit'};
+    return {label:'OK',cls:''};
+  }
+
+  function financePageV19(){
+    const t=totals();
+    const cats=categoryStats();
+    const budget=+db.config.orcamento||0;
+    const committed=t.contratado+unforeseenTotal();
+    const pct=(value)=>budget?Math.max(0,Math.round((value/budget)*100)):0;
+    const rows=Object.entries(cats).map(([name,v])=>{
+      const used=v.prev?Math.max(0,Math.round((v.real/v.prev)*100)):(v.real?100:0);
+      const st=financeStatus(+v.prev||0,+v.real||0);
+      return `<div class="finance-category-row">
+        <b class="finance-cat-name">${esc(name)}</b>
+        <span class="finance-cat-money">${money(v.prev)}</span>
+        <span class="finance-cat-money">${money(v.real)}</span>
+        <div class="finance-consumption"><div class="chart-track"><i style="width:${Math.min(100,used)}%"></i></div></div>
+        <span>${used}%</span>
+        <span class="finance-status ${st.cls}">${st.label}</span>
+      </div>`;
+    }).join('');
+
+    const issues=(db.imprevistos||[]);
+    const issuesHtml=issues.length
+      ? `<div class="tablewrap">${table('imprevistos',['nome','categoria','valor','impactoDias','status'])}</div>`
+      : `<div class="finance-empty"><div><b>Nenhum imprevisto registrado</b><span>Registre aqui os custos não previstos que surgirem durante a obra.</span><div style="margin-top:16px"><button class="btn" onclick="openModal('imprevistos')">+ Registrar imprevisto</button></div></div></div>`;
+
+    return `<div class="finance-v19">${header('Financeiro','Orçamento, pagamentos, imprevistos e comparativo por categoria',`<button class='btn' onclick="openModal('pagamentos')">+ Registrar pagamento</button>`)}
+      <div class="grid finance-kpis">
+        <div class="card kpi finance-kpi"><small>Investimento planejado</small><strong>${money(budget)}</strong><span class="hint">Total do orçamento</span></div>
+        <div class="card kpi finance-kpi"><small>Comprometido total</small><strong>${money(committed)}</strong><span class="hint">${pct(committed)}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>Pago</small><strong>${money(t.pago)}</strong><span class="hint">${pct(t.pago)}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>Imprevistos</small><strong>${money(unforeseenTotal())}</strong><span class="hint">${pct(unforeseenTotal())}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>A pagar (agendado)</small><strong>${money(paymentDue())}</strong><span class="hint">${pct(paymentDue())}% do planejado</span></div>
+      </div>
+      <div class="finance-main-grid">
+        <div class="card section finance-panel">
+          <div class="finance-panel-head"><div><h3>Previsto × Contratado por categoria</h3><span class="hint">Onde o orçamento está sendo consumido</span></div></div>
+          ${rows?`<div class="finance-category-table"><div class="finance-category-head"><span>Categoria</span><span>Previsto</span><span>Contratado</span><span>Consumo</span><span>%</span><span>Status</span></div>${rows}</div>`:`<div class="empty">Cadastre valores na obra para gerar o comparativo.</div>`}
+        </div>
+        <div class="card section finance-panel">
+          <div class="finance-panel-head"><div><h3>Imprevistos</h3><span class="hint">Custos não previstos no orçamento original</span></div><button class="btn secondary" onclick="openModal('imprevistos')">+ Registrar</button></div>
+          ${issuesHtml}
+        </div>
+      </div>
+      <div class="card section" style="margin-top:14px"><div class="toolbar"><h3 style="margin:0">Histórico e próximos pagamentos</h3><button class="btn secondary" onclick="openModal('pagamentos')">+ Pagamento</button></div><div class="tablewrap">${table('pagamentos',['referencia','tipo','valor','vencimento','forma','status'])}</div></div>
+    </div>`;
+  }
+
+  const pageV19Base=page;
+  page=function(k){
+    if(k==='financeiro') return financePageV19();
+    return pageV19Base(k);
+  };
+
+  /* Aplica classes de layout às seções já existentes de Configurações,
+     sem duplicar dados nem alterar as funções de backup/categorias. */
+  const renderV19Base=render;
+  render=function(){
+    renderV19Base();
+    if(current!=='config') return;
+    const pageRoot=document.getElementById('pages');
+    if(!pageRoot) return;
+
+    pageRoot.querySelectorAll('h3').forEach(h=>{
+      const title=(h.textContent||'').trim();
+      if(title==='Backup e restauração' || title==='Categorias'){
+        h.classList.add('config-v19-title');
+        const grid=h.nextElementSibling && h.nextElementSibling.classList.contains('grid') ? h.nextElementSibling : null;
+        if(grid){
+          grid.classList.add('config-v19-grid');
+          grid.querySelectorAll(':scope > .card').forEach(card=>card.classList.add('config-v19-card'));
+        }
+      }
+    });
+
+    ['novaCatObra','novaCatMaterial'].forEach(id=>{
+      const input=document.getElementById(id);
+      if(input && input.parentElement) input.parentElement.classList.add('config-v19-add');
+    });
+  };
+  render();
 })();
 </script>
 </body></html>
