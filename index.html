@@ -507,6 +507,13 @@ main,#pages,.page,.card,.section,.grid{min-width:0}
  .projects-page .project-mini-kpis>div:last-child{grid-column:auto}
 }
 
+/* V20.2 — reforço do cabeçalho sticky: overflow no root pode invalidar sticky em alguns browsers */
+html,body{overflow-x:clip}
+@supports not (overflow:clip){html,body{overflow-x:visible}}
+@media(min-width:901px){
+  .appbar{position:sticky;top:0;z-index:100}
+}
+
 /* V19.3 — Dashboard: Progresso + Resumo financeiro lado a lado e altura controlada */
 .dashboard-progress-finance{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
 .dashboard-progress-finance>.card{min-width:0;height:100%}
