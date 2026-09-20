@@ -49,192 +49,10 @@ main{padding:0 30px 32px;min-width:0}.appbar{height:112px;margin:0 -30px 18px;pa
 .finance-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 12px}
 .finance-toolbar h3{margin:0}
 
-/* ===== CSS bloco legado 5 — ordem de cascata preservada ===== */
-#pages .projects-page .general-kpis{
- display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
- gap:12px!important;width:100%!important;margin:0 0 22px!important
-}
-#pages .projects-page .general-kpis>.card{
- width:auto!important;min-width:0!important;height:112px!important;min-height:112px!important;
- margin:0!important;padding:18px 20px!important;border-radius:17px!important
-}
-#pages .projects-page .projects-grid{
- display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
- gap:16px!important;width:100%!important;max-width:none!important;align-items:start!important
-}
-#pages .projects-page .project-tile{
- width:auto!important;max-width:none!important;min-width:0!important;min-height:310px!important;
- margin:0!important;padding:20px!important;border-radius:18px!important
-}
-#pages .projects-page .project-tile.active-project{
- border:1.5px solid #b7852b!important;box-shadow:0 10px 28px rgba(93,65,28,.09)!important
-}
-#pages .projects-page .project-tile-head{
- display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important
-}
-#pages .projects-page .project-mini-kpis{
- display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important
-}
-#pages .projects-page .project-mini-kpis>div{width:auto!important;min-width:0!important}
-#pages .projects-page .project-tile-actions{
- display:flex!important;flex-direction:row!important;justify-content:space-between!important;
- align-items:center!important;gap:10px!important
-}
-#pages .projects-page .project-tile-actions .rowactions{
- display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important
-}
-#pages .projects-page .project-tile-actions .rowactions button{
- width:auto!important;display:inline-flex!important;align-items:center!important;white-space:nowrap!important
-}
-.project-filter-mobile{display:none!important}
-@media(max-width:1150px){
- #pages .projects-page .general-kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important}
- #pages .projects-page .projects-grid{grid-template-columns:1fr!important}
-}
-@media(max-width:720px){
- #pages .projects-page .general-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-@media(max-width:480px){
- #pages .projects-page .general-kpis{grid-template-columns:1fr!important}
-}
-
-/* ===== CSS bloco legado 6 — ordem de cascata preservada ===== */
-/* Card de projeto conforme referência enviada */
-#pages .projects-page .projects-grid{
- grid-template-columns:repeat(2,minmax(430px,1fr))!important;
- gap:18px!important;
-}
-#pages .projects-page .project-tile{
- min-height:0!important;
- padding:28px!important;
- border-radius:22px!important;
- background:#fffdf9!important;
-}
-#pages .projects-page .project-tile.active-project{
- border:1.5px solid #b98731!important;
- box-shadow:0 9px 25px rgba(99,70,28,.10)!important;
-}
-#pages .projects-page .project-tile-head{margin-bottom:25px!important}
-#pages .projects-page .project-type,
-#pages .projects-page .project-status{
- padding:8px 14px!important;
- border-radius:999px!important;
- font-size:12px!important;
-}
-#pages .projects-page .project-tile h3{
- font-size:23px!important;
- line-height:1.2!important;
- margin:0 0 7px!important;
-}
-#pages .projects-page .project-address{
- min-height:0!important;
- font-size:14px!important;
- line-height:1.4!important;
- margin-bottom:34px!important;
-}
-#pages .projects-page .project-mini-kpis{
- grid-template-columns:repeat(3,minmax(0,1fr))!important;
- gap:10px!important;
- margin:0 0 22px!important;
-}
-#pages .projects-page .project-mini-kpis>div{
- padding:14px 13px!important;
- border-radius:13px!important;
- background:#faf4ea!important;
-}
-#pages .projects-page .project-mini-kpis small{
- font-size:10px!important;
- margin-bottom:5px!important;
-}
-#pages .projects-page .project-mini-kpis b{
- font-size:14px!important;
-}
-#pages .projects-page .project-tile .bar{
- height:10px!important;
- margin-bottom:10px!important;
-}
-#pages .projects-page .project-budget-line{
- font-size:13px!important;
- margin:0 0 20px!important;
-}
-#pages .projects-page .project-tile-actions{
- border-top:1px solid var(--line)!important;
- padding-top:17px!important;
- margin-top:0!important;
-}
-#pages .projects-page .project-selected{
- padding:9px 13px!important;
- font-size:12px!important;
-}
-#pages .projects-page .project-tile-actions .rowactions button{
- font-size:12px!important;
- padding:8px 9px!important;
-}
-@media(max-width:1050px){
- #pages .projects-page .projects-grid{grid-template-columns:1fr!important}
-}
-
-/* ===== CSS bloco legado 7 — ordem de cascata preservada ===== */
-/* V12.8 — corrige valores dos cards de projeto */
-#pages .projects-page .project-mini-kpis{
- display:grid!important;
- grid-template-columns:repeat(3,minmax(0,1fr))!important;
- gap:10px!important;
- width:100%!important;
-}
-#pages .projects-page .project-mini-kpis>div{
- min-width:0!important;
- width:auto!important;
- overflow:hidden!important;
- padding:13px 14px!important;
- box-sizing:border-box!important;
-}
-#pages .projects-page .project-mini-kpis small{
- display:block!important;
- width:100%!important;
- margin:0 0 6px!important;
- font-size:9px!important;
- line-height:1.15!important;
- letter-spacing:.2px!important;
- white-space:nowrap!important;
- overflow:hidden!important;
- text-overflow:ellipsis!important;
-}
-#pages .projects-page .project-mini-kpis b{
- display:block!important;
- width:100%!important;
- margin:0!important;
- font-size:13px!important;
- line-height:1.2!important;
- white-space:nowrap!important;
- overflow:hidden!important;
- text-overflow:ellipsis!important;
-}
-#pages .projects-page .project-budget-line{
- display:flex!important;
- justify-content:space-between!important;
- align-items:center!important;
- gap:14px!important;
- width:100%!important;
-}
-#pages .projects-page .project-budget-line span{
- display:block!important;
- min-width:0!important;
- white-space:nowrap!important;
-}
-#pages .projects-page .project-budget-line span:last-child{
- margin-left:auto!important;
- text-align:right!important;
-}
-@media(max-width:1350px){
- #pages .projects-page .project-mini-kpis b{font-size:12px!important}
- #pages .projects-page .project-mini-kpis>div{padding:12px 10px!important}
-}
-@media(max-width:1180px){
- #pages .projects-page .projects-grid{grid-template-columns:1fr!important}
- #pages .projects-page .project-mini-kpis b{font-size:14px!important}
-}
-
+/* V19 — Projetos: consolidação dos overrides V12.6–V13.
+   Os estilos definitivos da tela permanecem no bloco V12.4 posterior,
+   que tem a mesma especificidade e representa o layout aprovado.
+   Mantido aqui apenas o bloco do Dashboard (.project-card), que é outro componente. */
 /* ===== CSS bloco legado 8 — ordem de cascata preservada ===== */
 /* V12.9 — compacta o bloco de identificação do projeto no Dashboard */
 .project-card{
@@ -281,68 +99,6 @@ main{padding:0 30px 32px;min-width:0}.appbar{height:112px;margin:0 -30px 18px;pa
    grid-template-columns:1fr 1fr!important;
    align-items:center!important;
  }
-}
-
-/* ===== CSS bloco legado 9 — ordem de cascata preservada ===== */
-/* V13 — refinamento final e consolidação visual */
-:root{--content-max:1680px}
-
-/* Evita expansão excessiva em monitores grandes */
-.main>*, #pages>*{max-width:var(--content-max);margin-left:auto;margin-right:auto}
-
-/* Cabeçalho */
-.topbar{min-height:96px}
-.project-filter-wrap{box-shadow:none!important}
-.project-filter-wrap select{cursor:pointer}
-
-/* Dashboard: bloco cadastral mais objetivo */
-.project-card{
- padding:18px 22px!important;
- border-radius:18px!important;
-}
-.project-card .project-details,
-.project-card .project-details-secondary{align-content:center}
-
-/* KPIs: números nunca escapam do card */
-.kpi,.project-mini-kpis>div{min-width:0}
-.kpi strong,.project-mini-kpis b{
- max-width:100%;
- overflow:hidden;
- text-overflow:ellipsis;
-}
-
-/* Projetos */
-#pages .projects-page .project-tile{
- transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
-}
-#pages .projects-page .project-tile:hover{
- transform:translateY(-2px);
- box-shadow:0 12px 30px rgba(95,67,29,.10)!important;
-}
-#pages .projects-page .project-type,
-#pages .projects-page .project-status{font-weight:700!important}
-#pages .projects-page .project-budget-line{
- padding-top:1px;
-}
-#pages .projects-page .project-tile-actions button{
- cursor:pointer;
-}
-
-/* Tabelas: melhor leitura sem quebrar o layout */
-.tablewrap{overflow-x:auto}
-table{min-width:760px}
-td,th{vertical-align:middle}
-
-/* Botões e inputs */
-.btn{transition:transform .12s ease,filter .12s ease}
-.btn:hover{filter:brightness(.98);transform:translateY(-1px)}
-input,select,textarea{max-width:100%}
-
-/* Mobile */
-@media(max-width:760px){
- .topbar{min-height:auto}
- .main>*,#pages>*{max-width:100%}
- #pages .projects-page .project-tile{padding:20px!important}
 }
 
 /* ===== CSS bloco legado 10 — ordem de cascata preservada ===== */
@@ -609,6 +365,56 @@ table tbody tr:hover{background:rgba(212,175,55,.08)}
   table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
   table::-webkit-scrollbar{height:6px}
   table::-webkit-scrollbar-thumb{background:rgba(45,36,28,.25);border-radius:6px}
+}
+
+/* V19 — Financeiro e Configurações: layout alinhado, compacto e responsivo */
+.finance-v19 .finance-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.finance-v19 .finance-kpi{min-width:0;min-height:108px;padding:16px}
+.finance-v19 .finance-kpi strong{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-v19 .finance-main-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr);gap:14px;margin-top:14px;align-items:stretch}
+.finance-v19 .finance-panel{min-width:0}
+.finance-v19 .finance-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.finance-v19 .finance-panel-head h3{margin:0 0 3px}
+.finance-v19 .finance-category-head,.finance-v19 .finance-category-row{display:grid;grid-template-columns:minmax(110px,1.25fr) minmax(95px,.85fr) minmax(95px,.85fr) minmax(130px,1fr) 56px 76px;gap:10px;align-items:center}
+.finance-v19 .finance-category-head{padding:8px 10px;background:#f5ecde;border-radius:9px 9px 0 0;color:var(--gold-dark);font-size:11px;font-weight:800}
+.finance-v19 .finance-category-row{padding:9px 10px;border-bottom:1px solid var(--line);font-size:12px}
+.finance-v19 .finance-category-row:last-child{border-bottom:0}
+.finance-v19 .finance-cat-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.finance-v19 .finance-cat-money{white-space:nowrap}
+.finance-v19 .finance-consumption{display:flex;align-items:center;gap:8px;min-width:0}
+.finance-v19 .finance-consumption .chart-track{flex:1;min-width:55px}
+.finance-v19 .finance-status{display:inline-flex;justify-content:center;white-space:nowrap;padding:4px 7px;border-radius:999px;background:#e5f4e9;color:#477458;font-size:10px;font-weight:800}
+.finance-v19 .finance-status.limit{background:#f8e9c9;color:#9a6a16}
+.finance-v19 .finance-empty{min-height:190px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}
+.finance-v19 .finance-empty b{display:block;color:var(--text);margin-bottom:5px}
+.config-v19-section{margin-top:26px}
+.config-v19-title{margin:0 0 4px}
+.config-v19-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;align-items:stretch}
+.config-v19-card{min-width:0;display:flex;flex-direction:column}
+.config-v19-card .actions{margin-top:auto}
+.config-v19-note{margin-top:14px}
+.config-v19-chips{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;min-height:74px}
+.config-v19-chip{display:inline-flex;align-items:center;gap:6px;margin:0}
+.config-v19-add{display:flex;gap:8px;align-items:stretch;margin-top:14px}
+.config-v19-add input{flex:1;min-width:0;background:#fffaf3;border:1px solid var(--line);border-radius:9px;padding:10px}
+@media(max-width:1180px){
+ .finance-v19 .finance-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .finance-v19 .finance-main-grid{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+ .finance-v19 .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .config-v19-grid{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+ .finance-v19 .finance-category-table{overflow-x:auto;padding-bottom:4px}
+ .finance-v19 .finance-category-head,.finance-v19 .finance-category-row{min-width:720px}
+ .finance-v19 .finance-panel-head{align-items:flex-start;flex-direction:column}
+ .config-v19-add{flex-direction:column}
+ .config-v19-add .btn{width:100%}
+}
+@media(max-width:520px){
+ .finance-v19 .finance-kpis{grid-template-columns:1fr}
+ .finance-v19 .finance-kpi{min-height:94px}
 }
 </style>
 
@@ -3380,6 +3186,100 @@ function custoEtapaHtml(x){
   };
 
   saveDB();
+})();
+</script>
+
+<script id="v19-finance-config-ui">
+/* V19 — refinamento visual solicitado para Financeiro e Configurações.
+   Mantém dados, cálculos, ações e persistência existentes. */
+(function(){
+  function financeStatus(prev, real){
+    if(!prev && !real) return {label:'OK',cls:''};
+    if(!prev && real>0) return {label:'Sem previsto',cls:'limit'};
+    if(real>prev) return {label:'Acima',cls:'limit'};
+    if(real===prev && prev>0) return {label:'No limite',cls:'limit'};
+    return {label:'OK',cls:''};
+  }
+
+  function financePageV19(){
+    const t=totals();
+    const cats=categoryStats();
+    const budget=+db.config.orcamento||0;
+    const committed=t.contratado+unforeseenTotal();
+    const pct=(value)=>budget?Math.max(0,Math.round((value/budget)*100)):0;
+    const rows=Object.entries(cats).map(([name,v])=>{
+      const used=v.prev?Math.max(0,Math.round((v.real/v.prev)*100)):(v.real?100:0);
+      const st=financeStatus(+v.prev||0,+v.real||0);
+      return `<div class="finance-category-row">
+        <b class="finance-cat-name">${esc(name)}</b>
+        <span class="finance-cat-money">${money(v.prev)}</span>
+        <span class="finance-cat-money">${money(v.real)}</span>
+        <div class="finance-consumption"><div class="chart-track"><i style="width:${Math.min(100,used)}%"></i></div></div>
+        <span>${used}%</span>
+        <span class="finance-status ${st.cls}">${st.label}</span>
+      </div>`;
+    }).join('');
+
+    const issues=(db.imprevistos||[]);
+    const issuesHtml=issues.length
+      ? `<div class="tablewrap">${table('imprevistos',['nome','categoria','valor','impactoDias','status'])}</div>`
+      : `<div class="finance-empty"><div><b>Nenhum imprevisto registrado</b><span>Registre aqui os custos não previstos que surgirem durante a obra.</span><div style="margin-top:16px"><button class="btn" onclick="openModal('imprevistos')">+ Registrar imprevisto</button></div></div></div>`;
+
+    return `<div class="finance-v19">${header('Financeiro','Orçamento, pagamentos, imprevistos e comparativo por categoria',`<button class='btn' onclick="openModal('pagamentos')">+ Registrar pagamento</button>`)}
+      <div class="grid finance-kpis">
+        <div class="card kpi finance-kpi"><small>Investimento planejado</small><strong>${money(budget)}</strong><span class="hint">Total do orçamento</span></div>
+        <div class="card kpi finance-kpi"><small>Comprometido total</small><strong>${money(committed)}</strong><span class="hint">${pct(committed)}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>Pago</small><strong>${money(t.pago)}</strong><span class="hint">${pct(t.pago)}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>Imprevistos</small><strong>${money(unforeseenTotal())}</strong><span class="hint">${pct(unforeseenTotal())}% do planejado</span></div>
+        <div class="card kpi finance-kpi"><small>A pagar (agendado)</small><strong>${money(paymentDue())}</strong><span class="hint">${pct(paymentDue())}% do planejado</span></div>
+      </div>
+      <div class="finance-main-grid">
+        <div class="card section finance-panel">
+          <div class="finance-panel-head"><div><h3>Previsto × Contratado por categoria</h3><span class="hint">Onde o orçamento está sendo consumido</span></div></div>
+          ${rows?`<div class="finance-category-table"><div class="finance-category-head"><span>Categoria</span><span>Previsto</span><span>Contratado</span><span>Consumo</span><span>%</span><span>Status</span></div>${rows}</div>`:`<div class="empty">Cadastre valores na obra para gerar o comparativo.</div>`}
+        </div>
+        <div class="card section finance-panel">
+          <div class="finance-panel-head"><div><h3>Imprevistos</h3><span class="hint">Custos não previstos no orçamento original</span></div><button class="btn secondary" onclick="openModal('imprevistos')">+ Registrar</button></div>
+          ${issuesHtml}
+        </div>
+      </div>
+      <div class="card section" style="margin-top:14px"><div class="toolbar"><h3 style="margin:0">Histórico e próximos pagamentos</h3><button class="btn secondary" onclick="openModal('pagamentos')">+ Pagamento</button></div><div class="tablewrap">${table('pagamentos',['referencia','tipo','valor','vencimento','forma','status'])}</div></div>
+    </div>`;
+  }
+
+  const pageV19Base=page;
+  page=function(k){
+    if(k==='financeiro') return financePageV19();
+    return pageV19Base(k);
+  };
+
+  /* Aplica classes de layout às seções já existentes de Configurações,
+     sem duplicar dados nem alterar as funções de backup/categorias. */
+  const renderV19Base=render;
+  render=function(){
+    renderV19Base();
+    if(current!=='config') return;
+    const pageRoot=document.getElementById('pages');
+    if(!pageRoot) return;
+
+    pageRoot.querySelectorAll('h3').forEach(h=>{
+      const title=(h.textContent||'').trim();
+      if(title==='Backup e restauração' || title==='Categorias'){
+        h.classList.add('config-v19-title');
+        const grid=h.nextElementSibling && h.nextElementSibling.classList.contains('grid') ? h.nextElementSibling : null;
+        if(grid){
+          grid.classList.add('config-v19-grid');
+          grid.querySelectorAll(':scope > .card').forEach(card=>card.classList.add('config-v19-card'));
+        }
+      }
+    });
+
+    ['novaCatObra','novaCatMaterial'].forEach(id=>{
+      const input=document.getElementById(id);
+      if(input && input.parentElement) input.parentElement.classList.add('config-v19-add');
+    });
+  };
+  render();
 })();
 </script>
 </body></html>
