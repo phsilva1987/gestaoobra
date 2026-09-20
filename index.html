@@ -546,6 +546,18 @@ html,body{overflow-x:clip}
  .dashboard-progress-scroll{max-height:300px}
  .dashboard-progress-item .toolbar>span:first-child{white-space:normal;overflow-wrap:anywhere}
 }
+
+/* V20.4 — capa individual por projeto */
+.project-cover-field{border:1px dashed var(--line);border-radius:12px;padding:12px;background:#fffaf2}
+.project-cover-preview{width:100%;height:150px;border-radius:10px;overflow:hidden;background:#f1e7d7;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-bottom:10px}
+.project-cover-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.project-cover-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.project-cover-actions input[type=file]{max-width:100%}
+.project-cover-thumb{height:120px;margin:-1px -1px 14px;border-radius:12px 12px 8px 8px;overflow:hidden;background:#f1e7d7}
+.project-cover-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.project-dashboard-cover{height:210px;border-radius:14px;overflow:hidden;margin-bottom:14px;background:#f1e7d7}
+.project-dashboard-cover img{width:100%;height:100%;object-fit:cover;display:block}
+@media(max-width:600px){.project-cover-thumb{height:100px}.project-dashboard-cover{height:160px}}
 </style>
 
 
@@ -577,7 +589,7 @@ function totals(){let previsto=db.obra.reduce((a,x)=>a+(+x.previsto||0),0),servC
 function header(title,sub,action=''){return `<div class='top'><div><h1>${title}</h1><p>${sub}</p></div>${action}</div>`}
 function render(){const td=document.getElementById('todayLabel');if(td)td.textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'long',year:'numeric'});document.getElementById('nav').innerHTML=menus.map(([k,n])=>`<button class='${current==k?'active':''}' onclick="go('${k}')"><span class='mi'>${svgIcon(k)}</span><span>${n}</span></button>`).join('');document.getElementById('mobileNav').innerHTML=menus.map(([k,n])=>`<option value='${k}' ${current==k?'selected':''}>${n}</option>`).join('');document.getElementById('mobileNav').onchange=e=>go(e.target.value);document.getElementById('pages').innerHTML=page(current)}
 function go(k){current=k;render()}
-function page(k){const t=totals();if(k==='dashboard'){const budget=+db.config.orcamento||0,usedPct=budget?Math.min(100,Math.round(t.pago/budget*100)):0,commPct=budget?Math.min(100,Math.round(t.contratado/budget*100)):0,available=budget-t.contratado,c=db.config||{},days=daysRemaining(c.fim);const info=`<div class='projectinfo'><div class='card project-card'><div><div class='project-title'>${esc(c.empresa||'Noremati Pilates Clássico')}</div><div class='project-sub'>${esc(c.projeto||'Reforma do Studio')}</div><div class='info-row'><span class='ii'>${svgIcon('building')}</span><div><small>CNPJ / CPF</small><b>${esc(c.documento||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('user')}</span><div><small>Responsável</small><b>${esc(c.responsavel||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('phone')}</span><div><small>Telefone / WhatsApp</small><b>${esc(c.telefone||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('mail')}</span><div><small>E-mail</small><b>${esc(c.email||'Não informado')}</b></div></div></div><div class='project-details-secondary'><div class='info-row'><span class='ii'>${svgIcon('map')}</span><div><small>Endereço da obra</small><b>${esc(c.endereco||'Não informado')} ${c.cidade?' · '+esc(c.cidade):''}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('hardhat')}</span><div><small>Responsável pela obra</small><b>${esc(c.respObra||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('calendar')}</span><div><small>Período da reforma</small><b>${fmt(c.inicio)} → ${fmt(c.fim)}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('clock')}</span><div><small>Situação do prazo</small><b class='gold'>${days===null?'Defina a previsão de término':days>=0?days+' dias restantes':Math.abs(days)+' dias após a previsão'}</b></div></div></div></div></div>`;return header('Dashboard','Visão executiva financeira e física da reforma',`<div class='dash-actions'><button class='report-btn' onclick="go('financeiro')">${svgIcon('diario')}<span>Gerar Relatório</span></button><div class='period-box'>${svgIcon('calendar')}<div>${fmt(c.inicio)} → ${fmt(c.fim)}<strong>${days===null?'Prazo não definido':days>=0?days+' dias restantes':Math.abs(days)+' dias em atraso'}</strong></div></div></div>`)+info+`<div class='grid kpis'><div class='card kpi'><span class='kicon'>${svgIcon('coins')}</span><small>Investimento planejado</small><strong>${money(budget)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('wallet')}</span><small>Pago</small><strong>${money(t.pago)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('receipt')}</span><small>Contratado</small><strong>${money(t.contratado)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('pie')}</span><small>Saldo disponível</small><strong class='${available<0?'status-Atrasado':'gold'}'>${money(available)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('chart')}</span><small>Progresso da obra</small><strong class='gold'>${t.prog}%</strong></div></div><div class='card' style='margin-top:14px'><div class='toolbar'><div><h3 style='margin:0'>Utilização do orçamento</h3><span class='hint'>Valor efetivamente pago em relação ao investimento planejado</span></div><b>${usedPct}%</b></div><div class='budgetbar'><i style='width:${usedPct}%'></i></div><div class='budgetmeta'><span>Pago: ${money(t.pago)}</span><span>Contratado: ${commPct}% do orçamento</span><span>Disponível: ${money(available)}</span></div></div><div class='grid two dashboard-progress-finance'>
+function page(k){const t=totals();if(k==='dashboard'){const budget=+db.config.orcamento||0,usedPct=budget?Math.min(100,Math.round(t.pago/budget*100)):0,commPct=budget?Math.min(100,Math.round(t.contratado/budget*100)):0,available=budget-t.contratado,c=db.config||{},days=daysRemaining(c.fim);const cover=(typeof curP==='function'&&curP()?.coverImage)?`<div class='project-dashboard-cover'><img src="${curP().coverImage}" alt="Imagem do projeto"></div>`:'';const info=cover+`<div class='projectinfo'><div class='card project-card'><div><div class='project-title'>${esc(c.empresa||'Noremati Pilates Clássico')}</div><div class='project-sub'>${esc(c.projeto||'Reforma do Studio')}</div><div class='info-row'><span class='ii'>${svgIcon('building')}</span><div><small>CNPJ / CPF</small><b>${esc(c.documento||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('user')}</span><div><small>Responsável</small><b>${esc(c.responsavel||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('phone')}</span><div><small>Telefone / WhatsApp</small><b>${esc(c.telefone||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('mail')}</span><div><small>E-mail</small><b>${esc(c.email||'Não informado')}</b></div></div></div><div class='project-details-secondary'><div class='info-row'><span class='ii'>${svgIcon('map')}</span><div><small>Endereço da obra</small><b>${esc(c.endereco||'Não informado')} ${c.cidade?' · '+esc(c.cidade):''}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('hardhat')}</span><div><small>Responsável pela obra</small><b>${esc(c.respObra||'Não informado')}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('calendar')}</span><div><small>Período da reforma</small><b>${fmt(c.inicio)} → ${fmt(c.fim)}</b></div></div><div class='info-row'><span class='ii'>${svgIcon('clock')}</span><div><small>Situação do prazo</small><b class='gold'>${days===null?'Defina a previsão de término':days>=0?days+' dias restantes':Math.abs(days)+' dias após a previsão'}</b></div></div></div></div></div>`;return header('Dashboard','Visão executiva financeira e física da reforma',`<div class='dash-actions'><button class='report-btn' onclick="go('financeiro')">${svgIcon('diario')}<span>Gerar Relatório</span></button><div class='period-box'>${svgIcon('calendar')}<div>${fmt(c.inicio)} → ${fmt(c.fim)}<strong>${days===null?'Prazo não definido':days>=0?days+' dias restantes':Math.abs(days)+' dias em atraso'}</strong></div></div></div>`)+info+`<div class='grid kpis'><div class='card kpi'><span class='kicon'>${svgIcon('coins')}</span><small>Investimento planejado</small><strong>${money(budget)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('wallet')}</span><small>Pago</small><strong>${money(t.pago)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('receipt')}</span><small>Contratado</small><strong>${money(t.contratado)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('pie')}</span><small>Saldo disponível</small><strong class='${available<0?'status-Atrasado':'gold'}'>${money(available)}</strong></div><div class='card kpi'><span class='kicon'>${svgIcon('chart')}</span><small>Progresso da obra</small><strong class='gold'>${t.prog}%</strong></div></div><div class='card' style='margin-top:14px'><div class='toolbar'><div><h3 style='margin:0'>Utilização do orçamento</h3><span class='hint'>Valor efetivamente pago em relação ao investimento planejado</span></div><b>${usedPct}%</b></div><div class='budgetbar'><i style='width:${usedPct}%'></i></div><div class='budgetmeta'><span>Pago: ${money(t.pago)}</span><span>Contratado: ${commPct}% do orçamento</span><span>Disponível: ${money(available)}</span></div></div><div class='grid two dashboard-progress-finance'>
 <div class='card section dashboard-progress-card'><h3>Progresso da obra</h3><div class='progressline'><div class='bar'><i style='width:${t.prog}%'></i></div><b>${t.prog}%</b></div><div class='dashboard-progress-scroll'>${db.obra.length?db.obra.map(x=>`<div class='dashboard-progress-item'><div class='toolbar'><span>${esc(x.nome)}</span><span class='hint'>${x.progresso||0}%</span></div><div class='bar'><i style='width:${x.progresso||0}%'></i></div></div>`).join(''):`<div class='empty'>Nenhuma etapa cadastrada.</div>`}</div></div>
 <div class='card section dashboard-finance-card'><h3>Resumo financeiro</h3><table><tr><td>A pagar</td><td><b>${money(t.apagar)}</b></td></tr><tr><td>Materiais da obra</td><td>${money(t.materiais)}</td></tr><tr><td>Mão de obra (profissionais avulsos)</td><td>${money(t.maoDeObra)}</td></tr><tr><td>Extras / imprevistos registrados</td><td>${money(t.extras)}</td></tr><tr><td>Administrativo pago</td><td>${money(t.adm)}</td></tr><tr><td>Equipamentos já comprados</td><td>${money(t.eq)}</td></tr></table><p class='hint'>Equipamentos e administrativo permanecem separados do orçamento da obra. "Mão de obra (profissionais avulsos)" soma só quem está cadastrado em Profissionais mas não vinculado a nenhuma etapa da Obra — evita contar o mesmo custo duas vezes.</p></div></div>`;}
 if(k==='obra')return listPage('Obra','Serviços e etapas da reforma','obra',['nome','categoria','previsto','contratado','pago','status','progresso']);
@@ -1134,15 +1146,53 @@ function projectsPage(){
  <div class="project-tile-actions" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span class="project-selected">${p.id===db.selectedProjectId?'Projeto selecionado':'Abrir projeto'}</span><div class="rowactions"><button onclick="event.stopPropagation();openProjectModal('${p.id}')">Editar</button><button onclick="event.stopPropagation();duplicateProject('${p.id}')">Duplicar</button><button onclick="event.stopPropagation();deleteProject('${p.id}')">Excluir</button></div></div></div>`}).join('')}</div>`;
 }
 let projectEditId=null;
+let projectCoverDraft=null;
+function projectCoverPreviewHTML(src){
+ return src ? `<img src="${src}" alt="Capa do projeto">` : '<span>Nenhuma imagem selecionada</span>';
+}
+function resizeProjectCover(file){
+ return new Promise((resolve,reject)=>{
+   if(!file || !file.type.startsWith('image/')) return reject(new Error('Selecione um arquivo de imagem.'));
+   const reader=new FileReader();
+   reader.onload=()=>{
+     const img=new Image();
+     img.onload=()=>{
+       const max=1600, scale=Math.min(1,max/Math.max(img.width,img.height));
+       const canvas=document.createElement('canvas');
+       canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+       canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+       resolve(canvas.toDataURL('image/jpeg',.78));
+     };
+     img.onerror=()=>reject(new Error('Não foi possível processar a imagem.'));
+     img.src=reader.result;
+   };
+   reader.onerror=()=>reject(new Error('Não foi possível ler o arquivo.'));
+   reader.readAsDataURL(file);
+ });
+}
+async function handleProjectCover(input){
+ const file=input.files&&input.files[0];if(!file)return;
+ try{
+   projectCoverDraft=await resizeProjectCover(file);
+   const preview=document.getElementById('projectCoverPreview');if(preview)preview.innerHTML=projectCoverPreviewHTML(projectCoverDraft);
+ }catch(e){alert(e.message||'Erro ao processar a imagem.');}
+ input.value='';
+}
+function removeProjectCover(){
+ projectCoverDraft='';
+ const preview=document.getElementById('projectCoverPreview');if(preview)preview.innerHTML=projectCoverPreviewHTML('');
+}
 function openProjectModal(id=null){
  projectEditId=id;const p=id?db.projects.find(x=>x.id===id):null,c=p?.config||{};
+ projectCoverDraft=p?.coverImage||'';
  document.getElementById('modalTitle').textContent=id?'Editar Projeto':'Nova Obra';
  document.getElementById('form').innerHTML=`<div><label>Nome do projeto</label><input name="pn" value="${esc(p?.nome||'')}"></div>
  <div><label>Tipo</label><select name="pt">${['Studio / Comercial','Apartamento','Casa','Loja','Escritório','Residencial','Outro'].map(x=>`<option ${p?.tipo===x?'selected':''}>${x}</option>`).join('')}</select></div>
  <div><label>Status</label><select name="ps">${['Planejamento','Em andamento','Pausada','Concluída','Cancelada'].map(x=>`<option ${p?.status===x?'selected':''}>${x}</option>`).join('')}</select></div>
  <div><label>Cliente / Empresa / Proprietário</label><input name="pe" value="${esc(c.empresa||'')}"></div><div><label>Responsável</label><input name="pr" value="${esc(c.responsavel||'')}"></div><div><label>Responsável pela obra</label><input name="pro" value="${esc(c.respObra||'')}"></div>
  <div class="full"><label>Endereço</label><input name="pend" value="${esc(c.endereco||'')}"></div><div><label>Cidade / UF</label><input name="pcid" value="${esc(c.cidade||'')}"></div>
- <div class="moneyinput"><label>Orçamento total</label><input name="porc" class="currency-input" value="${moneyInput(c.orcamento||0)}"></div><div><label>Início</label><input name="pini" type="date" value="${c.inicio||''}"></div><div><label>Término previsto</label><input name="pfim" type="date" value="${c.fim||''}"></div>`;
+ <div class="moneyinput"><label>Orçamento total</label><input name="porc" class="currency-input" value="${moneyInput(c.orcamento||0)}"></div><div><label>Início</label><input name="pini" type="date" value="${c.inicio||''}"></div><div><label>Término previsto</label><input name="pfim" type="date" value="${c.fim||''}"></div>
+ <div class="full project-cover-field"><label>Imagem do projeto</label><div id="projectCoverPreview" class="project-cover-preview">${projectCoverPreviewHTML(projectCoverDraft)}</div><div class="project-cover-actions"><input type="file" accept="image/*" onchange="handleProjectCover(this)"><button type="button" class="btn secondary" onclick="removeProjectCover()">Remover imagem</button></div><div class="hint" style="margin-top:8px">A imagem é otimizada automaticamente e fica vinculada somente a este projeto.</div></div>`;
  document.querySelector('.modalbox .actions').innerHTML=`<button class="btn secondary" onclick="closeModal(false)">Cancelar</button><button class="btn" onclick="saveProject()">Salvar Projeto</button>`;
  document.getElementById('modal').classList.add('show');bindMoneyInputs(document.getElementById('form'));
 }
@@ -1152,6 +1202,7 @@ function saveProject(){
  if(projectEditId)p=db.projects.find(x=>x.id===projectEditId);
  else{p=normalizeP({id:newPid(),obra:[],profissionais:[],materiais:[],equipamentos:[],admin:[],imprevistos:[],pagamentos:[],checklistFinal:defaultFinalChecklist(),config:{}});db.projects.push(p);db.selectedProjectId=p.id}
  p.nome=f.pn.trim();p.tipo=f.pt;p.status=f.ps;p.config={...p.config,projeto:p.nome,empresa:f.pe||'',responsavel:f.pr||'',respObra:f.pro||'',endereco:f.pend||'',cidade:f.pcid||'',orcamento:parseMoney(f.porc),inicio:f.pini||'',fim:f.pfim||''};
+ p.coverImage=projectCoverDraft||'';
  syncAliases();saveDB();closeModal();render();
 }
 function duplicateProject(id){const p=db.projects.find(x=>x.id===id);if(!p)return;const c=JSON.parse(JSON.stringify(p));c.id=newPid();c.nome+=' - Cópia';c.config.projeto=c.nome;c.status='Planejamento';db.projects.push(normalizeP(c));saveDB();render()}
@@ -1202,6 +1253,7 @@ projectsPage=function(){
    const pct=t.budget?Math.min(100,Math.max(0,Math.round(t.pago/t.budget*100))):0;
    const city=p.config?.cidade?` · ${esc(p.config.cidade)}`:'';
    return `<article class="card project-tile ${p.id===db.selectedProjectId?'active-project':''}">
+     ${p.coverImage?`<div class="project-cover-thumb"><img src="${p.coverImage}" alt="Capa de ${esc(p.nome)}"></div>`:''}
      <div onclick="switchProject('${p.id}');go('dashboard')" style="cursor:pointer">
        <div class="project-tile-head">
          <span class="project-type">${esc(p.tipo)}</span>
