@@ -1367,38 +1367,48 @@ function persistChecklist(){
   saveDB();
 }
 
-function syncChecklistFromStages(){
-  if(!Array.isArray(db.obra)) return;
+function syncChecklistFromStages(persistChanges=true){
+  if(!Array.isArray(db.obra)) return false;
   if(!Array.isArray(db.checklist)) db.checklist=[];
+  if(!Array.isArray(db.checklistIgnorar)) db.checklistIgnorar=[];
+
+  let changed=false;
 
   db.obra.forEach(stage=>{
     if(db.checklistIgnorar.includes(String(stage.id))) return;
     let item = db.checklist.find(x=>String(x.sourceObraId)===String(stage.id));
+    const shouldBeDone=(+stage.progresso||0)>=100 || stage.status==='Concluído';
+
     if(!item){
       db.checklist.push({
         id:'auto_'+stage.id,
         nome:stage.nome,
-        feito:(+stage.progresso||0)>=100 || stage.status==='Concluído',
+        feito:shouldBeDone,
         auto:true,
         sourceObraId:stage.id
       });
+      changed=true;
     }else if(item.auto){
-      item.nome = stage.nome;
-      item.feito = (+stage.progresso||0)>=100 || stage.status==='Concluído';
+      if(item.nome!==stage.nome){ item.nome=stage.nome; changed=true; }
+      if(item.feito!==shouldBeDone){ item.feito=shouldBeDone; changed=true; }
     }
   });
 
   /* remove itens automáticos (ainda vinculados) cuja etapa foi excluída */
+  const before=db.checklist.length;
   db.checklist = db.checklist.filter(item=>{
     if(!item.auto || !item.sourceObraId) return true;
     return db.obra.some(stage=>String(stage.id)===String(item.sourceObraId));
   });
+  if(db.checklist.length!==before) changed=true;
 
-  persistChecklist();
+  /* Evita gravar no localStorage durante simples renderizações/leitura de estatísticas. */
+  if(changed && persistChanges) persistChecklist();
+  return changed;
 }
 
 function checklistStats(){
-  syncChecklistFromStages();
+  syncChecklistFromStages(false);
   const total=db.checklist.length;
   const done=db.checklist.filter(x=>x.feito).length;
   return {total,done,pct:total?Math.round(done/total*100):0};
