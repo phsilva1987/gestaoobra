@@ -2890,23 +2890,6 @@ function custoEtapaHtml(x){
     return out;
   };
 
-  const renderV15Base = render;
-  render = function(){
-    renderV15Base();
-    const nav = document.getElementById('nav');
-    if (!nav || !menus._grupos) return;
-    let html = '', lastGrupo = null;
-    menus.forEach(([k, n]) => {
-      const grupo = menus._grupos[k] || null;
-      if (grupo && grupo !== lastGrupo) {
-        html += `<div style="margin:14px 10px 4px;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted)">${grupo}</div>`;
-      }
-      lastGrupo = grupo;
-      html += `<button class='${current==k?'active':''}' onclick="go('${k}')"><span class='mi'>${svgIcon(k)}</span><span>${n}</span></button>`;
-    });
-    nav.innerHTML = html;
-  };
-
   render();
 })();
 </script>
@@ -3386,6 +3369,23 @@ function custoEtapaHtml(x){
   const renderV19Base=render;
   render=function(){
     renderV19Base();
+
+    /* Mantém a montagem do menu agrupado da V15 dentro do wrapper final,
+       eliminando uma camada intermediária de render sem mudar o resultado. */
+    const nav=document.getElementById('nav');
+    if(nav && menus._grupos){
+      let html='', lastGrupo=null;
+      menus.forEach(([k,n])=>{
+        const grupo=menus._grupos[k]||null;
+        if(grupo && grupo!==lastGrupo){
+          html += `<div style="margin:14px 10px 4px;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted)">${grupo}</div>`;
+        }
+        lastGrupo=grupo;
+        html += `<button class='${current==k?'active':''}' onclick="go('${k}')"><span class='mi'>${svgIcon(k)}</span><span>${n}</span></button>`;
+      });
+      nav.innerHTML=html;
+    }
+
     if(current!=='config') return;
     const pageRoot=document.getElementById('pages');
     if(!pageRoot) return;
