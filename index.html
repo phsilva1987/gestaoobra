@@ -552,6 +552,9 @@ html,body{overflow-x:clip}
 .project-cover-preview{width:100%;height:150px;border-radius:10px;overflow:hidden;background:#f1e7d7;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-bottom:10px}
 .project-cover-preview img{width:100%;height:100%;object-fit:cover;display:block}
 .project-cover-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.project-cover-upload{position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.project-cover-upload input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.project-cover-upload-note{font-size:11px;color:var(--muted);margin-top:7px}
 .project-cover-actions input[type=file]{max-width:100%}
 .project-cover-thumb{height:120px;margin:-1px -1px 14px;border-radius:12px 12px 8px 8px;overflow:hidden;background:#f1e7d7}
 .project-cover-thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1192,7 +1195,7 @@ function openProjectModal(id=null){
  <div><label>Cliente / Empresa / Proprietário</label><input name="pe" value="${esc(c.empresa||'')}"></div><div><label>Responsável</label><input name="pr" value="${esc(c.responsavel||'')}"></div><div><label>Responsável pela obra</label><input name="pro" value="${esc(c.respObra||'')}"></div>
  <div class="full"><label>Endereço</label><input name="pend" value="${esc(c.endereco||'')}"></div><div><label>Cidade / UF</label><input name="pcid" value="${esc(c.cidade||'')}"></div>
  <div class="moneyinput"><label>Orçamento total</label><input name="porc" class="currency-input" value="${moneyInput(c.orcamento||0)}"></div><div><label>Início</label><input name="pini" type="date" value="${c.inicio||''}"></div><div><label>Término previsto</label><input name="pfim" type="date" value="${c.fim||''}"></div>
- <div class="full project-cover-field"><label>Imagem do projeto</label><div id="projectCoverPreview" class="project-cover-preview">${projectCoverPreviewHTML(projectCoverDraft)}</div><div class="project-cover-actions"><input type="file" accept="image/*" onchange="handleProjectCover(this)"><button type="button" class="btn secondary" onclick="removeProjectCover()">Remover imagem</button></div><div class="hint" style="margin-top:8px">A imagem é otimizada automaticamente e fica vinculada somente a este projeto.</div></div>`;
+ <div class="full project-cover-field"><label>Imagem do projeto</label><div id="projectCoverPreview" class="project-cover-preview">${projectCoverPreviewHTML(projectCoverDraft)}</div><div class="project-cover-actions"><label class="btn project-cover-upload">📷 Selecionar imagem<input id="projectCoverFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handleProjectCover(this)"></label><button type="button" class="btn secondary" onclick="removeProjectCover()">Remover imagem</button></div><div class="project-cover-upload-note">JPG, PNG ou WebP · a imagem será otimizada automaticamente.</div><div class="hint" style="margin-top:8px">A imagem fica vinculada somente a este projeto e muda automaticamente ao trocar de projeto.</div></div>`;
  document.querySelector('.modalbox .actions').innerHTML=`<button class="btn secondary" onclick="closeModal(false)">Cancelar</button><button class="btn" onclick="saveProject()">Salvar Projeto</button>`;
  document.getElementById('modal').classList.add('show');bindMoneyInputs(document.getElementById('form'));
 }
