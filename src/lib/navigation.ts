@@ -30,6 +30,7 @@ export const iconPaths: Record<string, string> = {
   building:
     '<path d="M4 21h16M6 21V4h9v17M15 9h3v12M9 7h2M9 11h2M9 15h2"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+  users: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2.5-7 6-7s6 3 6 7M14 14c3.5 0 6 2.3 6 6"/>',
   phone:
     '<path d="M5 4h4l2 5-3 2c1.5 3 3 4.5 6 6l2-3 5 2v4c0 1-1 2-2 2C10 22 2 14 2 5c0-1 1-2 3-1z"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/>',
@@ -71,6 +72,9 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: 'Sistema',
-    items: [{ key: 'config', label: 'Configurações', icon: 'config' }],
+    items: [
+      { key: 'usuarios', label: 'Usuários', icon: 'users' },
+      { key: 'config', label: 'Configurações', icon: 'config' },
+    ],
   },
 ];

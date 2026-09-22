@@ -7,6 +7,7 @@ export type PageKey =
   | 'equipamentos'
   | 'cronograma'
   | 'financeiro'
+  | 'usuarios'
   | 'config';
 
 export interface NavItem {

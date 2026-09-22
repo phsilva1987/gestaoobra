@@ -121,3 +121,19 @@ export async function removeProjectMember(projectId: string, userId: string): Pr
     throw error;
   }
 }
+
+export interface AdminUserOverviewRow {
+  user_id: string;
+  name: string;
+  email: string;
+  global_role: string;
+  project_id: string | null;
+  project_name: string | null;
+  project_role: string | null;
+}
+
+export async function getAdminUsersOverview(): Promise<AdminUserOverviewRow[]> {
+  const { data, error } = await supabase.rpc('get_admin_users_overview');
+  if (error) throw error;
+  return (data || []) as AdminUserOverviewRow[];
+}

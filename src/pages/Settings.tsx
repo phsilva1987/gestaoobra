@@ -6,7 +6,6 @@ import { ProjectImageManager } from '../components/settings/ProjectImageManager'
 import { CategoryManager } from '../components/settings/CategoryManager';
 import { SupplierManager } from '../components/settings/SupplierManager';
 import { BackupSection } from '../components/settings/BackupSection';
-import { TeamManager } from '../components/team/TeamManager';
 
 interface SettingsProps {
   project: ProjectData;
@@ -23,7 +22,6 @@ interface SettingsProps {
   onRestored: () => Promise<void>;
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
   isProjectAdmin: boolean;
-  currentUserId: string;
 }
 
 export function Settings({
@@ -41,7 +39,6 @@ export function Settings({
   onRestored,
   showToast,
   isProjectAdmin,
-  currentUserId,
 }: SettingsProps) {
   return (
     <>
@@ -65,13 +62,6 @@ export function Settings({
         onAdd={onAddSupplier}
         onUpdate={onUpdateSupplier}
         onDelete={onDeleteSupplier}
-      />
-
-      <TeamManager
-        projectId={project.id}
-        isProjectAdmin={isProjectAdmin}
-        currentUserId={currentUserId}
-        showToast={showToast}
       />
 
       <BackupSection

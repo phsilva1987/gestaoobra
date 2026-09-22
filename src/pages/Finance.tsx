@@ -66,7 +66,7 @@ export function Finance({
 
       <FinanceKpis project={project} />
 
-      <div className="grid two">
+      <div className="finance-grid">
         <CategoryComparison project={project} />
         <div>
           <div className="finance-panel-head">

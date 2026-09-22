@@ -10,6 +10,7 @@ import { Materials } from './pages/Materials';
 import { Equipment as EquipmentPage } from './pages/Equipment';
 import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
+import { UsersPage } from './pages/Users';
 import { Settings } from './pages/Settings';
 import { useProjects } from './hooks/useProjects';
 import type { ProjectFormData } from './components/projects/ProjectForm';
@@ -169,10 +170,12 @@ export function App() {
     );
   }
 
+  const isAdmin = profile?.role === 'admin';
+
   if (projects.length === 0 || !selectedProject) {
     return (
       <ProtectedApp>
-        <AppShell current={currentPage} onNavigate={setCurrentPage} projects={[]} selectedProjectId="" onSelectProject={() => {}} coverImage="" projectName="">
+        <AppShell current={currentPage} onNavigate={setCurrentPage} projects={[]} selectedProjectId="" onSelectProject={() => {}} coverImage="" projectName="" isAdmin={isAdmin}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center' }}>
             <div>
               <h2 style={{ marginBottom: 8 }}>Nenhum projeto disponível</h2>
@@ -190,7 +193,6 @@ export function App() {
     );
   }
 
-  const isAdmin = profile?.role === 'admin';
   const pid = selectedProject.id;
 
   const pages: Record<PageKey, React.ReactNode> = {
@@ -265,14 +267,21 @@ export function App() {
         onDeleteSupplier={(id: string) => handleDeleteSupplier(pid, id)}
         allProjects={projects} selectedProjectId={selectedProjectId || ''}
         onRestored={handleRestored} showToast={showToast}
-        isProjectAdmin={isAdmin} currentUserId={profile?.id || ''}
+        isProjectAdmin={isAdmin}
       />
+    ),
+    usuarios: isAdmin ? (
+      <UsersPage projects={projects} currentUserId={profile?.id || ''} showToast={showToast} />
+    ) : (
+      <div className="card section" style={{ marginTop: 14 }}>
+        <p className="empty">Você não possui permissão para acessar esta página.</p>
+      </div>
     ),
   };
 
   return (
     <ProtectedApp>
-      <AppShell current={currentPage} onNavigate={setCurrentPage} projects={projectOptions} selectedProjectId={selectedProjectId || ''} onSelectProject={setSelectedProjectId} coverImage={selectedProject.coverImage} projectName={selectedProject.nome}>
+      <AppShell current={currentPage} onNavigate={setCurrentPage} projects={projectOptions} selectedProjectId={selectedProjectId || ''} onSelectProject={setSelectedProjectId} coverImage={selectedProject.coverImage} projectName={selectedProject.nome} isAdmin={isAdmin}>
         {pages[currentPage]}
       </AppShell>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

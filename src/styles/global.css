@@ -512,6 +512,64 @@ main {
   margin-top: 14px;
 }
 
+/* Finance: CategoryComparison ~40%, Imprevistos ~60% */
+.finance-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.8fr) minmax(0, 1.2fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media (max-width: 1024px) {
+  .finance-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Category comparison chart rows */
+.chart-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 120px) 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.chart-row:last-child {
+  border-bottom: 0;
+}
+
+.chart-row > span:first-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3c3024;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-track {
+  height: 10px;
+  background: #eadfcd;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.chart-track i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #a87827, #b88c3b);
+  border-radius: 20px;
+  transition: width 0.3s ease;
+}
+
+.chart-row > b {
+  font-size: 13px;
+  white-space: nowrap;
+  color: #3c3024;
+}
+
 .dashboard-progress-finance {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;

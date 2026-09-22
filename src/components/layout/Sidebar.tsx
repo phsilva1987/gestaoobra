@@ -6,9 +6,13 @@ interface SidebarProps {
   onNavigate: (page: PageKey) => void;
   coverImage?: string;
   projectName?: string;
+  isAdmin?: boolean;
 }
 
-export function Sidebar({ current, onNavigate, coverImage, projectName }: SidebarProps) {
+export function Sidebar({ current, onNavigate, coverImage, projectName, isAdmin = false }: SidebarProps) {
+  const groups = navGroups
+    .map((g) => ({ ...g, items: g.items.filter((item) => item.key !== 'usuarios' || isAdmin) }))
+    .filter((g) => g.items.length > 0);
   return (
     <aside className="side">
       <div className="brand">
@@ -23,7 +27,7 @@ export function Sidebar({ current, onNavigate, coverImage, projectName }: Sideba
         )}
       </div>
       <nav className="nav">
-        {navGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.label} className="nav-section">
             <div className="nav-section-label">{group.label}</div>
             {group.items.map((item) => (

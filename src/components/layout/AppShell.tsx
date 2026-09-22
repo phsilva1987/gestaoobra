@@ -12,6 +12,7 @@ interface AppShellProps {
   onSelectProject: (id: string) => void;
   coverImage?: string;
   projectName?: string;
+  isAdmin?: boolean;
   children: React.ReactNode;
 }
 
@@ -23,13 +24,14 @@ export function AppShell({
   onSelectProject,
   coverImage,
   projectName,
+  isAdmin = false,
   children,
 }: AppShellProps) {
-  const mobileOptions = navGroups.flatMap((g) => g.items);
+  const mobileOptions = navGroups.flatMap((g) => g.items).filter((item) => item.key !== 'usuarios' || isAdmin);
 
   return (
     <div className="app">
-      <Sidebar current={current} onNavigate={onNavigate} coverImage={coverImage} projectName={projectName} />
+      <Sidebar current={current} onNavigate={onNavigate} coverImage={coverImage} projectName={projectName} isAdmin={isAdmin} />
       <main>
         <Header
           projects={projects}
