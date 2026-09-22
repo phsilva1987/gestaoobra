@@ -17,6 +17,7 @@ export interface ProjectRow {
   data_inicio: string | null;
   data_fim: string | null;
   cover_image_path: string;
+  legacy_key: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -62,6 +63,7 @@ export function mapProjectFromDb(row: ProjectRow): ProjectData {
     tipo: row.type || '',
     status: row.status || 'Planejamento',
     coverImage: row.cover_image_path || '',
+    legacyKey: row.legacy_key || null,
     config,
     obra: [],
     profissionais: [],

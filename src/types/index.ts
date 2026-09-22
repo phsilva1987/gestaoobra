@@ -127,6 +127,7 @@ export interface ProjectData {
   tipo: string;
   status: string;
   coverImage: string;
+  legacyKey?: string | null;
   config: ProjectConfig;
   obra: Stage[];
   profissionais: Professional[];
