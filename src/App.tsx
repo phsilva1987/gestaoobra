@@ -9,15 +9,19 @@ import { Equipment } from './pages/Equipment';
 import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
-import { mockProjects } from './lib/mockProjects';
+import { mockProjects, getProjectOptions } from './lib/mockProjects';
 import type { PageKey } from './types/navigation';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<PageKey>('dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState(mockProjects[0].id);
 
+  const selectedProject =
+    mockProjects.find((p) => p.id === selectedProjectId) || mockProjects[0];
+  const projectOptions = getProjectOptions();
+
   const pages: Record<PageKey, React.ReactNode> = {
-    dashboard: <Dashboard />,
+    dashboard: <Dashboard project={selectedProject} />,
     projetos: <Projects />,
     obra: <Stages />,
     profissionais: <Professionals />,
@@ -32,7 +36,7 @@ export function App() {
     <AppShell
       current={currentPage}
       onNavigate={setCurrentPage}
-      projects={mockProjects}
+      projects={projectOptions}
       selectedProjectId={selectedProjectId}
       onSelectProject={setSelectedProjectId}
     >

@@ -1,7 +1,10 @@
-import type { ProjectOption } from '../types/navigation';
+import type { ProjectData } from '../types';
+import { mockProjects } from './mockData';
 
-export const mockProjects: ProjectOption[] = [
-  { id: '1', nome: 'Reforma do Studio - Noremati Pilates', tipo: 'Reforma Comercial' },
-  { id: '2', nome: 'Reforma Apartamento Centro', tipo: 'Reforma Residencial' },
-  { id: '3', nome: 'Construção Casa Praia', tipo: 'Construção' },
-];
+export type { ProjectData };
+
+export function getProjectOptions(): { id: string; nome: string; tipo: string }[] {
+  return mockProjects.map((p) => ({ id: p.id, nome: p.nome, tipo: p.tipo }));
+}
+
+export { mockProjects };

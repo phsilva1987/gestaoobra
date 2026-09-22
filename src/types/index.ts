@@ -1,34 +1,46 @@
-// Domain types will be populated during migration phases.
-// For now, placeholders that compile and establish the pattern.
-
-export interface Project {
-  id: string;
-  nome: string;
-  tipo: string;
-  status: string;
+export interface ProjectConfig {
+  empresa: string;
+  projeto: string;
+  documento: string;
+  responsavel: string;
+  telefone: string;
+  email: string;
+  endereco: string;
+  cidade: string;
+  respObra: string;
+  orcamento: number;
+  inicio: string;
+  fim: string;
 }
 
 export interface Stage {
   id: string;
-  projeto_id: string;
   nome: string;
   categoria: string;
+  prioridade: string;
+  dependencia: string;
   status: string;
   progresso: number;
+  previsto: number;
+  inicio: string;
+  fim: string;
+  profissionalId: string | null;
+  observacao: string;
 }
 
 export interface Professional {
   id: string;
-  projeto_id: string;
   nome: string;
   servico: string;
   telefone: string;
+  valor: number;
+  pago: number;
+  forma: string;
   status: string;
 }
 
 export interface Job {
   id: string;
-  projeto_id: string;
   etapa_id: string;
   profissional_id: string;
   valor: number;
@@ -38,10 +50,10 @@ export interface Job {
 
 export interface Material {
   id: string;
-  projeto_id: string;
   etapa_id: string;
   nome: string;
   categoria: string;
+  fornecedor: string;
   quantidade: number;
   unidade: string;
   unitario: number;
@@ -51,12 +63,63 @@ export interface Material {
 
 export interface Equipment {
   id: string;
-  projeto_id: string;
   etapa_id: string;
   nome: string;
   quantidade: number;
   valor: number;
   status: string;
+}
+
+export interface Payment {
+  id: string;
+  referencia: string;
+  tipo: string;
+  valor: number;
+  vencimento: string;
+  forma: string;
+  status: string;
+}
+
+export interface Unforeseen {
+  id: string;
+  nome: string;
+  categoria: string;
+  valor: number;
+  impactoDias: number;
+  status: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  nome: string;
+  feito: boolean;
+  auto: boolean;
+  sourceObraId: string | null;
+}
+
+export interface AdminItem {
+  id: string;
+  nome: string;
+  valor: number;
+  pago: number;
+  status: string;
+}
+
+export interface ProjectData {
+  id: string;
+  nome: string;
+  tipo: string;
+  status: string;
+  config: ProjectConfig;
+  obra: Stage[];
+  profissionais: Professional[];
+  jobs: Job[];
+  materiais: Material[];
+  equipamentos: Equipment[];
+  imprevistos: Unforeseen[];
+  pagamentos: Payment[];
+  admin: AdminItem[];
+  checklist: ChecklistItem[];
 }
 
 export interface Supplier {
