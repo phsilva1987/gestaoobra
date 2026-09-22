@@ -39,9 +39,7 @@ export interface Professional {
   nome: string;
   servico: string;
   telefone: string;
-  valor: number;
-  pago: number;
-  forma: string;
+  email: string;
   status: string;
 }
 
@@ -51,6 +49,10 @@ export interface Job {
   profissional_id: string;
   valor: number;
   pago: number;
+  forma: string;
+  parcelas: string;
+  chavePix: string;
+  valorParcela: number | null;
   status: string;
 }
 

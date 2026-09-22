@@ -10,13 +10,15 @@ import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
 import { mockProjects, getProjectOptions } from './lib/mockProjects';
-import type { ProjectData, Stage } from './types';
+import type { ProjectData, Stage, Professional, Job } from './types';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
+import type { ProfessionalFormData } from './components/professionals/ProfessionalForm';
+import type { JobFormData } from './components/professionals/JobForm';
 import { isoToday } from './lib/format';
 
-function genId(): string {
-  return 's_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+function genId(prefix: string): string {
+  return prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
 }
 
 export function App() {
@@ -35,7 +37,7 @@ export function App() {
       prev.map((p) => {
         if (p.id !== projectId) return p;
         const newStage: Stage = {
-          id: genId(),
+          id: genId('s'),
           nome: data.nome,
           categoria: data.categoria,
           prioridade: data.prioridade,
@@ -123,6 +125,107 @@ export function App() {
     );
   }, []);
 
+  const addProfessional = useCallback((projectId: string, data: ProfessionalFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const newProf: Professional = {
+          id: genId('p'),
+          nome: data.nome,
+          servico: data.servico,
+          telefone: data.telefone,
+          email: data.email,
+          status: data.status,
+        };
+        return { ...p, profissionais: [...p.profissionais, newProf] };
+      })
+    );
+  }, []);
+
+  const updateProfessional = useCallback((projectId: string, profId: string, data: ProfessionalFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return {
+          ...p,
+          profissionais: p.profissionais.map((pr) =>
+            pr.id === profId
+              ? { ...pr, nome: data.nome, servico: data.servico, telefone: data.telefone, email: data.email, status: data.status }
+              : pr
+          ),
+        };
+      })
+    );
+  }, []);
+
+  const deleteProfessional = useCallback((projectId: string, profId: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, profissionais: p.profissionais.filter((pr) => pr.id !== profId) };
+      })
+    );
+  }, []);
+
+  const addJob = useCallback((projectId: string, data: JobFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const n = parseInt(data.parcelas) || 1;
+        const newJob: Job = {
+          id: genId('j'),
+          etapa_id: data.etapa_id,
+          profissional_id: data.profissional_id,
+          valor: data.valor,
+          pago: data.pago,
+          forma: data.forma,
+          parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+          chavePix: data.forma === 'Pix' ? data.chavePix : '',
+          valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+          status: data.status,
+        };
+        return { ...p, jobs: [...p.jobs, newJob] };
+      })
+    );
+  }, []);
+
+  const updateJob = useCallback((projectId: string, jobId: string, data: JobFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const n = parseInt(data.parcelas) || 1;
+        return {
+          ...p,
+          jobs: p.jobs.map((j) =>
+            j.id === jobId
+              ? {
+                  ...j,
+                  etapa_id: data.etapa_id,
+                  profissional_id: data.profissional_id,
+                  valor: data.valor,
+                  pago: data.pago,
+                  forma: data.forma,
+                  parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+                  chavePix: data.forma === 'Pix' ? data.chavePix : '',
+                  valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+                  status: data.status,
+                }
+              : j
+          ),
+        };
+      })
+    );
+  }, []);
+
+  const deleteJob = useCallback((projectId: string, jobId: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, jobs: p.jobs.filter((j) => j.id !== jobId) };
+      })
+    );
+  }, []);
+
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
     projetos: <Projects />,
@@ -136,7 +239,17 @@ export function App() {
         onFinishStage={(id) => finishStage(selectedProject.id, id)}
       />
     ),
-    profissionais: <Professionals />,
+    profissionais: (
+      <Professionals
+        project={selectedProject}
+        onAddProfessional={(data) => addProfessional(selectedProject.id, data)}
+        onUpdateProfessional={(id, data) => updateProfessional(selectedProject.id, id, data)}
+        onDeleteProfessional={(id) => deleteProfessional(selectedProject.id, id)}
+        onAddJob={(data) => addJob(selectedProject.id, data)}
+        onUpdateJob={(id, data) => updateJob(selectedProject.id, id, data)}
+        onDeleteJob={(id) => deleteJob(selectedProject.id, id)}
+      />
+    ),
     materiais: <Materials />,
     equipamentos: <Equipment />,
     cronograma: <Schedule />,

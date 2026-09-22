@@ -1029,6 +1029,10 @@ th {
   border: 1px solid var(--line);
 }
 
+.modalbox.modalbox-wide {
+  max-width: 760px;
+}
+
 .modalbox h2 {
   margin: 0 0 18px;
   font-size: 20px;
@@ -1130,6 +1134,46 @@ th {
 .checkitem span {
   font-size: 14px;
   color: #3b2d20;
+}
+
+/* Professional jobs section */
+.prof-jobs-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.prof-jobs-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 8px;
+  flex-wrap: wrap;
+}
+
+.prof-jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prof-job-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.prof-job-info {
+  font-size: 13px;
+  color: #3b2d20;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Delete blocked */
