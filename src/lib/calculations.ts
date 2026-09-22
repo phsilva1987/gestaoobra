@@ -166,6 +166,41 @@ export function checklistStats(
   return { total, done, pct: total ? Math.round((done / total) * 100) : 0 };
 }
 
+export function categoryStats(
+  project: ProjectData
+): Record<string, { prev: number; real: number }> {
+  const m: Record<string, { prev: number; real: number }> = {};
+  project.obra.forEach((s) => {
+    const k = s.categoria || 'Outros';
+    if (!m[k]) m[k] = { prev: 0, real: 0 };
+    m[k].prev += +s.previsto || 0;
+    m[k].real += stageContratado(s, project.jobs, project.materiais, project.equipamentos);
+  });
+  return m;
+}
+
+export interface FinanceMetrics {
+  budget: number;
+  comprometido: number;
+  pago: number;
+  imprevistos: number;
+  apagarAgendado: number;
+  saldo: number;
+}
+
+export function financeMetrics(project: ProjectData): FinanceMetrics {
+  const t = projectTotals(project);
+  const imprevistos = unforeseenTotal(project.imprevistos);
+  return {
+    budget: t.budget,
+    comprometido: t.contratado + imprevistos,
+    pago: t.pago,
+    imprevistos,
+    apagarAgendado: paymentDue(project.pagamentos),
+    saldo: t.available,
+  };
+}
+
 export interface DashboardMetrics {
   late: Stage[];
   attention: Stage[];

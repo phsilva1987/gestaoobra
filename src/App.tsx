@@ -10,7 +10,7 @@ import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
 import { mockProjects, getProjectOptions } from './lib/mockProjects';
-import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier } from './types';
+import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier, Unforeseen, Payment, AdminItem } from './types';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
 import type { ProfessionalFormData } from './components/professionals/ProfessionalForm';
@@ -18,6 +18,9 @@ import type { JobFormData } from './components/professionals/JobForm';
 import type { MaterialFormData } from './components/materials/MaterialForm';
 import type { EquipmentFormData } from './components/equipment/EquipmentForm';
 import type { SupplierFormData } from './components/suppliers/SupplierForm';
+import type { UnforeseenFormData } from './components/finance/UnforeseenForm';
+import type { PaymentFormData } from './components/finance/PaymentForm';
+import type { AdminFormData } from './components/finance/AdminForm';
 import { isoToday } from './lib/format';
 
 function genId(prefix: string): string {
@@ -370,6 +373,90 @@ export function App() {
     );
   }, []);
 
+  const addUnforeseen = useCallback((projectId: string, data: UnforeseenFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const item: Unforeseen = { id: genId('i'), ...data };
+        return { ...p, imprevistos: [...p.imprevistos, item] };
+      })
+    );
+  }, []);
+
+  const updateUnforeseen = useCallback((projectId: string, id: string, data: UnforeseenFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, imprevistos: p.imprevistos.map((u) => u.id === id ? { ...u, ...data } : u) };
+      })
+    );
+  }, []);
+
+  const deleteUnforeseen = useCallback((projectId: string, id: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, imprevistos: p.imprevistos.filter((u) => u.id !== id) };
+      })
+    );
+  }, []);
+
+  const addPayment = useCallback((projectId: string, data: PaymentFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const item: Payment = { id: genId('pa'), ...data };
+        return { ...p, pagamentos: [...p.pagamentos, item] };
+      })
+    );
+  }, []);
+
+  const updatePayment = useCallback((projectId: string, id: string, data: PaymentFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, pagamentos: p.pagamentos.map((pa) => pa.id === id ? { ...pa, ...data } : pa) };
+      })
+    );
+  }, []);
+
+  const deletePayment = useCallback((projectId: string, id: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, pagamentos: p.pagamentos.filter((pa) => pa.id !== id) };
+      })
+    );
+  }, []);
+
+  const addAdmin = useCallback((projectId: string, data: AdminFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const item: AdminItem = { id: genId('a'), ...data };
+        return { ...p, admin: [...p.admin, item] };
+      })
+    );
+  }, []);
+
+  const updateAdmin = useCallback((projectId: string, id: string, data: AdminFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, admin: p.admin.map((a) => a.id === id ? { ...a, ...data } : a) };
+      })
+    );
+  }, []);
+
+  const deleteAdmin = useCallback((projectId: string, id: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, admin: p.admin.filter((a) => a.id !== id) };
+      })
+    );
+  }, []);
+
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
     projetos: <Projects />,
@@ -420,7 +507,20 @@ export function App() {
         onFinishStage={(id) => finishStage(selectedProject.id, id)}
       />
     ),
-    financeiro: <Finance />,
+    financeiro: (
+      <Finance
+        project={selectedProject}
+        onAddUnforeseen={(data) => addUnforeseen(selectedProject.id, data)}
+        onUpdateUnforeseen={(id, data) => updateUnforeseen(selectedProject.id, id, data)}
+        onDeleteUnforeseen={(id) => deleteUnforeseen(selectedProject.id, id)}
+        onAddPayment={(data) => addPayment(selectedProject.id, data)}
+        onUpdatePayment={(id, data) => updatePayment(selectedProject.id, id, data)}
+        onDeletePayment={(id) => deletePayment(selectedProject.id, id)}
+        onAddAdmin={(data) => addAdmin(selectedProject.id, data)}
+        onUpdateAdmin={(id, data) => updateAdmin(selectedProject.id, id, data)}
+        onDeleteAdmin={(id) => deleteAdmin(selectedProject.id, id)}
+      />
+    ),
     config: <Settings />,
   };
 
