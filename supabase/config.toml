@@ -3,3 +3,6 @@ verify_jwt = true
 
 [functions.create-system-user]
 verify_jwt = true
+
+[functions.manage-user]
+verify_jwt = true

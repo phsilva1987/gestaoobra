@@ -170,3 +170,47 @@ export async function createSystemUser(
     message: result.message || 'Usuário criado com sucesso.',
   };
 }
+
+export async function resetUserPassword(userId: string, newPassword: string): Promise<void> {
+  const { data: session } = await supabase.auth.getSession();
+  const token = session?.session?.access_token;
+  if (!token) throw new Error('Sessão expirada. Faça login novamente.');
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action: 'reset_password', user_id: userId, new_password: newPassword }),
+  });
+
+  const result = await resp.json();
+  if (!resp.ok) {
+    throw new Error(result.error || 'Não foi possível redefinir a senha.');
+  }
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const { data: session } = await supabase.auth.getSession();
+  const token = session?.session?.access_token;
+  if (!token) throw new Error('Sessão expirada. Faça login novamente.');
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action: 'delete', user_id: userId }),
+  });
+
+  const result = await resp.json();
+  if (!resp.ok) {
+    throw new Error(result.error || 'Não foi possível excluir o usuário.');
+  }
+}

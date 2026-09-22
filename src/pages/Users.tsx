@@ -6,6 +6,8 @@ import {
   addProjectMember,
   updateProjectMemberRole,
   removeProjectMember,
+  resetUserPassword,
+  deleteUser,
   type AdminUserOverviewRow,
 } from '../services/teamService';
 
@@ -75,6 +77,11 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
   const [addProject, setAddProject] = useState('');
   const [addRole, setAddRole] = useState('operator');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [resetPwd, setResetPwd] = useState('');
+  const [resetPwdConfirm, setResetPwdConfirm] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -113,6 +120,9 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
     setEditRole(u.globalRole);
     setAddProject('');
     setAddRole('operator');
+    setResetPwd('');
+    setResetPwdConfirm('');
+    setConfirmDelete(false);
   }
 
   async function handleCreateUser() {
@@ -236,20 +246,19 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
         </button>
       </div>
 
-      <div className="kpis" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-        <div className="card kpi">
-          <div className="kicon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2.5-7 6-7s6 3 6 7M14 14c3.5 0 6 2.3 6 6"/></svg></div>
+      <div className="users-kpi-row">
+        <div className="users-kpi-item">
           <small>Total de usuários</small>
           <strong>{users.length}</strong>
         </div>
-        <div className="card kpi">
-          <div className="kicon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+        <div className="users-kpi-divider" />
+        <div className="users-kpi-item">
           <small>Administradores</small>
           <strong>{adminCount}</strong>
         </div>
-        <div className="card kpi">
-          <div className="kicon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
-          <small>Operators</small>
+        <div className="users-kpi-divider" />
+        <div className="users-kpi-item">
+          <small>Operadores</small>
           <strong>{operatorCount}</strong>
         </div>
       </div>
@@ -459,34 +468,95 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                 </>
               )}
 
-              {activeTab === 'security' && (
+              {activeTab === 'security' && manageUser.userId !== currentUserId && (
                 <>
                   <div className="manage-section">
                     <h3>Redefinir senha</h3>
                     <div className="manage-form-grid">
                       <label className="field">
                         <span>Nova senha</span>
-                        <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
+                        <input type="password" value={resetPwd} onChange={(e) => setResetPwd(e.target.value)} placeholder="Mínimo 6 caracteres" />
                       </label>
                       <label className="field">
                         <span>Confirmar nova senha</span>
-                        <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
+                        <input type="password" value={resetPwdConfirm} onChange={(e) => setResetPwdConfirm(e.target.value)} placeholder="Repita a senha" />
                       </label>
                     </div>
-                    <button className="btn secondary" disabled>
-                      Redefinir senha
-                    </button>
-                    <p className="btn-disabled-hint">Redefinição de senha requer Edge Function segura (em breve).</p>
+                    <div className="modal-actions" style={{ marginTop: 8 }}>
+                      <button
+                        className="btn"
+                        disabled={resetting || !resetPwd || resetPwd.length < 6 || resetPwd !== resetPwdConfirm}
+                        onClick={async () => {
+                          if (!manageUser) return;
+                          setResetting(true);
+                          try {
+                            await resetUserPassword(manageUser.userId, resetPwd);
+                            showToast('Senha redefinida com sucesso.', 'success');
+                            setResetPwd('');
+                            setResetPwdConfirm('');
+                          } catch (err) {
+                            const msg = err instanceof Error ? err.message : 'Erro ao redefinir senha.';
+                            showToast(msg, 'error');
+                          } finally {
+                            setResetting(false);
+                          }
+                        }}
+                      >
+                        {resetting ? 'Redefinindo...' : 'Redefinir senha'}
+                      </button>
+                    </div>
+                    {resetPwd && resetPwd !== resetPwdConfirm && (
+                      <p className="hint" style={{ marginTop: 6, color: 'var(--bad)' }}>As senhas não conferem.</p>
+                    )}
                   </div>
 
                   <div className="manage-section danger-zone">
-                    <h3>Zona de perigo</h3>
-                    <button className="btn secondary" disabled>
-                      Desativar usuário
-                    </button>
-                    <p className="btn-disabled-hint">Ações destrutivas requerem suporte administrativo seguro (em breve).</p>
+                    <h3>Excluir usuário</h3>
+                    <p className="hint" style={{ margin: '0 0 10px' }}>
+                      A exclusão remove o usuário, seu perfil e todos os acessos a projetos. Esta ação não pode ser desfeita.
+                    </p>
+                    {confirmDelete ? (
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button
+                          className="btn"
+                          style={{ background: 'var(--bad)' }}
+                          disabled={deleting}
+                          onClick={async () => {
+                            if (!manageUser) return;
+                            setDeleting(true);
+                            try {
+                              await deleteUser(manageUser.userId);
+                              showToast('Usuário excluído com sucesso.', 'success');
+                              setManageUser(null);
+                              setConfirmDelete(false);
+                              await load();
+                            } catch (err) {
+                              const msg = err instanceof Error ? err.message : 'Erro ao excluir usuário.';
+                              showToast(msg, 'error');
+                            } finally {
+                              setDeleting(false);
+                            }
+                          }}
+                        >
+                          {deleting ? 'Excluindo...' : 'Confirmar exclusão'}
+                        </button>
+                        <button className="btn secondary" onClick={() => setConfirmDelete(false)}>
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button className="btn secondary" style={{ color: 'var(--bad)' }} onClick={() => setConfirmDelete(true)}>
+                        Excluir usuário
+                      </button>
+                    )}
                   </div>
                 </>
+              )}
+
+              {activeTab === 'security' && manageUser.userId === currentUserId && (
+                <p className="hint" style={{ padding: 16 }}>
+                  Você não pode alterar sua própria senha ou excluir sua própria conta por aqui.
+                </p>
               )}
             </div>
           </div>
