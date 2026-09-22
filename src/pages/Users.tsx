@@ -69,6 +69,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
 
   // Manage panel
   const [manageUser, setManageUser] = useState<UserGroup | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'security'>('overview');
   const [editName, setEditName] = useState('');
   const [editRole, setEditRole] = useState('operator');
   const [addProject, setAddProject] = useState('');
@@ -107,6 +108,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
 
   function openManage(u: UserGroup) {
     setManageUser(u);
+    setActiveTab('overview');
     setEditName(u.name);
     setEditRole(u.globalRole);
     setAddProject('');
@@ -318,146 +320,174 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
         )}
       </div>
 
-      {/* Manage user panel */}
+      {/* Manage user panel — right-side drawer */}
       {manageUser && (
-        <div className="modal-overlay" onClick={() => setManageUser(null)}>
-          <div className="modalbox modalbox-lg" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div className="user-avatar" style={{ width: 52, height: 52, fontSize: 18 }}>
-                {initials(manageUser.name)}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <h2 style={{ margin: 0 }}>{manageUser.name}</h2>
-                <p className="hint" style={{ margin: '2px 0 0' }}>{manageUser.email}</p>
+        <div className="modal-overlay detail-drawer-overlay" onClick={() => setManageUser(null)}>
+          <div className="modalbox modalbox-lg user-detail-panel" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="user-detail-header">
+              <div className="user-avatar">{initials(manageUser.name)}</div>
+              <div className="user-detail-header-info">
+                <h2>{manageUser.name}</h2>
+                <span className="hint">{manageUser.email}</span>
               </div>
               {manageUser.userId === currentUserId && <span className="badge status-Concluído">Você</span>}
+              <button className="user-detail-close" onClick={() => setManageUser(null)} aria-label="Fechar">×</button>
             </div>
 
-            {/* DADOS DO USUÁRIO */}
-            <div className="manage-section">
-              <h3>Dados do usuário</h3>
-              <div className="manage-form-grid">
-                <label className="field">
-                  <span>Nome completo</span>
-                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
-                </label>
-                <label className="field">
-                  <span>E-mail</span>
-                  <input type="email" value={manageUser.email} disabled style={{ opacity: 0.6 }} />
-                </label>
-                <label className="field">
-                  <span>Perfil global</span>
-                  <select value={editRole} onChange={(e) => setEditRole(e.target.value)} disabled={manageUser.userId === currentUserId}>
-                    <option value="operator">Operator</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </label>
-              </div>
-              <div className="modal-actions" style={{ marginTop: 8 }}>
-                <button className="btn" disabled={savingProfile} onClick={handleSaveProfile}>
-                  {savingProfile ? 'Salvando...' : 'Salvar alterações'}
-                </button>
-              </div>
-              <p className="hint" style={{ marginTop: 8 }}>
-                Alterações de perfil global exigem suporte administrativo server-side.
-              </p>
+            {/* Tabs */}
+            <div className="user-detail-tabs">
+              <button className={`user-detail-tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+                Visão geral
+              </button>
+              <button className={`user-detail-tab ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => setActiveTab('projects')}>
+                Projetos
+              </button>
+              <button className={`user-detail-tab ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>
+                Segurança
+              </button>
             </div>
 
-            {/* ACESSOS A PROJETOS */}
-            <div className="manage-section">
-              <h3>Acessos a projetos</h3>
-              {manageUser.memberships.length > 0 ? (
-                <div>
-                  {manageUser.memberships.map((m) => (
-                    <div key={m.projectId} className="manage-access-row">
-                      <span>{m.projectName}</span>
-                      {manageUser.userId !== currentUserId ? (
-                        <select
-                          className="manage-access-select"
-                          value={m.role}
-                          onChange={(e) => handleRoleChange(m.projectId, manageUser.userId, e.target.value)}
-                        >
-                          <option value="admin">Admin</option>
+            {/* Body */}
+            <div className="user-detail-body">
+              {activeTab === 'overview' && (
+                <>
+                  <div className="manage-section">
+                    <h3>Dados do usuário</h3>
+                    <div className="manage-form-grid">
+                      <label className="field">
+                        <span>Nome completo</span>
+                        <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                      </label>
+                      <label className="field">
+                        <span>E-mail</span>
+                        <input type="email" value={manageUser.email} disabled style={{ opacity: 0.6 }} />
+                      </label>
+                      <label className="field">
+                        <span>Perfil global</span>
+                        <select value={editRole} onChange={(e) => setEditRole(e.target.value)} disabled={manageUser.userId === currentUserId}>
                           <option value="operator">Operator</option>
+                          <option value="admin">Administrador</option>
                         </select>
-                      ) : (
-                        <span className="badge">{m.role === 'admin' ? 'Admin' : 'Operator'}</span>
-                      )}
-                      {manageUser.userId !== currentUserId && (
-                        <button
-                          className="btn secondary"
-                          style={{ fontSize: 12, padding: '5px 10px' }}
-                          onClick={() => handleRemove(m.projectId, manageUser.userId)}
-                        >
-                          Remover
-                        </button>
-                      )}
+                      </label>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="empty" style={{ padding: 16 }}>Sem acesso a nenhum projeto.</p>
+                    <div className="modal-actions" style={{ marginTop: 8 }}>
+                      <button className="btn" disabled={savingProfile} onClick={handleSaveProfile}>
+                        {savingProfile ? 'Salvando...' : 'Salvar alterações'}
+                      </button>
+                    </div>
+                    <p className="hint" style={{ marginTop: 8 }}>
+                      Alterações de perfil global exigem suporte administrativo server-side.
+                    </p>
+                  </div>
+
+                  <div className="manage-section">
+                    <h3>Resumo de acessos</h3>
+                    <p className="hint" style={{ margin: 0 }}>
+                      {manageUser.memberships.length > 0
+                        ? `${manageUser.memberships.length} projeto(s) vinculado(s). Veja a aba "Projetos" para detalhes.`
+                        : 'Sem acesso a nenhum projeto.'}
+                    </p>
+                  </div>
+                </>
               )}
-            </div>
 
-            {/* ADICIONAR ACESSO A PROJETO */}
-            {availableProjects.length > 0 && (
-              <div className="manage-section">
-                <h3>Adicionar acesso a projeto</h3>
-                <div className="manage-form-grid">
-                  <label className="field">
-                    <span>Projeto</span>
-                    <select value={addProject} onChange={(e) => setAddProject(e.target.value)}>
-                      <option value="">Selecionar projeto</option>
-                      {availableProjects.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                    </select>
-                  </label>
-                  <label className="field">
-                    <span>Permissão</span>
-                    <select value={addRole} onChange={(e) => setAddRole(e.target.value)}>
-                      <option value="operator">Operator</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </label>
-                </div>
-                <div className="modal-actions" style={{ marginTop: 4 }}>
-                  <button className="btn" disabled={!addProject} onClick={handleAddProject}>
-                    + Adicionar projeto
-                  </button>
-                </div>
-              </div>
-            )}
+              {activeTab === 'projects' && (
+                <>
+                  <div className="manage-section">
+                    <h3>Acessos a projetos</h3>
+                    {manageUser.memberships.length > 0 ? (
+                      <div>
+                        {manageUser.memberships.map((m) => (
+                          <div key={m.projectId} className="manage-access-row">
+                            <span>{m.projectName}</span>
+                            {manageUser.userId !== currentUserId ? (
+                              <select
+                                className="manage-access-select"
+                                value={m.role}
+                                onChange={(e) => handleRoleChange(m.projectId, manageUser.userId, e.target.value)}
+                              >
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                              </select>
+                            ) : (
+                              <span className="badge">{m.role === 'admin' ? 'Admin' : 'Operator'}</span>
+                            )}
+                            {manageUser.userId !== currentUserId && (
+                              <button
+                                className="btn secondary"
+                                style={{ fontSize: 12, padding: '5px 10px' }}
+                                onClick={() => handleRemove(m.projectId, manageUser.userId)}
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="empty" style={{ padding: 16 }}>Sem acesso a nenhum projeto.</p>
+                    )}
+                  </div>
 
-            {/* SEGURANÇA */}
-            <div className="manage-section">
-              <h3>Segurança</h3>
-              <div className="manage-form-grid">
-                <label className="field">
-                  <span>Nova senha</span>
-                  <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
-                </label>
-                <label className="field">
-                  <span>Confirmar nova senha</span>
-                  <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
-                </label>
-              </div>
-              <button className="btn secondary" disabled>
-                Redefinir senha
-              </button>
-              <p className="btn-disabled-hint">Redefinição de senha requer Edge Function segura (em breve).</p>
-            </div>
+                  {availableProjects.length > 0 && (
+                    <div className="manage-section">
+                      <h3>Adicionar acesso a projeto</h3>
+                      <div className="manage-form-grid">
+                        <label className="field">
+                          <span>Projeto</span>
+                          <select value={addProject} onChange={(e) => setAddProject(e.target.value)}>
+                            <option value="">Selecionar projeto</option>
+                            {availableProjects.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>Permissão</span>
+                          <select value={addRole} onChange={(e) => setAddRole(e.target.value)}>
+                            <option value="operator">Operator</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </label>
+                      </div>
+                      <div className="modal-actions" style={{ marginTop: 4 }}>
+                        <button className="btn" disabled={!addProject} onClick={handleAddProject}>
+                          + Adicionar projeto
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-            {/* ZONA DE PERIGO */}
-            <div className="manage-section danger-zone">
-              <h3>Zona de perigo</h3>
-              <button className="btn secondary" disabled>
-                Desativar usuário
-              </button>
-              <p className="btn-disabled-hint">Ações destrutivas requerem suporte administrativo seguro (em breve).</p>
-            </div>
+              {activeTab === 'security' && (
+                <>
+                  <div className="manage-section">
+                    <h3>Redefinir senha</h3>
+                    <div className="manage-form-grid">
+                      <label className="field">
+                        <span>Nova senha</span>
+                        <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
+                      </label>
+                      <label className="field">
+                        <span>Confirmar nova senha</span>
+                        <input type="password" placeholder="•••••••••••" disabled style={{ opacity: 0.6 }} />
+                      </label>
+                    </div>
+                    <button className="btn secondary" disabled>
+                      Redefinir senha
+                    </button>
+                    <p className="btn-disabled-hint">Redefinição de senha requer Edge Function segura (em breve).</p>
+                  </div>
 
-            <div className="modal-actions">
-              <button className="btn secondary" onClick={() => setManageUser(null)}>Fechar</button>
+                  <div className="manage-section danger-zone">
+                    <h3>Zona de perigo</h3>
+                    <button className="btn secondary" disabled>
+                      Desativar usuário
+                    </button>
+                    <p className="btn-disabled-hint">Ações destrutivas requerem suporte administrativo seguro (em breve).</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
