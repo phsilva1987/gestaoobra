@@ -412,7 +412,14 @@ export function App() {
         onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
       />
     ),
-    cronograma: <Schedule />,
+    cronograma: (
+      <Schedule
+        project={selectedProject}
+        onUpdateStage={(id, data) => updateStage(selectedProject.id, id, data)}
+        onToggleCheck={(id, key, checked) => toggleCheck(selectedProject.id, id, key, checked)}
+        onFinishStage={(id) => finishStage(selectedProject.id, id)}
+      />
+    ),
     financeiro: <Finance />,
     config: <Settings />,
   };

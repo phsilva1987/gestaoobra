@@ -6,6 +6,7 @@ import type {
   Unforeseen,
   Payment,
   ChecklistItem,
+  Professional,
   ProjectData,
 } from '../types';
 import { isoToday, dayDiff } from './format';
@@ -63,6 +64,30 @@ export function stageEquipment(
   return equipments
     .filter((e) => e.etapa_id === stage.id)
     .reduce((a, e) => a + (+e.valor || 0), 0);
+}
+
+export function responsaveisEtapa(
+  stageId: string,
+  jobs: Job[],
+  professionals: Professional[]
+): Professional[] {
+  const profIds = [...new Set(
+    jobs
+      .filter((j) => String(j.etapa_id) === String(stageId))
+      .map((j) => String(j.profissional_id))
+  )];
+  return profIds
+    .map((id) => professionals.find((p) => String(p.id) === id))
+    .filter(Boolean) as Professional[];
+}
+
+export function projectProgress(project: ProjectData): number {
+  return project.obra.length
+    ? Math.round(
+        project.obra.reduce((a, x) => a + (+x.progresso || 0), 0) /
+          project.obra.length
+      )
+    : 0;
 }
 
 export interface ProjectTotals {

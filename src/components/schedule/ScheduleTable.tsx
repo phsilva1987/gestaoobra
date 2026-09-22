@@ -1,17 +1,15 @@
 import type { Stage, ProjectData } from '../../types';
 import { autoSituation, responsaveisEtapa } from '../../lib/calculations';
 import { isoToday, fmt } from '../../lib/format';
-import { StageStatusBadge } from './StageStatusBadge';
-import { StageCost } from './StageCost';
+import { StageStatusBadge } from '../stages/StageStatusBadge';
 
-interface StageTableProps {
+interface ScheduleTableProps {
   project: ProjectData;
   onEdit: (stage: Stage) => void;
   onChecklist: (stage: Stage) => void;
-  onDelete: (stage: Stage) => void;
 }
 
-export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTableProps) {
+export function ScheduleTable({ project, onEdit, onChecklist }: ScheduleTableProps) {
   const today = isoToday();
 
   if (!project.obra.length) {
@@ -20,18 +18,12 @@ export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTabl
         <table>
           <thead>
             <tr>
-              <th>Etapa</th>
-              <th>Responsável</th>
-              <th>Custo</th>
-              <th>Prioridade</th>
-              <th>Prazo</th>
-              <th>Situação</th>
-              <th>Progresso</th>
-              <th></th>
+              <th>Etapa</th><th>Dependência</th><th>Início</th>
+              <th>Fim</th><th>Situação</th><th>Progresso</th><th></th>
             </tr>
           </thead>
           <tbody>
-            <tr><td colSpan={8} className="empty">Nenhuma etapa cadastrada.</td></tr>
+            <tr><td colSpan={7} className="empty">Nenhuma etapa cadastrada.</td></tr>
           </tbody>
         </table>
       </div>
@@ -44,14 +36,8 @@ export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTabl
         <table>
           <thead>
             <tr>
-              <th>Etapa</th>
-              <th>Responsável</th>
-              <th>Custo</th>
-              <th>Prioridade</th>
-              <th>Prazo</th>
-              <th>Situação</th>
-              <th>Progresso</th>
-              <th></th>
+              <th>Etapa</th><th>Dependência</th><th>Início</th>
+              <th>Fim</th><th>Situação</th><th>Progresso</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -66,31 +52,15 @@ export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTabl
                   <td>
                     <b>{stage.nome}</b>
                     <div className="hint">
-                      {stage.categoria}
-                      {dep ? ' · depende de ' + dep.nome : ''}
+                      {resp.length
+                        ? resp.map((p) => p.nome).join(', ')
+                        : 'Sem profissional vinculado'}
                     </div>
                   </td>
+                  <td>{dep ? dep.nome : '—'}</td>
+                  <td>{fmt(stage.inicio)}</td>
                   <td>
-                    {resp.length ? (
-                      resp.map((p) => (
-                        <div key={p.id}>
-                          <b>{p.nome}</b>
-                          <div className="hint">{p.telefone || 'sem telefone'}</div>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="hint">Sem profissional vinculado</span>
-                    )}
-                  </td>
-                  <StageCost
-                    stage={stage}
-                    jobs={project.jobs}
-                    materials={project.materiais}
-                    equipments={project.equipamentos}
-                  />
-                  <td>{stage.prioridade}</td>
-                  <td>
-                    {fmt(stage.inicio)} → {fmt(stage.fim)}
+                    {fmt(stage.fim)}
                     {stage.fimReal && <div className="hint">Concluído: {fmt(stage.fimReal)}</div>}
                   </td>
                   <StageStatusBadge situation={situation} />
@@ -105,7 +75,6 @@ export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTabl
                   <td className="rowactions">
                     <button onClick={() => onEdit(stage)}>Editar</button>
                     <button onClick={() => onChecklist(stage)}>Checklist</button>
-                    <button onClick={() => onDelete(stage)}>Excluir</button>
                   </td>
                 </tr>
               );
