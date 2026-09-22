@@ -1,16 +1,42 @@
+import { useState } from 'react';
+import { AppShell } from './components/layout/AppShell';
+import { Dashboard } from './pages/Dashboard';
+import { Projects } from './pages/Projects';
+import { Stages } from './pages/Stages';
+import { Professionals } from './pages/Professionals';
+import { Materials } from './pages/Materials';
+import { Equipment } from './pages/Equipment';
+import { Schedule } from './pages/Schedule';
+import { Finance } from './pages/Finance';
+import { Settings } from './pages/Settings';
+import { mockProjects } from './lib/mockProjects';
+import type { PageKey } from './types/navigation';
+
 export function App() {
+  const [currentPage, setCurrentPage] = useState<PageKey>('dashboard');
+  const [selectedProjectId, setSelectedProjectId] = useState(mockProjects[0].id);
+
+  const pages: Record<PageKey, React.ReactNode> = {
+    dashboard: <Dashboard />,
+    projetos: <Projects />,
+    obra: <Stages />,
+    profissionais: <Professionals />,
+    materiais: <Materials />,
+    equipamentos: <Equipment />,
+    cronograma: <Schedule />,
+    financeiro: <Finance />,
+    config: <Settings />,
+  };
+
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem', color: '#2d241c' }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-        Gestão da Reforma
-      </h1>
-      <p style={{ color: '#796d60', fontSize: '0.875rem' }}>
-        Aplicação em migração. O protótipo original está disponível em{' '}
-        <a href="/prototype.html" style={{ color: '#9b712b' }}>
-          /prototype.html
-        </a>
-        .
-      </p>
-    </div>
+    <AppShell
+      current={currentPage}
+      onNavigate={setCurrentPage}
+      projects={mockProjects}
+      selectedProjectId={selectedProjectId}
+      onSelectProject={setSelectedProjectId}
+    >
+      {pages[currentPage]}
+    </AppShell>
   );
 }
