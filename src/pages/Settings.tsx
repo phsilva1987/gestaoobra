@@ -6,12 +6,14 @@ import { ProjectImageManager } from '../components/settings/ProjectImageManager'
 import { CategoryManager } from '../components/settings/CategoryManager';
 import { SupplierManager } from '../components/settings/SupplierManager';
 import { BackupSection } from '../components/settings/BackupSection';
+import { TeamManager } from '../components/team/TeamManager';
 import type { RestoreSummary } from '../lib/backup';
 
 interface SettingsProps {
   project: ProjectData;
   onUpdateProject: (data: ProjectSettingsFormData) => void;
-  onImageChange: (base64: string) => void;
+  onImageChange: (file: File) => void;
+  onImageRemove: () => void;
   onAddCategory: (kind: 'obra' | 'material', name: string) => void;
   onRemoveCategory: (kind: 'obra' | 'material', name: string) => void;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
@@ -21,12 +23,15 @@ interface SettingsProps {
   selectedProjectId: string;
   onRestore: (summary: RestoreSummary) => void;
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
+  isProjectAdmin: boolean;
+  currentUserId: string;
 }
 
 export function Settings({
   project,
   onUpdateProject,
   onImageChange,
+  onImageRemove,
   onAddCategory,
   onRemoveCategory,
   onAddSupplier,
@@ -36,6 +41,8 @@ export function Settings({
   selectedProjectId,
   onRestore,
   showToast,
+  isProjectAdmin,
+  currentUserId,
 }: SettingsProps) {
   return (
     <>
@@ -49,7 +56,7 @@ export function Settings({
       <ProjectSettingsForm project={project} onSave={onUpdateProject} />
 
       <div style={{ marginTop: 14 }}>
-        <ProjectImageManager project={project} onImageChange={onImageChange} />
+        <ProjectImageManager project={project} onImageChange={onImageChange} onImageRemove={onImageRemove} isAdmin={isProjectAdmin} />
       </div>
 
       <CategoryManager project={project} onAdd={onAddCategory} onRemove={onRemoveCategory} />
@@ -59,6 +66,13 @@ export function Settings({
         onAdd={onAddSupplier}
         onUpdate={onUpdateSupplier}
         onDelete={onDeleteSupplier}
+      />
+
+      <TeamManager
+        projectId={project.id}
+        isProjectAdmin={isProjectAdmin}
+        currentUserId={currentUserId}
+        showToast={showToast}
       />
 
       <BackupSection

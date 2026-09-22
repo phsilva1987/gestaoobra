@@ -1,82 +1,99 @@
 import { useRef, useState } from 'react';
 import type { ProjectData } from '../../types';
+import { ALLOWED_TYPES, MAX_SIZE } from '../../services/storageService';
 
 interface ProjectImageManagerProps {
   project: ProjectData;
-  onImageChange: (base64: string) => void;
+  onImageChange: (file: File) => void;
+  onImageRemove: () => void;
+  isAdmin: boolean;
 }
 
-function resizeImage(file: File, maxDim = 1600, quality = 0.78): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith('image/')) {
-      reject(new Error('Selecione um arquivo de imagem.'));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(img.width * scale));
-        canvas.height = Math.max(1, Math.round(img.height * scale));
-        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = () => reject(new Error('Não foi possível processar a imagem.'));
-      img.src = reader.result as string;
-    };
-    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
-    reader.readAsDataURL(file);
-  });
-}
-
-export function ProjectImageManager({ project, onImageChange }: ProjectImageManagerProps) {
+export function ProjectImageManager({ project, onImageChange, onImageRemove, isAdmin }: ProjectImageManagerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const base64 = await resizeImage(file);
-      onImageChange(base64);
-      setError('');
-    } catch (err) {
-      setError((err as Error).message || 'Erro ao processar a imagem.');
+    setError('');
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setError('Formato não suportado. Use JPG, PNG ou WebP.');
+      if (fileRef.current) fileRef.current.value = '';
+      return;
     }
-    if (fileRef.current) fileRef.current.value = '';
+    if (file.size > MAX_SIZE) {
+      setError('A imagem excede o tamanho permitido (5 MB).');
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      await onImageChange(file);
+    } catch (err) {
+      setError((err as Error).message || 'Não foi possível enviar a imagem.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   }
+
+  async function handleRemove() {
+    setUploading(true);
+    try {
+      await onImageRemove();
+    } catch (err) {
+      setError((err as Error).message || 'Não foi possível remover a imagem.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const coverUrl = project.coverImage
+    + (project.coverImage && !project.coverImage.startsWith('data:') && !project.coverImage.startsWith('/')
+      ? `?t=${Date.now()}`
+      : '');
 
   return (
     <div className="card section">
       <h3 style={{ marginTop: 0 }}>Imagem do projeto</h3>
       <div className="project-cover-preview">
         {project.coverImage ? (
-          <img src={project.coverImage} alt={`Imagem do projeto ${project.nome}`} />
+          <img src={coverUrl} alt={`Imagem do projeto ${project.nome}`} />
         ) : (
           <span>Nenhuma imagem selecionada</span>
         )}
       </div>
       <div className="project-cover-actions" style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <label className="btn secondary" style={{ cursor: 'pointer' }}>
-          Selecionar imagem
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFile}
-            style={{ display: 'none' }}
-          />
-        </label>
-        {project.coverImage && (
-          <button type="button" className="btn secondary" onClick={() => onImageChange('')}>
-            Remover imagem
-          </button>
+        {isAdmin && (
+          <>
+            <label className="btn secondary" style={{ cursor: uploading ? 'wait' : 'pointer', opacity: uploading ? 0.6 : 1 }}>
+              {uploading ? 'Enviando imagem...' : 'Selecionar imagem'}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFile}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
+            {project.coverImage && (
+              <button type="button" className="btn secondary" onClick={handleRemove} disabled={uploading}>
+                Remover imagem
+              </button>
+            )}
+          </>
+        )}
+        {!isAdmin && (
+          <span className="hint">Apenas administradores podem alterar a imagem.</span>
         )}
       </div>
       <div className="hint" style={{ marginTop: 8 }}>
-        JPG, PNG ou WebP · a imagem será otimizada automaticamente.
+        JPG, PNG ou WebP · até 5 MB · a imagem é otimizada automaticamente.
       </div>
       <div className="hint" style={{ marginTop: 4 }}>
         A imagem fica vinculada somente a este projeto e muda automaticamente ao trocar de projeto.

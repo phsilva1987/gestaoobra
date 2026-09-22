@@ -39,7 +39,7 @@ export function App() {
   const {
     projects, selectedProject, selectedProjectId, setSelectedProjectId,
     loading, error: projectsError, profile,
-    addProject, updateProject, updateProjectFull, removeProject, changeProjectImage,
+    addProject, updateProject, updateProjectFull, removeProject, changeProjectImage, removeProjectImageHandler,
     addSupplier, updateSupplier, deleteSupplier, addCategory, removeCategory,
     addStage, updateStage, deleteStage, toggleCheck, finishStage,
     addProfessional, updateProfessional, deleteProfessional,
@@ -107,9 +107,15 @@ export function App() {
     catch (err) { showToast(friendlyError(err, 'Erro ao salvar configurações'), 'error'); }
   }, [updateProject, showToast]);
 
-  const handleImageChange = useCallback(async (projectId: string, base64: string) => {
-    await changeProjectImage(projectId, base64);
-  }, [changeProjectImage]);
+  const handleImageChange = useCallback(async (projectId: string, file: File) => {
+    try { await changeProjectImage(projectId, file); showToast('Imagem atualizada.', 'success'); }
+    catch (err) { showToast(friendlyError(err, 'Não foi possível enviar a imagem.'), 'error'); }
+  }, [changeProjectImage, showToast]);
+
+  const handleImageRemove = useCallback(async (projectId: string) => {
+    try { await removeProjectImageHandler(projectId); showToast('Imagem removida.', 'success'); }
+    catch (err) { showToast(friendlyError(err, 'Não foi possível remover a imagem.'), 'error'); }
+  }, [removeProjectImageHandler, showToast]);
 
   const handleAddCategory = useCallback(async (projectId: string, kind: 'obra' | 'material', name: string) => {
     try { await addCategory(projectId, kind, name); }
@@ -251,7 +257,8 @@ export function App() {
     config: (
       <Settings project={selectedProject}
         onUpdateProject={(data: ProjectSettingsFormData) => handleUpdateProject(pid, data)}
-        onImageChange={(base64: string) => handleImageChange(pid, base64)}
+        onImageChange={(file: File) => handleImageChange(pid, file)}
+        onImageRemove={() => handleImageRemove(pid)}
         onAddCategory={(kind: 'obra' | 'material', name: string) => handleAddCategory(pid, kind, name)}
         onRemoveCategory={(kind: 'obra' | 'material', name: string) => handleRemoveCategory(pid, kind, name)}
         onAddSupplier={handleAddSupplier.bind(null, pid)}
@@ -259,6 +266,7 @@ export function App() {
         onDeleteSupplier={(id: string) => handleDeleteSupplier(pid, id)}
         allProjects={projects} selectedProjectId={selectedProjectId || ''}
         onRestore={handleRestore} showToast={showToast}
+        isProjectAdmin={isAdmin} currentUserId={profile?.id || ''}
       />
     ),
   };

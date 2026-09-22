@@ -116,7 +116,6 @@ export async function updateProjectFull(
       orcamento: updateData.orcamento,
       data_inicio: updateData.data_inicio,
       data_fim: updateData.data_fim,
-      cover_image_path: updateData.cover_image_path,
     })
     .eq('id', id);
 

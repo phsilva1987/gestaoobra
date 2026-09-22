@@ -1,4 +1,5 @@
 import type { ProjectData, ProjectConfig, Supplier } from '../types';
+import { getProjectImageUrl } from './storageService';
 
 export interface ProjectRow {
   id: string;
@@ -62,7 +63,7 @@ export function mapProjectFromDb(row: ProjectRow): ProjectData {
     nome: row.name,
     tipo: row.type || '',
     status: row.status || 'Planejamento',
-    coverImage: row.cover_image_path || '',
+    coverImage: getProjectImageUrl(row.id, row.cover_image_path || ''),
     legacyKey: row.legacy_key || null,
     config,
     obra: [],

@@ -9,6 +9,7 @@ export interface ProjectFormData {
   tipo: string;
   status: string;
   coverImage: string;
+  imageFile?: File | null;
   config: ProjectConfig;
 }
 
@@ -33,6 +34,7 @@ export function ProjectForm({ project, onSave, onCancel, saving = false }: Proje
     tipo: project?.tipo || 'Apartamento',
     status: project?.status || 'Planejamento',
     coverImage: project?.coverImage || '',
+    imageFile: null,
     config: project ? { ...project.config } : emptyConfig(),
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +47,7 @@ export function ProjectForm({ project, onSave, onCancel, saving = false }: Proje
         tipo: project.tipo,
         status: project.status,
         coverImage: project.coverImage,
+        imageFile: null,
         config: { ...project.config },
       });
     }
@@ -55,13 +58,16 @@ export function ProjectForm({ project, onSave, onCancel, saving = false }: Proje
   }
 
   function handleImageFile(file: File) {
-    if (file.size > 2_000_000) {
-      setErrors((e) => ({ ...e, coverImage: 'A imagem deve ter no máximo 2 MB.' }));
+    if (file.size > 5_000_000) {
+      setErrors((e) => ({ ...e, coverImage: 'A imagem deve ter no máximo 5 MB.' }));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => setForm((f) => ({ ...f, coverImage: reader.result as string }));
-    reader.readAsDataURL(file);
+    if (!file.type.startsWith('image/')) {
+      setErrors((e) => ({ ...e, coverImage: 'Selecione um arquivo de imagem.' }));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setForm((f) => ({ ...f, coverImage: url, imageFile: file }));
   }
 
   function validate(): boolean {
@@ -165,7 +171,7 @@ export function ProjectForm({ project, onSave, onCancel, saving = false }: Proje
                   {form.coverImage ? 'Trocar imagem' : 'Selecionar imagem'}
                 </button>
                 {form.coverImage && (
-                  <button type="button" className="btn secondary" onClick={() => setForm((f) => ({ ...f, coverImage: '' }))}>
+                  <button type="button" className="btn secondary" onClick={() => setForm((f) => ({ ...f, coverImage: '', imageFile: null }))}>
                     Remover
                   </button>
                 )}

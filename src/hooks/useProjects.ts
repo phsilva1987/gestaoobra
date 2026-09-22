@@ -86,6 +86,8 @@ import type { UnforeseenFormData } from '../components/finance/UnforeseenForm';
 import type { PaymentFormData } from '../components/finance/PaymentForm';
 import type { AdminFormData } from '../components/finance/AdminForm';
 import { useAuth } from '../auth/AuthProvider';
+import { uploadProjectImage, removeProjectImage as dbRemoveProjectImage, getProjectImageUrl } from '../services/storageService';
+import { updateProjectImage } from '../services/projectService';
 
 async function loadProjectData(projectId: string): Promise<Partial<ProjectData>> {
   const [
@@ -179,7 +181,17 @@ export function useProjects() {
   const addProject = useCallback(async (data: ProjectFormData): Promise<string> => {
     const created = await dbCreateProject(data);
     const projectData = await loadProjectData(created.id);
-    const full = { ...created, ...projectData };
+    let coverImage = created.coverImage;
+    if (data.imageFile) {
+      try {
+        const path = await uploadProjectImage(created.id, data.imageFile);
+        await updateProjectImage(created.id, path);
+        coverImage = getProjectImageUrl(created.id, path);
+      } catch {
+        throw new Error('Projeto criado, mas não foi possível enviar a imagem.');
+      }
+    }
+    const full = { ...created, ...projectData, coverImage };
     setProjects((prev) => [...prev, full]);
     setSelectedProjectId(created.id);
     return created.id;
@@ -194,9 +206,16 @@ export function useProjects() {
   }, []);
 
   const updateProjectFull = useCallback(async (projectId: string, data: ProjectFormData): Promise<void> => {
-    await dbUpdateProjectFull(projectId, data);
+    let coverImage = data.coverImage;
+    if (data.imageFile) {
+      const path = await uploadProjectImage(projectId, data.imageFile);
+      await updateProjectImage(projectId, path);
+      coverImage = getProjectImageUrl(projectId, path);
+    } else {
+      await dbUpdateProjectFull(projectId, data);
+    }
     updateProjectState(projectId, (p) => ({
-      ...p, nome: data.nome, tipo: data.tipo, status: data.status, coverImage: data.coverImage,
+      ...p, nome: data.nome, tipo: data.tipo, status: data.status, coverImage,
       config: { ...data.config, projeto: data.nome },
     }));
   }, []);
@@ -211,8 +230,17 @@ export function useProjects() {
     });
   }, [selectedProjectId]);
 
-  const changeProjectImage = useCallback(async (projectId: string, base64: string): Promise<void> => {
-    updateProjectState(projectId, (p) => ({ ...p, coverImage: base64 }));
+  const changeProjectImage = useCallback(async (projectId: string, file: File): Promise<void> => {
+    const path = await uploadProjectImage(projectId, file);
+    await updateProjectImage(projectId, path);
+    const url = getProjectImageUrl(projectId, path);
+    updateProjectState(projectId, (p) => ({ ...p, coverImage: url }));
+  }, []);
+
+  const removeProjectImageHandler = useCallback(async (projectId: string): Promise<void> => {
+    await dbRemoveProjectImage(projectId);
+    await updateProjectImage(projectId, '');
+    updateProjectState(projectId, (p) => ({ ...p, coverImage: '' }));
   }, []);
 
   // ---- Suppliers ----
@@ -445,7 +473,7 @@ export function useProjects() {
     projects, selectedProject, selectedProjectId, setSelectedProjectId,
     loading, error, refresh, profile,
     // Project CRUD
-    addProject, updateProject, updateProjectFull, removeProject, changeProjectImage,
+    addProject, updateProject, updateProjectFull, removeProject, changeProjectImage, removeProjectImageHandler,
     // Suppliers
     addSupplier, updateSupplier, deleteSupplier,
     // Categories

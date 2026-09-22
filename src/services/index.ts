@@ -11,3 +11,5 @@ export * from './unforeseenService';
 export * from './adminService';
 export * from './checklistService';
 export * from './mappers';
+export * from './teamService';
+export * from './storageService';
