@@ -9,6 +9,7 @@ import { NextSevenDays } from '../components/dashboard/NextSevenDays';
 import { ProjectHealth } from '../components/dashboard/ProjectHealth';
 import { fmt, daysRemaining } from '../lib/format';
 import { svgIcon } from '../lib/navigation';
+import { ReportMenu } from '../components/dashboard/ReportMenu';
 
 interface DashboardProps {
   project: ProjectData;
@@ -26,10 +27,7 @@ export function Dashboard({ project }: DashboardProps) {
           <p>Visão executiva financeira e física da reforma</p>
         </div>
         <div className="dash-actions">
-          <button className="report-btn" type="button">
-            <span dangerouslySetInnerHTML={{ __html: svgIcon('diario') }} />
-            <span>Gerar Relatório</span>
-          </button>
+          <ReportMenu project={project} />
           <div className="period-box">
             <span dangerouslySetInnerHTML={{ __html: svgIcon('calendar') }} />
             <div>

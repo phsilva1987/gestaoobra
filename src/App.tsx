@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { AppShell } from './components/layout/AppShell';
+import { ToastContainer, type ToastMsg } from './components/Toast';
 import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
 import { Stages } from './pages/Stages';
@@ -10,6 +11,7 @@ import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
 import { mockProjects, getProjectOptions } from './lib/mockProjects';
+import { type RestoreSummary } from './lib/backup';
 import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier, Unforeseen, Payment, AdminItem } from './types';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
@@ -38,6 +40,21 @@ export function App() {
   const selectedProject =
     projects.find((p) => p.id === selectedProjectId) || projects[0];
   const projectOptions = getProjectOptions();
+
+  const [toasts, setToasts] = useState<ToastMsg[]>([]);
+  const toastIdRef = useRef(0);
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+    const id = ++toastIdRef.current;
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const handleRestore = useCallback((summary: RestoreSummary) => {
+    setProjects(summary.projects);
+    setSelectedProjectId(summary.selectedProjectId);
+  }, []);
 
   const addStage = useCallback((projectId: string, data: StageFormData) => {
     setProjects((prev) =>
@@ -607,21 +624,28 @@ export function App() {
         onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
         onUpdateSupplier={(id, data) => updateSupplier(selectedProject.id, id, data)}
         onDeleteSupplier={(id) => deleteSupplier(selectedProject.id, id)}
+        allProjects={projects}
+        selectedProjectId={selectedProjectId}
+        onRestore={handleRestore}
+        showToast={showToast}
       />
     ),
   };
 
   return (
-    <AppShell
-      current={currentPage}
-      onNavigate={setCurrentPage}
-      projects={projectOptions}
-      selectedProjectId={selectedProjectId}
-      onSelectProject={setSelectedProjectId}
-      coverImage={selectedProject.coverImage}
-      projectName={selectedProject.nome}
-    >
-      {pages[currentPage]}
-    </AppShell>
+    <>
+      <AppShell
+        current={currentPage}
+        onNavigate={setCurrentPage}
+        projects={projectOptions}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={setSelectedProjectId}
+        coverImage={selectedProject.coverImage}
+        projectName={selectedProject.nome}
+      >
+        {pages[currentPage]}
+      </AppShell>
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+    </>
   );
 }
