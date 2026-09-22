@@ -1370,6 +1370,150 @@ th {
   align-items: center;
 }
 
+/* ===== Projects page ===== */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.project-card-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(104, 77, 39, 0.045);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card-item.selected {
+  border-color: var(--gold);
+  box-shadow: 0 8px 28px rgba(168, 120, 39, 0.16);
+}
+
+.project-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  z-index: 2;
+}
+
+.project-card-cover {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background: #f1e7d7;
+}
+
+.project-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.project-card-noimg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--gold);
+  background: linear-gradient(135deg, #f7efe3, #eadfce);
+}
+
+.project-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.project-card-body h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #3b2d20;
+  line-height: 1.25;
+}
+
+.project-card-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.project-card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.project-card-info small,
+.project-card-finance small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.project-card-info b {
+  font-size: 13px;
+  color: #4a3826;
+}
+
+.project-card-finance {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.project-card-finance b {
+  font-size: 13px;
+  color: #4a3826;
+}
+
+.project-card-finance b.neg {
+  color: #a65e52;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.project-card-actions .btn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+@media (max-width: 650px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .project-card-finance {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ===== Config V19 ===== */
 .config-v19-title {
   margin: 26px 0 4px;

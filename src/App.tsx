@@ -10,7 +10,8 @@ import { Equipment as EquipmentPage } from './pages/Equipment';
 import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
-import { mockProjects, getProjectOptions } from './lib/mockProjects';
+import { mockProjects } from './lib/mockProjects';
+import type { ProjectFormData } from './components/projects/ProjectForm';
 import { type RestoreSummary } from './lib/backup';
 import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier, Unforeseen, Payment, AdminItem } from './types';
 import type { PageKey } from './types/navigation';
@@ -39,7 +40,7 @@ export function App() {
 
   const selectedProject =
     projects.find((p) => p.id === selectedProjectId) || projects[0];
-  const projectOptions = getProjectOptions();
+  const projectOptions = projects.map((p) => ({ id: p.id, nome: p.nome, tipo: p.tipo }));
 
   const [toasts, setToasts] = useState<ToastMsg[]>([]);
   const toastIdRef = useRef(0);
@@ -50,6 +51,60 @@ export function App() {
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const addProject = useCallback((data: ProjectFormData): string => {
+    const newId = genId('proj');
+    setProjects((prev) => [
+      ...prev,
+      {
+        id: newId,
+        nome: data.nome,
+        tipo: data.tipo,
+        status: data.status,
+        coverImage: data.coverImage,
+        config: data.config,
+        obra: [],
+        profissionais: [],
+        jobs: [],
+        materiais: [],
+        equipamentos: [],
+        fornecedores: [],
+        categoriasObra: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Limpeza', 'Acabamentos', 'Imprevistos'],
+        categoriasObraExtra: [],
+        categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
+        categoriasMaterialExtra: [],
+        imprevistos: [],
+        pagamentos: [],
+        admin: [],
+        checklist: [],
+      },
+    ]);
+    return newId;
+  }, []);
+
+  const updateProjectFull = useCallback((projectId: string, data: ProjectFormData) => {
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? { ...p, nome: data.nome, tipo: data.tipo, status: data.status, coverImage: data.coverImage, config: { ...data.config, projeto: data.nome } }
+          : p
+      )
+    );
+  }, []);
+
+  const deleteProject = useCallback((projectId: string) => {
+    setProjects((prev) => {
+      const remaining = prev.filter((p) => p.id !== projectId);
+      return remaining;
+    });
+    setSelectedProjectId((prev) => {
+      const remaining = projects.filter((p) => p.id !== projectId);
+      if (prev === projectId && remaining.length > 0) {
+        return remaining[0].id;
+      }
+      return prev;
+    });
+  }, [projects]);
 
   const handleRestore = useCallback((summary: RestoreSummary) => {
     setProjects(summary.projects);
@@ -552,7 +607,17 @@ export function App() {
 
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
-    projetos: <Projects />,
+    projetos: (
+      <Projects
+        projects={projects}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={setSelectedProjectId}
+        onNavigate={setCurrentPage}
+        onAddProject={addProject}
+        onUpdateProject={updateProjectFull}
+        onDeleteProject={deleteProject}
+      />
+    ),
     obra: (
       <Stages
         project={selectedProject}
