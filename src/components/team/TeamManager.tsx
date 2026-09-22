@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { TeamMember, ProfileSearchResult } from '../../services/teamService';
-import { getProjectMembers, searchProfiles, addProjectMember } from '../../services/teamService';
+import { getProjectMembers, searchProfiles, addProjectMember, inviteProjectMember } from '../../services/teamService';
 
 interface TeamManagerProps {
   projectId: string;
@@ -17,6 +17,11 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
   const [searchResults, setSearchResults] = useState<ProfileSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('operator');
+  const [inviting, setInviting] = useState(false);
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -97,7 +102,10 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
         <div className="toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12 }}>
           <span className="hint">Membros com acesso a este projeto.</span>
           {isProjectAdmin && (
-            <button className="btn" onClick={() => setShowAdd(true)}>+ Adicionar usuário</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn secondary" onClick={() => setShowAdd(true)}>+ Adicionar usuário</button>
+              <button className="btn" onClick={() => setShowInvite(true)}>Convidar usuário</button>
+            </div>
           )}
         </div>
 
@@ -195,6 +203,70 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
             )}
             <div className="modal-actions">
               <button className="btn secondary" onClick={() => { setShowAdd(false); setSearchResults([]); }}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showInvite && (
+        <div className="modal-overlay" onClick={() => setShowInvite(false)}>
+          <div className="modalbox modalbox-sm" onClick={(e) => e.stopPropagation()}>
+            <h2>Convidar usuário</h2>
+            <p className="hint" style={{ marginBottom: 12 }}>O convidado receberá um e-mail para definir sua senha e acessar o sistema.</p>
+            <label className="field">
+              <span>Nome</span>
+              <input
+                type="text"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="Nome do convidado"
+                autoFocus
+              />
+            </label>
+            <label className="field">
+              <span>E-mail</span>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="email@exemplo.com"
+              />
+            </label>
+            <label className="field">
+              <span>Permissão no projeto</span>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+              >
+                <option value="operator">Operator</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <div className="modal-actions">
+              <button
+                className="btn"
+                disabled={inviting || !inviteEmail.trim()}
+                onClick={async () => {
+                  setInviting(true);
+                  try {
+                    const result = await inviteProjectMember(projectId, inviteEmail.trim(), inviteName.trim(), inviteRole);
+                    showToast(result.message, 'success');
+                    setShowInvite(false);
+                    setInviteName('');
+                    setInviteEmail('');
+                    setInviteRole('operator');
+                    await loadMembers();
+                  } catch (err) {
+                    const msg = err instanceof Error ? err.message : 'Erro ao enviar convite.';
+                    showToast(msg, 'error');
+                  } finally {
+                    setInviting(false);
+                  }
+                }}
+              >
+                {inviting ? 'Enviando convite...' : 'Enviar convite'}
+              </button>
+              <button className="btn secondary" onClick={() => setShowInvite(false)}>Cancelar</button>
             </div>
           </div>
         </div>

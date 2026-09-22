@@ -1,0 +1,2 @@
+[functions.invite-project-user]
+verify_jwt = true

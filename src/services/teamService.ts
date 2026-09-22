@@ -69,6 +69,45 @@ export async function updateProjectMemberRole(projectId: string, userId: string,
   if (error) throw error;
 }
 
+export async function inviteProjectMember(
+  projectId: string,
+  email: string,
+  name: string,
+  projectRole: string = 'operator'
+): Promise<{ ok: boolean; invited: boolean; message: string }> {
+  const { data: session } = await supabase.auth.getSession();
+  const token = session?.session?.access_token;
+  if (!token) throw new Error('Sessão expirada. Faça login novamente.');
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-project-user`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      email,
+      name,
+      project_id: projectId,
+      project_role: projectRole,
+    }),
+  });
+
+  const result = await resp.json();
+
+  if (!resp.ok) {
+    throw new Error(result.error || 'Não foi possível enviar o convite.');
+  }
+
+  return {
+    ok: true,
+    invited: result.invited,
+    message: result.message,
+  };
+}
+
 export async function removeProjectMember(projectId: string, userId: string): Promise<void> {
   const { error } = await supabase
     .from('project_operators')

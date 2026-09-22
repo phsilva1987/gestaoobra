@@ -13,7 +13,6 @@ import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
 import { useProjects } from './hooks/useProjects';
 import type { ProjectFormData } from './components/projects/ProjectForm';
-import { type RestoreSummary } from './lib/backup';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
 import type { ProfessionalFormData } from './components/professionals/ProfessionalForm';
@@ -38,7 +37,7 @@ export function App() {
   const [currentPage, setCurrentPage] = useState<PageKey>('dashboard');
   const {
     projects, selectedProject, selectedProjectId, setSelectedProjectId,
-    loading, error: projectsError, profile,
+    loading, error: projectsError, profile, refresh,
     addProject, updateProject, updateProjectFull, removeProject, changeProjectImage, removeProjectImageHandler,
     addSupplier, updateSupplier, deleteSupplier, addCategory, removeCategory,
     addStage, updateStage, deleteStage, toggleCheck, finishStage,
@@ -142,9 +141,9 @@ export function App() {
     catch (err) { showToast(friendlyError(err, 'Erro ao excluir fornecedor'), 'error'); }
   }, [deleteSupplier, showToast]);
 
-  const handleRestore = useCallback((_summary: RestoreSummary) => {
-    showToast('Restauração de backup será reativada após migração completa.', 'info');
-  }, [showToast]);
+  const handleRestored = useCallback(async () => {
+    await refresh();
+  }, [refresh]);
 
   // ---- Loading / error / empty states ----
   if (loading) {
@@ -265,7 +264,7 @@ export function App() {
         onUpdateSupplier={(id: string, data: SupplierFormData) => handleUpdateSupplier(pid, id, data)}
         onDeleteSupplier={(id: string) => handleDeleteSupplier(pid, id)}
         allProjects={projects} selectedProjectId={selectedProjectId || ''}
-        onRestore={handleRestore} showToast={showToast}
+        onRestored={handleRestored} showToast={showToast}
         isProjectAdmin={isAdmin} currentUserId={profile?.id || ''}
       />
     ),

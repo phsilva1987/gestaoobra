@@ -7,7 +7,6 @@ import { CategoryManager } from '../components/settings/CategoryManager';
 import { SupplierManager } from '../components/settings/SupplierManager';
 import { BackupSection } from '../components/settings/BackupSection';
 import { TeamManager } from '../components/team/TeamManager';
-import type { RestoreSummary } from '../lib/backup';
 
 interface SettingsProps {
   project: ProjectData;
@@ -21,7 +20,7 @@ interface SettingsProps {
   onDeleteSupplier: (id: string) => void;
   allProjects: ProjectData[];
   selectedProjectId: string;
-  onRestore: (summary: RestoreSummary) => void;
+  onRestored: () => Promise<void>;
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
   isProjectAdmin: boolean;
   currentUserId: string;
@@ -39,7 +38,7 @@ export function Settings({
   onDeleteSupplier,
   allProjects,
   selectedProjectId,
-  onRestore,
+  onRestored,
   showToast,
   isProjectAdmin,
   currentUserId,
@@ -78,7 +77,7 @@ export function Settings({
       <BackupSection
         projects={allProjects}
         selectedProjectId={selectedProjectId}
-        onRestore={onRestore}
+        onRestored={onRestored}
         showToast={showToast}
       />
     </>
