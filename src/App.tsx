@@ -18,6 +18,7 @@ import type { JobFormData } from './components/professionals/JobForm';
 import type { MaterialFormData } from './components/materials/MaterialForm';
 import type { EquipmentFormData } from './components/equipment/EquipmentForm';
 import type { SupplierFormData } from './components/suppliers/SupplierForm';
+import type { ProjectSettingsFormData } from './components/settings/ProjectSettingsForm';
 import type { UnforeseenFormData } from './components/finance/UnforeseenForm';
 import type { PaymentFormData } from './components/finance/PaymentForm';
 import type { AdminFormData } from './components/finance/AdminForm';
@@ -457,6 +458,81 @@ export function App() {
     );
   }, []);
 
+  const updateProject = useCallback((projectId: string, data: ProjectSettingsFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return {
+          ...p,
+          nome: data.nome,
+          tipo: data.tipo,
+          status: data.status,
+          config: { ...data.config, projeto: data.nome },
+        };
+      })
+    );
+  }, []);
+
+  const updateProjectImage = useCallback((projectId: string, base64: string) => {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === projectId ? { ...p, coverImage: base64 } : p)));
+  }, []);
+
+  const addCategory = useCallback((projectId: string, kind: 'obra' | 'material', name: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const baseKey = kind === 'obra' ? 'categoriasObra' : 'categoriasMaterial';
+        const extraKey = kind === 'obra' ? 'categoriasObraExtra' : 'categoriasMaterialExtra';
+        const all = [...(p[baseKey] || []), ...(p[extraKey] || [])];
+        if (all.some((c) => c.toLowerCase() === name.toLowerCase())) return p;
+        return { ...p, [baseKey]: [...(p[baseKey] || []), name] };
+      })
+    );
+  }, []);
+
+  const removeCategory = useCallback((projectId: string, kind: 'obra' | 'material', name: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const baseKey = kind === 'obra' ? 'categoriasObra' : 'categoriasMaterial';
+        const extraKey = kind === 'obra' ? 'categoriasObraExtra' : 'categoriasMaterialExtra';
+        const inUse = kind === 'obra'
+          ? p.obra.some((s) => s.categoria === name)
+          : p.materiais.some((m) => m.categoria === name);
+        if (inUse) return p;
+        return {
+          ...p,
+          [baseKey]: (p[baseKey] || []).filter((c) => c !== name),
+          [extraKey]: (p[extraKey] || []).filter((c) => c !== name),
+        };
+      })
+    );
+  }, []);
+
+  const updateSupplier = useCallback((projectId: string, id: string, data: SupplierFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return {
+          ...p,
+          fornecedores: p.fornecedores.map((f) =>
+            f.id === id ? { ...f, nome: data.nome, telefone: data.telefone, email: data.email, site: data.site } : f
+          ),
+        };
+      })
+    );
+  }, []);
+
+  const deleteSupplier = useCallback((projectId: string, id: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, fornecedores: p.fornecedores.filter((f) => f.id !== id) };
+      })
+    );
+  }, []);
+
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
     projetos: <Projects />,
@@ -521,7 +597,18 @@ export function App() {
         onDeleteAdmin={(id) => deleteAdmin(selectedProject.id, id)}
       />
     ),
-    config: <Settings />,
+    config: (
+      <Settings
+        project={selectedProject}
+        onUpdateProject={(data) => updateProject(selectedProject.id, data)}
+        onImageChange={(base64) => updateProjectImage(selectedProject.id, base64)}
+        onAddCategory={(kind, name) => addCategory(selectedProject.id, kind, name)}
+        onRemoveCategory={(kind, name) => removeCategory(selectedProject.id, kind, name)}
+        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
+        onUpdateSupplier={(id, data) => updateSupplier(selectedProject.id, id, data)}
+        onDeleteSupplier={(id) => deleteSupplier(selectedProject.id, id)}
+      />
+    ),
   };
 
   return (
@@ -531,6 +618,8 @@ export function App() {
       projects={projectOptions}
       selectedProjectId={selectedProjectId}
       onSelectProject={setSelectedProjectId}
+      coverImage={selectedProject.coverImage}
+      projectName={selectedProject.nome}
     >
       {pages[currentPage]}
     </AppShell>

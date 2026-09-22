@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Supplier } from '../../types';
 
 export interface SupplierFormData {
@@ -9,18 +9,30 @@ export interface SupplierFormData {
 }
 
 interface SupplierFormProps {
+  supplier?: Supplier | null;
   onSave: (data: SupplierFormData) => Supplier;
   onCancel: () => void;
 }
 
-export function SupplierForm({ onSave, onCancel }: SupplierFormProps) {
+export function SupplierForm({ supplier, onSave, onCancel }: SupplierFormProps) {
   const [form, setForm] = useState<SupplierFormData>({
-    nome: '',
-    telefone: '',
-    email: '',
-    site: '',
+    nome: supplier?.nome || '',
+    telefone: supplier?.telefone || '',
+    email: supplier?.email || '',
+    site: supplier?.site || '',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (supplier) {
+      setForm({
+        nome: supplier.nome,
+        telefone: supplier.telefone,
+        email: supplier.email,
+        site: supplier.site,
+      });
+    }
+  }, [supplier]);
 
   function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
@@ -34,7 +46,7 @@ export function SupplierForm({ onSave, onCancel }: SupplierFormProps) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modalbox modalbox-sm" onClick={(e) => e.stopPropagation()}>
-        <h2>Novo fornecedor</h2>
+        <h2>{supplier ? 'Editar fornecedor' : 'Novo fornecedor'}</h2>
         <form onSubmit={handleSubmit} className="stage-form">
           <div className="form-grid">
             <div className="form-field full">

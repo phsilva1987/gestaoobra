@@ -10,6 +10,8 @@ interface AppShellProps {
   projects: ProjectOption[];
   selectedProjectId: string;
   onSelectProject: (id: string) => void;
+  coverImage?: string;
+  projectName?: string;
   children: React.ReactNode;
 }
 
@@ -19,13 +21,15 @@ export function AppShell({
   projects,
   selectedProjectId,
   onSelectProject,
+  coverImage,
+  projectName,
   children,
 }: AppShellProps) {
   const mobileOptions = navGroups.flatMap((g) => g.items);
 
   return (
     <div className="app">
-      <Sidebar current={current} onNavigate={onNavigate} />
+      <Sidebar current={current} onNavigate={onNavigate} coverImage={coverImage} projectName={projectName} />
       <main>
         <Header
           projects={projects}

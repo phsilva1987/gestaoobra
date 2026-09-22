@@ -126,6 +126,7 @@ export interface ProjectData {
   nome: string;
   tipo: string;
   status: string;
+  coverImage: string;
   config: ProjectConfig;
   obra: Stage[];
   profissionais: Professional[];
@@ -133,6 +134,8 @@ export interface ProjectData {
   materiais: Material[];
   equipamentos: Equipment[];
   fornecedores: Supplier[];
+  categoriasObra: string[];
+  categoriasObraExtra: string[];
   categoriasMaterial: string[];
   categoriasMaterialExtra: string[];
   imprevistos: Unforeseen[];

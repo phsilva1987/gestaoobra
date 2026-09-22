@@ -4,13 +4,23 @@ import type { PageKey } from '../../types/navigation';
 interface SidebarProps {
   current: PageKey;
   onNavigate: (page: PageKey) => void;
+  coverImage?: string;
+  projectName?: string;
 }
 
-export function Sidebar({ current, onNavigate }: SidebarProps) {
+export function Sidebar({ current, onNavigate, coverImage, projectName }: SidebarProps) {
   return (
     <aside className="side">
       <div className="brand">
-        <span className="brand-tag">GESTÃO DA REFORMA</span>
+        {coverImage ? (
+          <img
+            src={coverImage}
+            alt={`Imagem do projeto ${projectName || ''}`}
+            className="brand project-photo"
+          />
+        ) : (
+          <span className="brand-tag">GESTÃO DA REFORMA</span>
+        )}
       </div>
       <nav className="nav">
         {navGroups.map((group) => (

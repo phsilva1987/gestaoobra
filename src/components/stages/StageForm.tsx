@@ -3,7 +3,6 @@ import type { Stage, ProjectData } from '../../types';
 
 const STATUS_OBRA = ['Não iniciado', 'Cotação', 'Contratado', 'Em andamento', 'Bloqueado', 'Concluído'];
 const PRIORIDADES = ['Crítica', 'Alta', 'Média', 'Baixa'];
-const CATEGORIAS_OBRA = ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Limpeza', 'Acabamentos', 'Imprevistos'];
 
 const PROGRESSO_SUGERIDO: Record<string, number | undefined> = {
   'Não iniciado': 0,
@@ -33,9 +32,10 @@ interface StageFormProps {
 }
 
 export function StageForm({ stage, project, onSave, onCancel }: StageFormProps) {
+  const categoriasObra = [...new Set([...(project.categoriasObra || []), ...(project.categoriasObraExtra || [])])];
   const [form, setForm] = useState<StageFormData>({
     nome: stage?.nome || '',
-    categoria: stage?.categoria || CATEGORIAS_OBRA[0],
+    categoria: stage?.categoria || categoriasObra[0] || '',
     prioridade: stage?.prioridade || 'Média',
     dependencia: stage?.dependencia || '',
     inicio: stage?.inicio || '',
@@ -117,7 +117,7 @@ export function StageForm({ stage, project, onSave, onCancel }: StageFormProps) 
             <div className="form-field">
               <label>Categoria</label>
               <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
-                {CATEGORIAS_OBRA.map((c) => <option key={c} value={c}>{c}</option>)}
+                {categoriasObra.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="form-field">

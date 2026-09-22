@@ -55,11 +55,14 @@ export const mockProjects: ProjectData[] = [
       { id: 'e2', etapa_id: 's5', nome: 'Reformer Pilates', quantidade: 1, valor: 8000, fornecedorId: 'f3', forma: 'Cartão', chavePix: '', parcelas: '4x', valorParcela: 2000, compra: '2026-09-28', entrega: '2026-10-10', status: 'Comprado' },
       { id: 'e3', etapa_id: 's5', nome: 'Cadillac Pilates', quantidade: 1, valor: 12000, fornecedorId: 'f3', forma: 'Cartão', chavePix: '', parcelas: '6x', valorParcela: 2000, compra: '2026-09-28', entrega: '2026-10-15', status: 'Aguardando entrega' },
     ],
+    coverImage: '',
     fornecedores: [
       { id: 'f1', nome: 'Casa do Construtor', telefone: '(13) 3222-1111', email: 'vendas@casadoconstrutor.com', site: '' },
       { id: 'f2', nome: 'Hidráulica Santos', telefone: '(13) 3222-3333', email: 'contato@hidraulicasantos.com', site: '' },
       { id: 'f3', nome: 'Pilates Pro Equipamentos', telefone: '(11) 4000-1234', email: 'comercial@pilatespro.com', site: 'pilatespro.com.br' },
     ],
+    categoriasObra: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Limpeza', 'Acabamentos', 'Imprevistos'],
+    categoriasObraExtra: [],
     categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
     categoriasMaterialExtra: [],
     imprevistos: [
@@ -124,9 +127,12 @@ export const mockProjects: ProjectData[] = [
       { id: 'm2', etapa_id: 's2', nome: 'Argamassa', categoria: 'Alvenaria', fornecedorId: 'f1', quantidade: 30, unidade: 'caixa', unitario: 45, pago: 1350, data: '2026-08-25', status: 'Entregue' },
     ],
     equipamentos: [],
+    coverImage: '',
     fornecedores: [
       { id: 'f1', nome: 'Casa do Construtor', telefone: '(13) 3222-1111', email: 'vendas@casadoconstrutor.com', site: '' },
     ],
+    categoriasObra: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Limpeza', 'Acabamentos', 'Imprevistos'],
+    categoriasObraExtra: [],
     categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
     categoriasMaterialExtra: [],
     imprevistos: [],
