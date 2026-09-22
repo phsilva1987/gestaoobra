@@ -66,14 +66,14 @@ export function BackupSection({ projects, selectedProjectId, onRestore, showToas
         <div className="card section">
           <h3 style={{ marginTop: 0 }}>Baixar backup</h3>
           <p className="hint">Gera um arquivo .json com o estado completo do sistema — todos os projetos cadastrados, serviços da obra, financeiro, materiais, equipamentos, profissionais e configurações.</p>
-          <div className="actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
+          <div className="modal-actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
             <button className="btn" onClick={handleExport}>Baixar backup (.json)</button>
           </div>
         </div>
         <div className="card section">
           <h3 style={{ marginTop: 0 }}>Restaurar backup</h3>
           <p className="hint">Selecione um arquivo .json exportado por este sistema. <b>Isso substitui todos os dados atuais</b> pelos dados do arquivo — não pode ser desfeito.</p>
-          <div className="actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
+          <div className="modal-actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
             <button className="btn secondary" onClick={() => fileRef.current?.click()}>Restaurar backup</button>
             <input
               ref={fileRef}
@@ -100,7 +100,7 @@ export function BackupSection({ projects, selectedProjectId, onRestore, showToas
           <h3 style={{ marginTop: 0 }}>Confirmar restauração</h3>
           <p className="hint">O backup contém <b>{summary.projectCount}</b> projeto(s), <b>{summary.stageCount}</b> etapa(s), <b>{summary.jobCount}</b> trabalho(s), <b>{summary.materialCount}</b> material(is), <b>{summary.equipmentCount}</b> equipamento(s) e <b>{summary.supplierCount}</b> fornecedor(es).</p>
           <p className="hint" style={{ color: '#d94a3a' }}>Restaurar este backup vai SUBSTITUIR todos os dados atuais. Essa ação não pode ser desfeita.</p>
-          <div className="actions" style={{ justifyContent: 'flex-start', marginTop: 12 }}>
+          <div className="modal-actions" style={{ justifyContent: 'flex-start', marginTop: 12 }}>
             <button className="btn danger" onClick={confirmRestore}>Confirmar restauração</button>
             <button className="btn secondary" onClick={cancelRestore}>Cancelar</button>
           </div>
