@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { ToastContainer, type ToastMsg } from './components/Toast';
+import { ProtectedApp } from './auth/ProtectedApp';
 import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
 import { Stages } from './pages/Stages';
@@ -698,7 +699,7 @@ export function App() {
   };
 
   return (
-    <>
+    <ProtectedApp>
       <AppShell
         current={currentPage}
         onNavigate={setCurrentPage}
@@ -711,6 +712,6 @@ export function App() {
         {pages[currentPage]}
       </AppShell>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-    </>
+    </ProtectedApp>
   );
 }

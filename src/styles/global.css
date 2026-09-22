@@ -1559,3 +1559,138 @@ th {
     width: 100%;
   }
 }
+
+/* ===== Login Page ===== */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #f7f1e7 0%, #ede0c8 100%);
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(95, 67, 29, 0.12);
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.login-brand h1 {
+  font-size: 22px;
+  color: #4a3826;
+  margin: 0 0 4px;
+}
+
+.login-brand p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5a4a3a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.login-field input {
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fffdf9;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.login-field input:focus {
+  border-color: var(--gold);
+}
+
+.login-error {
+  background: #f9eae8;
+  border: 1px solid #e6c9c4;
+  color: #8c4a40;
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* ===== Logout button ===== */
+.btn-logout {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  margin-left: 4px;
+}
+
+.btn-logout:hover {
+  background: #f4eadb;
+  color: var(--gold-dark);
+}
+
+@media (max-width: 768px) {
+  .appbar-right {
+    gap: 12px;
+  }
+  .appbar-date {
+    display: none;
+  }
+  .btn-logout {
+    display: none;
+  }
+}

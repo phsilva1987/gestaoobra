@@ -1,5 +1,6 @@
 import type { ProjectOption } from '../../types/navigation';
 import { ProjectSelector } from './ProjectSelector';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface HeaderProps {
   projects: ProjectOption[];
@@ -8,12 +9,23 @@ interface HeaderProps {
 }
 
 export function Header({ projects, selectedProjectId, onSelectProject }: HeaderProps) {
+  const { profile, signOut } = useAuth();
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'short',
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
+
+  const initials = (profile?.name || profile?.email || '?')
+    .split(' ')
+    .map((w) => w.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const displayName = profile?.name || profile?.email || 'Usuário';
+  const roleLabel = profile?.role === 'admin' ? 'Administrador' : 'Operador';
 
   return (
     <div className="appbar">
@@ -29,11 +41,14 @@ export function Header({ projects, selectedProjectId, onSelectProject }: HeaderP
         />
         <div className="appbar-date">{today}</div>
         <div className="userbox">
-          <div className="avatar">PH</div>
+          <div className="avatar">{initials}</div>
           <div className="usertext">
-            <b>Paulo Henrique</b>
-            <span>Administrador</span>
+            <b>{displayName}</b>
+            <span>{roleLabel}</span>
           </div>
+          <button className="btn-logout" onClick={() => signOut()} title="Sair">
+            Sair
+          </button>
         </div>
       </div>
     </div>
