@@ -146,6 +146,12 @@ function validateIntegrity(projects: ProjectData[], selectedProjectId: string): 
     const profIds = new Set(p.profissionais.map((pr) => String(pr.id)));
     const supplierIds = new Set(p.fornecedores.map((f) => String(f.id)));
 
+    for (const s of p.obra) {
+      if (s.dependencia && !stageIds.has(String(s.dependencia)))
+        return `Projeto "${p.nome}": etapa "${s.nome}" possui dependência inválida (${s.dependencia}).`;
+      if (s.profissionalId && !profIds.has(String(s.profissionalId)))
+        return `Projeto "${p.nome}": etapa "${s.nome}" referencia profissional inexistente (${s.profissionalId}).`;
+    }
     for (const j of p.jobs) {
       if (!stageIds.has(String(j.etapa_id)))
         return `Projeto "${p.nome}": trabalho ${j.id} referencia etapa inexistente (${j.etapa_id}).`;
