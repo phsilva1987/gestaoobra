@@ -907,6 +907,280 @@ th {
   }
 }
 
+/* ===== Stage page (Obra/Etapas) ===== */
+.page-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.page-top h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  color: #3b2d20;
+}
+
+.page-top p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #a87827, #b88c3b);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.btn.secondary {
+  background: #f0e5d4;
+  color: #5f4f3a;
+  border: 1px solid var(--line);
+}
+
+.btn.danger {
+  background: #b85a4e;
+  color: #fff;
+}
+
+.rowactions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.rowactions button {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #5f4f3a;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.rowactions button:hover {
+  background: #f7efe3;
+  border-color: var(--gold);
+}
+
+.stage-table-card {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.stage-table-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c7a15b #f1e7d7;
+}
+
+.stage-table-scroll table {
+  min-width: 960px;
+}
+
+.stage-table-scroll th,
+.stage-table-scroll td {
+  padding: 12px 10px;
+  vertical-align: top;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 30, 20, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 30px 16px;
+  overflow-y: auto;
+}
+
+.modalbox {
+  background: #fffdf9;
+  border-radius: 16px;
+  padding: 26px 28px;
+  width: 100%;
+  max-width: 620px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+}
+
+.modalbox h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+  color: #3b2d20;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Form */
+.stage-form .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-field.full {
+  grid-column: 1 / -1;
+}
+
+.form-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5f5449;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: #3b2d20;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--gold);
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.field-error {
+  color: #b85a4e;
+  font-size: 12px;
+}
+
+.stage-derived-info {
+  margin-top: 16px;
+}
+
+/* Checklist */
+.stage-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkitem:hover {
+  background: #f7efe3;
+}
+
+.checkitem input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.checkitem span {
+  font-size: 14px;
+  color: #3b2d20;
+}
+
+/* Delete blocked */
+.delete-blocked ul {
+  margin: 8px 0;
+  padding-left: 20px;
+  color: #b85a4e;
+}
+
+.delete-blocked .hint {
+  margin-top: 8px;
+}
+
+/* Status badge colors */
+.status-Atrasado,
+.status-Aberto {
+  background: #f8e0dd;
+  color: #a65e52;
+}
+
+.status-Atenção {
+  background: #fcefd0;
+  color: #8b6320;
+}
+
+.status-Concluído,
+.status-Entregue,
+.status-Montado,
+.status-Pago,
+.status-Dentro-do-prazo {
+  background: #d8ecd9;
+  color: #4a7a55;
+}
+
+.auto-late {
+  color: #a65e52;
+}
+
+.auto-ok {
+  color: #4a7a55;
+}
+
+@media (max-width: 600px) {
+  .stage-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modalbox {
+    padding: 20px 18px;
+  }
+}
+
 /* ===== Mobile ===== */
 .mobile {
   display: none;

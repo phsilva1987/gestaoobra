@@ -26,6 +26,12 @@ export interface Stage {
   fim: string;
   profissionalId: string | null;
   observacao: string;
+  fimReal: string;
+  checkServico: boolean;
+  checkConferido: boolean;
+  checkLimpo: boolean;
+  checkPagamento: boolean;
+  checkPendencias: boolean;
 }
 
 export interface Professional {
