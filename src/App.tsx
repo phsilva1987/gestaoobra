@@ -5,16 +5,19 @@ import { Projects } from './pages/Projects';
 import { Stages } from './pages/Stages';
 import { Professionals } from './pages/Professionals';
 import { Materials } from './pages/Materials';
-import { Equipment } from './pages/Equipment';
+import { Equipment as EquipmentPage } from './pages/Equipment';
 import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
 import { mockProjects, getProjectOptions } from './lib/mockProjects';
-import type { ProjectData, Stage, Professional, Job } from './types';
+import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier } from './types';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
 import type { ProfessionalFormData } from './components/professionals/ProfessionalForm';
 import type { JobFormData } from './components/professionals/JobForm';
+import type { MaterialFormData } from './components/materials/MaterialForm';
+import type { EquipmentFormData } from './components/equipment/EquipmentForm';
+import type { SupplierFormData } from './components/suppliers/SupplierForm';
 import { isoToday } from './lib/format';
 
 function genId(prefix: string): string {
@@ -226,6 +229,147 @@ export function App() {
     );
   }, []);
 
+  const addSupplier = useCallback((projectId: string, data: SupplierFormData): Supplier => {
+    const newSupplier: Supplier = {
+      id: genId('f'),
+      nome: data.nome,
+      telefone: data.telefone,
+      email: data.email,
+      site: data.site,
+    };
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, fornecedores: [...p.fornecedores, newSupplier] };
+      })
+    );
+    return newSupplier;
+  }, []);
+
+  const addMaterial = useCallback((projectId: string, data: MaterialFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const newMaterial: Material = {
+          id: genId('m'),
+          etapa_id: data.etapa_id,
+          nome: data.nome,
+          categoria: data.categoria,
+          fornecedorId: data.fornecedorId,
+          quantidade: data.quantidade,
+          unidade: data.unidade,
+          unitario: data.unitario,
+          pago: data.pago,
+          data: data.data,
+          status: data.status,
+        };
+        return { ...p, materiais: [...p.materiais, newMaterial] };
+      })
+    );
+  }, []);
+
+  const updateMaterial = useCallback((projectId: string, materialId: string, data: MaterialFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return {
+          ...p,
+          materiais: p.materiais.map((m) =>
+            m.id === materialId
+              ? {
+                  ...m,
+                  nome: data.nome,
+                  categoria: data.categoria,
+                  fornecedorId: data.fornecedorId,
+                  quantidade: data.quantidade,
+                  unidade: data.unidade,
+                  unitario: data.unitario,
+                  pago: data.pago,
+                  data: data.data,
+                  status: data.status,
+                  etapa_id: data.etapa_id,
+                }
+              : m
+          ),
+        };
+      })
+    );
+  }, []);
+
+  const deleteMaterial = useCallback((projectId: string, materialId: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, materiais: p.materiais.filter((m) => m.id !== materialId) };
+      })
+    );
+  }, []);
+
+  const addEquipment = useCallback((projectId: string, data: EquipmentFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const n = parseInt(data.parcelas) || 1;
+        const newEq: Equipment = {
+          id: genId('e'),
+          etapa_id: data.etapa_id,
+          nome: data.nome,
+          quantidade: data.quantidade,
+          valor: data.valor,
+          fornecedorId: data.fornecedorId,
+          forma: data.forma,
+          chavePix: data.forma === 'Pix' ? data.chavePix : '',
+          parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+          valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+          compra: data.compra,
+          entrega: data.entrega,
+          status: data.status,
+        };
+        return { ...p, equipamentos: [...p.equipamentos, newEq] };
+      })
+    );
+  }, []);
+
+  const updateEquipment = useCallback((projectId: string, eqId: string, data: EquipmentFormData) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        const n = parseInt(data.parcelas) || 1;
+        return {
+          ...p,
+          equipamentos: p.equipamentos.map((e) =>
+            e.id === eqId
+              ? {
+                  ...e,
+                  nome: data.nome,
+                  quantidade: data.quantidade,
+                  valor: data.valor,
+                  fornecedorId: data.fornecedorId,
+                  forma: data.forma,
+                  chavePix: data.forma === 'Pix' ? data.chavePix : '',
+                  parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+                  valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+                  compra: data.compra,
+                  entrega: data.entrega,
+                  status: data.status,
+                  etapa_id: data.etapa_id,
+                }
+              : e
+          ),
+        };
+      })
+    );
+  }, []);
+
+  const deleteEquipment = useCallback((projectId: string, eqId: string) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+        return { ...p, equipamentos: p.equipamentos.filter((e) => e.id !== eqId) };
+      })
+    );
+  }, []);
+
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
     projetos: <Projects />,
@@ -250,8 +394,24 @@ export function App() {
         onDeleteJob={(id) => deleteJob(selectedProject.id, id)}
       />
     ),
-    materiais: <Materials />,
-    equipamentos: <Equipment />,
+    materiais: (
+      <Materials
+        project={selectedProject}
+        onAddMaterial={(data) => addMaterial(selectedProject.id, data)}
+        onUpdateMaterial={(id, data) => updateMaterial(selectedProject.id, id, data)}
+        onDeleteMaterial={(id) => deleteMaterial(selectedProject.id, id)}
+        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
+      />
+    ),
+    equipamentos: (
+      <EquipmentPage
+        project={selectedProject}
+        onAddEquipment={(data) => addEquipment(selectedProject.id, data)}
+        onUpdateEquipment={(id, data) => updateEquipment(selectedProject.id, id, data)}
+        onDeleteEquipment={(id) => deleteEquipment(selectedProject.id, id)}
+        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
+      />
+    ),
     cronograma: <Schedule />,
     financeiro: <Finance />,
     config: <Settings />,

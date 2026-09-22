@@ -1033,6 +1033,16 @@ th {
   max-width: 760px;
 }
 
+.modalbox.modalbox-sm {
+  max-width: 420px;
+}
+
+.supplier-select-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
 .modalbox h2 {
   margin: 0 0 18px;
   font-size: 20px;

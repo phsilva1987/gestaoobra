@@ -61,11 +61,12 @@ export interface Material {
   etapa_id: string;
   nome: string;
   categoria: string;
-  fornecedor: string;
+  fornecedorId: string;
   quantidade: number;
   unidade: string;
   unitario: number;
   pago: number;
+  data: string;
   status: string;
 }
 
@@ -75,6 +76,13 @@ export interface Equipment {
   nome: string;
   quantidade: number;
   valor: number;
+  fornecedorId: string;
+  forma: string;
+  chavePix: string;
+  parcelas: string;
+  valorParcela: number | null;
+  compra: string;
+  entrega: string;
   status: string;
 }
 
@@ -124,6 +132,9 @@ export interface ProjectData {
   jobs: Job[];
   materiais: Material[];
   equipamentos: Equipment[];
+  fornecedores: Supplier[];
+  categoriasMaterial: string[];
+  categoriasMaterialExtra: string[];
   imprevistos: Unforeseen[];
   pagamentos: Payment[];
   admin: AdminItem[];
@@ -132,10 +143,10 @@ export interface ProjectData {
 
 export interface Supplier {
   id: string;
-  projeto_id: string;
   nome: string;
   telefone: string;
   email: string;
+  site: string;
 }
 
 export interface Category {

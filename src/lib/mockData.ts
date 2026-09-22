@@ -46,15 +46,22 @@ export const mockProjects: ProjectData[] = [
       { id: 'j6', etapa_id: 's2', profissional_id: 'p5', valor: 3000, pago: 0, forma: 'Cartão', parcelas: '3x', chavePix: '', valorParcela: 1000, status: 'Em andamento' },
     ],
     materiais: [
-      { id: 'm1', etapa_id: 's2', nome: 'Fios e cabos elétricos', categoria: 'Elétrica', fornecedor: 'Casa do Construtor', quantidade: 100, unidade: 'm', unitario: 15, pago: 1500, status: 'Entregue' },
-      { id: 'm2', etapa_id: 's3', nome: 'Tubos PVC 40mm', categoria: 'Hidráulica', fornecedor: 'Hidráulica Santos', quantidade: 20, unidade: 'm', unitario: 35, pago: 700, status: 'Entregue' },
-      { id: 'm3', etapa_id: 's1', nome: 'Sacos de cimento', categoria: 'Demolição', fornecedor: 'Casa do Construtor', quantidade: 10, unidade: 'caixa', unitario: 28, pago: 280, status: 'Entregue' },
+      { id: 'm1', etapa_id: 's2', nome: 'Fios e cabos elétricos', categoria: 'Elétrica', fornecedorId: 'f1', quantidade: 100, unidade: 'm', unitario: 15, pago: 1500, data: '2026-09-12', status: 'Entregue' },
+      { id: 'm2', etapa_id: 's3', nome: 'Tubos PVC 40mm', categoria: 'Hidráulica', fornecedorId: 'f2', quantidade: 20, unidade: 'm', unitario: 35, pago: 700, data: '2026-09-15', status: 'Entregue' },
+      { id: 'm3', etapa_id: 's1', nome: 'Sacos de cimento', categoria: 'Demolição', fornecedorId: 'f1', quantidade: 10, unidade: 'caixa', unitario: 28, pago: 280, data: '2026-09-01', status: 'Entregue' },
     ],
     equipamentos: [
-      { id: 'e1', etapa_id: 's1', nome: 'Martelete elétrico', quantidade: 1, valor: 10000, status: 'Comprado' },
-      { id: 'e2', etapa_id: 's5', nome: 'Reformer Pilates', quantidade: 1, valor: 8000, status: 'Comprado' },
-      { id: 'e3', etapa_id: 's5', nome: 'Cadillac Pilates', quantidade: 1, valor: 12000, status: 'Aguardando entrega' },
+      { id: 'e1', etapa_id: 's1', nome: 'Martelete elétrico', quantidade: 1, valor: 10000, fornecedorId: 'f1', forma: 'Pix', chavePix: '', parcelas: '1x', valorParcela: null, compra: '2026-09-01', entrega: '2026-09-05', status: 'Comprado' },
+      { id: 'e2', etapa_id: 's5', nome: 'Reformer Pilates', quantidade: 1, valor: 8000, fornecedorId: 'f3', forma: 'Cartão', chavePix: '', parcelas: '4x', valorParcela: 2000, compra: '2026-09-28', entrega: '2026-10-10', status: 'Comprado' },
+      { id: 'e3', etapa_id: 's5', nome: 'Cadillac Pilates', quantidade: 1, valor: 12000, fornecedorId: 'f3', forma: 'Cartão', chavePix: '', parcelas: '6x', valorParcela: 2000, compra: '2026-09-28', entrega: '2026-10-15', status: 'Aguardando entrega' },
     ],
+    fornecedores: [
+      { id: 'f1', nome: 'Casa do Construtor', telefone: '(13) 3222-1111', email: 'vendas@casadoconstrutor.com', site: '' },
+      { id: 'f2', nome: 'Hidráulica Santos', telefone: '(13) 3222-3333', email: 'contato@hidraulicasantos.com', site: '' },
+      { id: 'f3', nome: 'Pilates Pro Equipamentos', telefone: '(11) 4000-1234', email: 'comercial@pilatespro.com', site: 'pilatespro.com.br' },
+    ],
+    categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
+    categoriasMaterialExtra: [],
     imprevistos: [
       { id: 'i1', nome: 'Cano quebrado na parede', categoria: 'Hidráulica', valor: 500, impactoDias: 2, status: 'Aberto' },
       { id: 'i2', nome: 'Fio adicional para ar-condicionado', categoria: 'Elétrica', valor: 200, impactoDias: 0, status: 'Resolvido' },
@@ -113,10 +120,15 @@ export const mockProjects: ProjectData[] = [
       { id: 'j2', etapa_id: 's2', profissional_id: 'p1', valor: 5000, pago: 3000, forma: 'Em Dinheiro', parcelas: '1x', chavePix: '', valorParcela: null, status: 'Em andamento' },
     ],
     materiais: [
-      { id: 'm1', etapa_id: 's2', nome: 'Tijolos cerâmicos', categoria: 'Alvenaria', fornecedor: 'Casa do Construtor', quantidade: 500, unidade: 'un', unitario: 2.5, pago: 1250, status: 'Entregue' },
-      { id: 'm2', etapa_id: 's2', nome: 'Argamassa', categoria: 'Alvenaria', fornecedor: 'Casa do Construtor', quantidade: 30, unidade: 'caixa', unitario: 45, pago: 1350, status: 'Entregue' },
+      { id: 'm1', etapa_id: 's2', nome: 'Tijolos cerâmicos', categoria: 'Alvenaria', fornecedorId: 'f1', quantidade: 500, unidade: 'un', unitario: 2.5, pago: 1250, data: '2026-08-25', status: 'Entregue' },
+      { id: 'm2', etapa_id: 's2', nome: 'Argamassa', categoria: 'Alvenaria', fornecedorId: 'f1', quantidade: 30, unidade: 'caixa', unitario: 45, pago: 1350, data: '2026-08-25', status: 'Entregue' },
     ],
     equipamentos: [],
+    fornecedores: [
+      { id: 'f1', nome: 'Casa do Construtor', telefone: '(13) 3222-1111', email: 'vendas@casadoconstrutor.com', site: '' },
+    ],
+    categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
+    categoriasMaterialExtra: [],
     imprevistos: [],
     pagamentos: [
       { id: 'pa1', referencia: 'Pedro - Alvenaria (2ª parcela)', tipo: 'Profissional', valor: 2000, vencimento: '2026-09-25', forma: 'PIX', status: 'Pendente' },
