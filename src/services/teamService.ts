@@ -137,3 +137,36 @@ export async function getAdminUsersOverview(): Promise<AdminUserOverviewRow[]> {
   if (error) throw error;
   return (data || []) as AdminUserOverviewRow[];
 }
+
+export async function createSystemUser(
+  name: string,
+  email: string,
+  password: string,
+  role: string
+): Promise<{ ok: boolean; message: string }> {
+  const { data: session } = await supabase.auth.getSession();
+  const token = session?.session?.access_token;
+  if (!token) throw new Error('Sessão expirada. Faça login novamente.');
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-system-user`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ name, email, password, role }),
+  });
+
+  const result = await resp.json();
+
+  if (!resp.ok) {
+    throw new Error(result.error || 'Não foi possível criar o usuário.');
+  }
+
+  return {
+    ok: true,
+    message: result.message || 'Usuário criado com sucesso.',
+  };
+}

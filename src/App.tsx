@@ -171,6 +171,7 @@ export function App() {
   }
 
   const isAdmin = profile?.role === 'admin';
+  const canCreateProject = profile?.role === 'admin' || profile?.role === 'operator';
 
   if (projects.length === 0 || !selectedProject) {
     return (
@@ -180,10 +181,10 @@ export function App() {
             <div>
               <h2 style={{ marginBottom: 8 }}>Nenhum projeto disponível</h2>
               <p style={{ color: 'var(--muted)', maxWidth: 400 }}>
-                {profile?.role === 'admin' ? 'Crie seu primeiro projeto para começar a gerenciar sua reforma.' : 'Entre em contato com um administrador para receber acesso a um projeto.'}
+                Você ainda não possui projetos vinculados. Você pode criar um novo projeto para começar.
               </p>
             </div>
-            {profile?.role === 'admin' && (
+            {canCreateProject && (
               <Projects projects={[]} selectedProjectId="" onSelectProject={() => {}} onNavigate={setCurrentPage} onAddProject={handleAddProject} onUpdateProject={handleUpdateProjectFull} onDeleteProject={handleDeleteProject} canCreate={true} />
             )}
           </div>
@@ -198,7 +199,7 @@ export function App() {
   const pages: Record<PageKey, React.ReactNode> = {
     dashboard: <Dashboard project={selectedProject} />,
     projetos: (
-      <Projects projects={projects} selectedProjectId={selectedProjectId || ''} onSelectProject={setSelectedProjectId} onNavigate={setCurrentPage} onAddProject={handleAddProject} onUpdateProject={handleUpdateProjectFull} onDeleteProject={handleDeleteProject} canCreate={isAdmin} />
+      <Projects projects={projects} selectedProjectId={selectedProjectId || ''} onSelectProject={setSelectedProjectId} onNavigate={setCurrentPage} onAddProject={handleAddProject} onUpdateProject={handleUpdateProjectFull} onDeleteProject={handleDeleteProject} canCreate={canCreateProject} />
     ),
     obra: (
       <Stages project={selectedProject}

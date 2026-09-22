@@ -2,13 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import type { ProjectData } from '../types';
 import {
   getAdminUsersOverview,
-  inviteProjectMember,
+  createSystemUser,
   addProjectMember,
   updateProjectMemberRole,
   removeProjectMember,
-  searchProfiles,
   type AdminUserOverviewRow,
-  type ProfileSearchResult,
 } from '../services/teamService';
 
 interface UsersPageProps {
@@ -51,19 +49,15 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
-  const [showInvite, setShowInvite] = useState(false);
-  const [inviteName, setInviteName] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteProject, setInviteProject] = useState('');
-  const [inviteRole, setInviteRole] = useState('operator');
-  const [inviting, setInviting] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<ProfileSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [addProject, setAddProject] = useState('');
-  const [addRole, setAddRole] = useState('operator');
-  const [adding, setAdding] = useState(false);
+
+  // Novo usuário modal
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState('operator');
+  const [creating, setCreating] = useState(false);
+
   const [manageUser, setManageUser] = useState<UserGroup | null>(null);
 
   const load = useCallback(async () => {
@@ -96,36 +90,23 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
   const adminCount = users.filter((u) => u.globalRole === 'admin').length;
   const operatorCount = users.filter((u) => u.globalRole === 'operator').length;
 
-  async function handleSearch() {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
+  async function handleCreateUser() {
+    if (!newEmail.trim() || !newName.trim() || !newPassword.trim()) return;
+    setCreating(true);
     try {
-      const results = await searchProfiles(searchQuery.trim());
-      setSearchResults(results);
-    } catch {
-      showToast('Erro ao buscar usuários.', 'error');
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  async function handleAdd(userId: string) {
-    if (!addProject) return;
-    setAdding(true);
-    try {
-      await addProjectMember(addProject, userId, addRole);
-      showToast('Usuário adicionado ao projeto.', 'success');
-      setShowAdd(false);
-      setSearchQuery('');
-      setSearchResults([]);
+      const result = await createSystemUser(newName.trim(), newEmail.trim(), newPassword, newRole);
+      showToast(result.message, 'success');
+      setShowCreate(false);
+      setNewName('');
+      setNewEmail('');
+      setNewPassword('');
+      setNewRole('operator');
       await load();
-      setManageUser(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao adicionar usuário.';
+      const msg = err instanceof Error ? err.message : 'Erro ao criar usuário.';
       showToast(msg, 'error');
     } finally {
-      setAdding(false);
+      setCreating(false);
     }
   }
 
@@ -152,25 +133,6 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
     }
   }
 
-  async function handleInvite() {
-    if (!inviteEmail.trim() || !inviteProject) return;
-    setInviting(true);
-    try {
-      const result = await inviteProjectMember(inviteProject, inviteEmail.trim(), inviteName.trim(), inviteRole);
-      showToast(result.message, 'success');
-      setShowInvite(false);
-      setInviteName('');
-      setInviteEmail('');
-      setInviteRole('operator');
-      await load();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao enviar convite.';
-      showToast(msg, 'error');
-    } finally {
-      setInviting(false);
-    }
-  }
-
   return (
     <>
       <div className="page-top">
@@ -178,8 +140,8 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
           <h1>Usuários</h1>
           <p>Gerencie usuários, permissões e acessos aos projetos.</p>
         </div>
-        <button className="btn" onClick={() => { setInviteProject(projects[0]?.id || ''); setShowInvite(true); }}>
-          + Convidar usuário
+        <button className="btn" onClick={() => setShowCreate(true)}>
+          + Novo usuário
         </button>
       </div>
 
@@ -215,9 +177,6 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
             <option value="admin">Admins</option>
             <option value="operator">Operators</option>
           </select>
-          <button className="btn secondary" onClick={() => { setAddProject(projects[0]?.id || ''); setShowAdd(true); }}>
-            + Adicionar usuário
-          </button>
         </div>
 
         {loading ? (
@@ -252,7 +211,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                         {u.globalRole === 'admin' ? 'Admin' : 'Operator'}
                       </span>
                     </td>
-                    <td>{u.memberships.length > 0 ? `${u.memberships.length} projeto(s)` : '—'}</td>
+                    <td>{u.memberships.length > 0 ? `${u.memberships.length} projeto(s)` : '0'}</td>
                     <td>
                       {u.memberships.length > 0
                         ? u.memberships.map((m, i) => (
@@ -260,7 +219,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                             {m.projectName}: {m.role === 'admin' ? 'Admin' : 'Operator'}
                           </span>
                         ))
-                        : '—'}
+                        : 'Nenhum acesso'}
                     </td>
                     <td className="rowactions">
                       <button onClick={() => setManageUser(u)}>Gerenciar</button>
@@ -330,14 +289,14 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
               <p className="empty" style={{ marginBottom: 16 }}>Sem acesso a nenhum projeto.</p>
             )}
 
-            {/* Projects without access */}
+            {/* Add access to project */}
             {(() => {
               const memberProjectIds = new Set(manageUser.memberships.map((m) => m.projectId));
               const available = projects.filter((p) => !memberProjectIds.has(p.id));
               if (available.length === 0) return null;
               return (
                 <>
-                  <h3 style={{ margin: '0 0 12px' }}>Adicionar a projeto</h3>
+                  <h3 style={{ margin: '0 0 12px' }}>Adicionar acesso a projeto</h3>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
                     {available.map((p) => (
                       <button
@@ -346,11 +305,11 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                         onClick={async () => {
                           try {
                             await addProjectMember(p.id, manageUser.userId, 'operator');
-                            showToast('Usuário adicionado ao projeto.', 'success');
+                            showToast('Acesso adicionado ao projeto.', 'success');
                             await load();
                             setManageUser(null);
                           } catch (err) {
-                            const msg = err instanceof Error ? err.message : 'Erro ao adicionar usuário.';
+                            const msg = err instanceof Error ? err.message : 'Erro ao adicionar acesso.';
                             showToast(msg, 'error');
                           }
                         }}
@@ -370,97 +329,40 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
         </div>
       )}
 
-      {/* Invite modal */}
-      {showInvite && (
-        <div className="modal-overlay" onClick={() => setShowInvite(false)}>
+      {/* Novo usuário modal */}
+      {showCreate && (
+        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
           <div className="modalbox modalbox-sm" onClick={(e) => e.stopPropagation()}>
-            <h2>Convidar usuário</h2>
-            <p className="hint" style={{ marginBottom: 12 }}>O convidado receberá um e-mail para definir sua senha e acessar o sistema.</p>
+            <h2>Novo usuário</h2>
+            <p className="hint" style={{ marginBottom: 12 }}>Crie um usuário no sistema. Ele poderá fazer login imediatamente.</p>
             <label className="field">
-              <span>Nome</span>
-              <input type="text" value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="Nome do convidado" autoFocus />
+              <span>Nome completo *</span>
+              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nome do usuário" autoFocus />
             </label>
             <label className="field">
-              <span>E-mail</span>
-              <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@exemplo.com" />
+              <span>E-mail *</span>
+              <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
             </label>
             <label className="field">
-              <span>Projeto</span>
-              <select value={inviteProject} onChange={(e) => setInviteProject(e.target.value)}>
-                {projects.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-              </select>
+              <span>Senha inicial *</span>
+              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
             </label>
             <label className="field">
-              <span>Permissão no projeto</span>
-              <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
+              <span>Perfil global *</span>
+              <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
                 <option value="operator">Operator</option>
-                <option value="admin">Admin</option>
+                <option value="admin">Administrador</option>
               </select>
             </label>
             <div className="modal-actions">
-              <button className="btn" disabled={inviting || !inviteEmail.trim() || !inviteProject} onClick={handleInvite}>
-                {inviting ? 'Enviando convite...' : 'Enviar convite'}
+              <button
+                className="btn"
+                disabled={creating || !newEmail.trim() || !newName.trim() || !newPassword.trim()}
+                onClick={handleCreateUser}
+              >
+                {creating ? 'Criando...' : 'Criar usuário'}
               </button>
-              <button className="btn secondary" onClick={() => setShowInvite(false)}>Cancelar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add existing user modal */}
-      {showAdd && (
-        <div className="modal-overlay" onClick={() => { setShowAdd(false); setSearchResults([]); }}>
-          <div className="modalbox modalbox-sm" onClick={(e) => e.stopPropagation()}>
-            <h2>Adicionar usuário a projeto</h2>
-            <p className="hint" style={{ marginBottom: 12 }}>Busque um usuário existente pelo nome ou e-mail.</p>
-            <label className="field">
-              <span>Projeto</span>
-              <select value={addProject} onChange={(e) => setAddProject(e.target.value)}>
-                {projects.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-              </select>
-            </label>
-            <label className="field">
-              <span>Permissão</span>
-              <select value={addRole} onChange={(e) => setAddRole(e.target.value)}>
-                <option value="operator">Operator</option>
-                <option value="admin">Admin</option>
-              </select>
-            </label>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <input
-                type="text"
-                placeholder="Nome ou e-mail..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-                autoFocus
-                style={{ flex: 1 }}
-              />
-              <button className="btn" onClick={handleSearch} disabled={searching}>
-                {searching ? 'Buscando...' : 'Buscar'}
-              </button>
-            </div>
-            {searchResults.length > 0 && (
-              <div className="stage-table-scroll" style={{ maxHeight: 240 }}>
-                <table>
-                  <thead><tr><th>Nome</th><th>E-mail</th><th></th></tr></thead>
-                  <tbody>
-                    {searchResults.map((r) => (
-                      <tr key={r.id}>
-                        <td><b>{r.name || '—'}</b></td>
-                        <td>{r.email}</td>
-                        <td><button className="btn" onClick={() => handleAdd(r.id)} disabled={adding}>Adicionar</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {searchResults.length === 0 && searchQuery && !searching && (
-              <p className="empty">Nenhum usuário encontrado.</p>
-            )}
-            <div className="modal-actions">
-              <button className="btn secondary" onClick={() => { setShowAdd(false); setSearchResults([]); }}>Fechar</button>
+              <button className="btn secondary" onClick={() => setShowCreate(false)}>Cancelar</button>
             </div>
           </div>
         </div>
