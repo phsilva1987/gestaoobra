@@ -16,52 +16,34 @@ export interface ProfileSearchResult {
 }
 
 export async function getProjectMembers(projectId: string): Promise<TeamMember[]> {
-  const { data, error } = await supabase
-    .from('project_operators')
-    .select(`
-      user_id,
-      role,
-      profiles!inner(id, name, email, role)
-    `)
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: true });
-
+  const { data, error } = await supabase.rpc('get_project_members', { p_project_id: projectId });
   if (error) throw error;
 
-  return (data || []).map((row: Record<string, unknown>) => {
-    const profile = row.profiles as Record<string, unknown>;
-    return {
-      id: profile.id as string,
-      name: (profile.name as string) || '',
-      email: (profile.email as string) || '',
-      globalRole: (profile.role as string) || 'operator',
-      projectRole: row.role as string,
-      status: 'Ativo',
-    };
-  });
+  return (data || []).map((row: Record<string, unknown>) => ({
+    id: row.user_id as string,
+    name: (row.name as string) || '',
+    email: (row.email as string) || '',
+    globalRole: (row.global_role as string) || 'operator',
+    projectRole: (row.project_role as string) || 'operator',
+    status: 'Ativo',
+  }));
 }
 
 export async function searchProfiles(query: string, excludeProjectId?: string): Promise<ProfileSearchResult[]> {
-  let q = supabase
-    .from('profiles')
-    .select('id, name, email')
-    .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
-    .limit(20);
+  const { data: rpcData, error: rpcError } = await supabase.rpc('search_profiles', { p_query: query });
+  if (rpcError) throw rpcError;
+  let results = (rpcData || []) as ProfileSearchResult[];
 
   if (excludeProjectId) {
     const { data: existing } = await supabase
       .from('project_operators')
       .select('user_id')
       .eq('project_id', excludeProjectId);
-    const excludeIds = (existing || []).map((r) => r.user_id);
-    if (excludeIds.length > 0) {
-      q = q.not('id', 'in', `(${excludeIds.join(',')})`);
-    }
+    const excludeIds = new Set((existing || []).map((r) => r.user_id));
+    results = results.filter((r) => !excludeIds.has(r.id));
   }
 
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data || []) as ProfileSearchResult[];
+  return results;
 }
 
 export async function addProjectMember(projectId: string, userId: string, role: string = 'operator'): Promise<void> {
