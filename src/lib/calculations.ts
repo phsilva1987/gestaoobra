@@ -2,7 +2,7 @@ import type {
   Stage,
   Job,
   Material,
-  Professional,
+  Equipment,
   Unforeseen,
   Payment,
   ChecklistItem,
@@ -25,7 +25,8 @@ export function paymentDue(payments: Payment[]): number {
 export function stageContratado(
   stage: Stage,
   jobs: Job[],
-  materials: Material[]
+  materials: Material[],
+  equipments: Equipment[]
 ): number {
   const jobsTotal = jobs
     .filter((j) => j.etapa_id === stage.id)
@@ -33,7 +34,10 @@ export function stageContratado(
   const matsTotal = materials
     .filter((m) => m.etapa_id === stage.id)
     .reduce((a, m) => a + materialTotal(m), 0);
-  return jobsTotal + matsTotal;
+  const eqTotal = equipments
+    .filter((e) => e.etapa_id === stage.id)
+    .reduce((a, e) => a + (+e.valor || 0), 0);
+  return jobsTotal + matsTotal + eqTotal;
 }
 
 export function stagePago(
@@ -50,22 +54,15 @@ export function stagePago(
   return jobsPago + matsPago;
 }
 
-export function profissionaisAvulsos(
-  professionals: Professional[],
-  jobs: Job[]
-): Professional[] {
-  const contratadoPorProfissional: Record<string, number> = {};
-  jobs.forEach((j) => {
-    const k = String(j.profissional_id);
-    contratadoPorProfissional[k] =
-      (contratadoPorProfissional[k] || 0) + (+j.valor || 0);
-  });
-  const vinculados = new Set(jobs.map((j) => String(j.profissional_id)));
-  return professionals.filter((p) => {
-    const k = String(p.id);
-    if (!vinculados.has(k)) return true;
-    return (contratadoPorProfissional[k] || 0) === 0;
-  });
+/* V14: equipamentos não possuem campo "pago" no modelo atual —
+   entram no contratado mas não no pago. Dívida/modelo futuro. */
+export function stageEquipment(
+  stage: Stage,
+  equipments: Equipment[]
+): number {
+  return equipments
+    .filter((e) => e.etapa_id === stage.id)
+    .reduce((a, e) => a + (+e.valor || 0), 0);
 }
 
 export interface ProjectTotals {
@@ -78,25 +75,22 @@ export interface ProjectTotals {
   prog: number;
   materiais: number;
   maoDeObra: number;
+  maoDeObraPago: number;
   extras: number;
   budget: number;
   available: number;
 }
 
 export function projectTotals(project: ProjectData): ProjectTotals {
-  const previsto = project.obra.reduce((a, x) => a + (+x.previsto || 0), 0);
-  const servContr = project.jobs.reduce((a, j) => a + (+j.valor || 0), 0);
-  const servPago = project.jobs.reduce((a, j) => a + (+j.pago || 0), 0);
+  const maoDeObra = project.jobs.reduce((a, j) => a + (+j.valor || 0), 0);
+  const maoDeObraPago = project.jobs.reduce((a, j) => a + (+j.pago || 0), 0);
   const materiais = project.materiais.reduce((a, m) => a + materialTotal(m), 0);
   const materiaisPago = project.materiais.reduce((a, m) => a + (+m.pago || 0), 0);
-  const avulsos = profissionaisAvulsos(project.profissionais, project.jobs);
-  const maoDeObra = avulsos.reduce((a, p) => a + (+p.valor || 0), 0);
-  const maoDeObraPago = avulsos.reduce((a, p) => a + (+p.pago || 0), 0);
-  const extras = unforeseenTotal(project.imprevistos);
-  const contratado = servContr + materiais + maoDeObra;
-  const pago = servPago + materiaisPago + maoDeObraPago;
   const eq = project.equipamentos.reduce((a, e) => a + (+e.valor || 0), 0);
   const adm = project.admin.reduce((a, x) => a + (+x.pago || 0), 0);
+  const extras = unforeseenTotal(project.imprevistos);
+  const contratado = maoDeObra + materiais + eq;
+  const pago = maoDeObraPago + materiaisPago;
   const prog = project.obra.length
     ? Math.round(
         project.obra.reduce((a, x) => a + (+x.progresso || 0), 0) /
@@ -106,7 +100,7 @@ export function projectTotals(project: ProjectData): ProjectTotals {
   const budget = +project.config.orcamento || 0;
   const available = budget - contratado - extras;
   return {
-    previsto,
+    previsto: contratado,
     contratado,
     pago,
     apagar: Math.max(0, contratado - pago),
@@ -115,6 +109,7 @@ export function projectTotals(project: ProjectData): ProjectTotals {
     prog,
     materiais,
     maoDeObra,
+    maoDeObraPago,
     extras,
     budget,
     available,

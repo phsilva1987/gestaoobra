@@ -35,12 +35,15 @@ export const mockProjects: ProjectData[] = [
       { id: 'p2', nome: 'Carlos Eletricista', servico: 'Eletricista', telefone: '(13) 98888-2222', valor: 0, pago: 0, forma: 'Pix', status: 'Em andamento' },
       { id: 'p3', nome: 'Marcos Pintor', servico: 'Pintor', telefone: '(13) 98888-3333', valor: 2000, pago: 0, forma: 'Pix', status: 'Cotação' },
       { id: 'p4', nome: 'Ana Encanadora', servico: 'Encanadora', telefone: '(13) 98888-4444', valor: 0, pago: 0, forma: 'Em Dinheiro', status: 'Em andamento' },
+      { id: 'p5', nome: 'Antonio Acabamentos', servico: 'Acabamentos / Geral', telefone: '(13) 98888-5555', valor: 0, pago: 0, forma: 'Pix', status: 'Em andamento' },
     ],
     jobs: [
       { id: 'j1', etapa_id: 's1', profissional_id: 'p1', valor: 3000, pago: 3000, status: 'Concluído' },
       { id: 'j2', etapa_id: 's2', profissional_id: 'p2', valor: 2500, pago: 1500, status: 'Em andamento' },
       { id: 'j3', etapa_id: 's3', profissional_id: 'p4', valor: 1800, pago: 800, status: 'Em andamento' },
       { id: 'j4', etapa_id: 's3', profissional_id: 'p1', valor: 1200, pago: 0, status: 'Em andamento' },
+      { id: 'j5', etapa_id: 's1', profissional_id: 'p5', valor: 5000, pago: 2000, status: 'Em andamento' },
+      { id: 'j6', etapa_id: 's2', profissional_id: 'p5', valor: 3000, pago: 0, status: 'Em andamento' },
     ],
     materiais: [
       { id: 'm1', etapa_id: 's2', nome: 'Fios e cabos elétricos', categoria: 'Elétrica', fornecedor: 'Casa do Construtor', quantidade: 100, unidade: 'm', unitario: 15, pago: 1500, status: 'Entregue' },
@@ -48,8 +51,9 @@ export const mockProjects: ProjectData[] = [
       { id: 'm3', etapa_id: 's1', nome: 'Sacos de cimento', categoria: 'Demolição', fornecedor: 'Casa do Construtor', quantidade: 10, unidade: 'caixa', unitario: 28, pago: 280, status: 'Entregue' },
     ],
     equipamentos: [
-      { id: 'e1', etapa_id: 's5', nome: 'Reformer Pilates', quantidade: 1, valor: 8000, status: 'Comprado' },
-      { id: 'e2', etapa_id: 's5', nome: 'Cadillac Pilates', quantidade: 1, valor: 12000, status: 'Aguardando entrega' },
+      { id: 'e1', etapa_id: 's1', nome: 'Martelete elétrico', quantidade: 1, valor: 10000, status: 'Comprado' },
+      { id: 'e2', etapa_id: 's5', nome: 'Reformer Pilates', quantidade: 1, valor: 8000, status: 'Comprado' },
+      { id: 'e3', etapa_id: 's5', nome: 'Cadillac Pilates', quantidade: 1, valor: 12000, status: 'Aguardando entrega' },
     ],
     imprevistos: [
       { id: 'i1', nome: 'Cano quebrado na parede', categoria: 'Hidráulica', valor: 500, impactoDias: 2, status: 'Aberto' },
