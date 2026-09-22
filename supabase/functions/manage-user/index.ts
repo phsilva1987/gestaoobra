@@ -147,8 +147,9 @@ Deno.serve(async (req: Request) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    console.error("manage-user failed", err);
     return new Response(
-      JSON.stringify({ error: err.message || "Erro interno do servidor." }),
+      JSON.stringify({ error: "Erro interno do servidor." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

@@ -8,15 +8,16 @@ function getFilePath(projectId: string): string {
   return `${projectId}/cover.webp`;
 }
 
-function getPublicUrl(path: string): string {
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
-}
+const SIGNED_URL_TTL = 21600; // 6h
 
-export function getProjectImageUrl(_projectId: string, coverPath: string): string {
+export async function getProjectImageUrl(_projectId: string, coverPath: string): Promise<string> {
   if (!coverPath) return '';
-  if (coverPath.startsWith('http') || coverPath.startsWith('/')) return coverPath;
-  return getPublicUrl(coverPath);
+  if (coverPath.startsWith('http') || coverPath.startsWith('/') || coverPath.startsWith('data:')) {
+    return coverPath;
+  }
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(coverPath, SIGNED_URL_TTL);
+  if (error || !data?.signedUrl) return '';
+  return data.signedUrl;
 }
 
 export function isStoragePath(path: string): boolean {

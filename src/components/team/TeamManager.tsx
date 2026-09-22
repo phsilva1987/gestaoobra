@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { friendlyError } from '../../lib/errors';
 import type { TeamMember, ProfileSearchResult } from '../../services/teamService';
 import { getProjectMembers, searchProfiles, addProjectMember, inviteProjectMember } from '../../services/teamService';
 
@@ -41,7 +42,10 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
   }, [loadMembers]);
 
   async function handleSearch() {
-    if (!searchQuery.trim()) return;
+    if (searchQuery.trim().length < 3) {
+      showToast('Digite pelo menos 3 caracteres do nome ou o e-mail completo.', 'info');
+      return;
+    }
     setSearching(true);
     try {
       const results = await searchProfiles(searchQuery.trim(), projectId);
@@ -64,7 +68,7 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
       setSearchResults([]);
       await loadMembers();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao adicionar usuário.';
+      const msg = friendlyError(err, 'Erro ao adicionar usuário.');
       showToast(msg, 'error');
     } finally {
       setAdding(false);
@@ -78,7 +82,7 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
       showToast('Permissão atualizada.', 'success');
       await loadMembers();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar permissão.';
+      const msg = friendlyError(err, 'Erro ao atualizar permissão.');
       showToast(msg, 'error');
     }
   }
@@ -90,7 +94,7 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
       showToast('Usuário removido do projeto.', 'success');
       await loadMembers();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao remover usuário.';
+      const msg = friendlyError(err, 'Erro ao remover usuário.');
       showToast(msg, 'error');
     }
   }
@@ -257,7 +261,7 @@ export function TeamManager({ projectId, isProjectAdmin, currentUserId, showToas
                     setInviteRole('operator');
                     await loadMembers();
                   } catch (err) {
-                    const msg = err instanceof Error ? err.message : 'Erro ao enviar convite.';
+                    const msg = friendlyError(err, 'Erro ao enviar convite.');
                     showToast(msg, 'error');
                   } finally {
                     setInviting(false);

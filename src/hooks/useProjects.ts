@@ -88,6 +88,7 @@ import type { AdminFormData } from '../components/finance/AdminForm';
 import { useAuth } from '../auth/AuthProvider';
 import { uploadProjectImage, removeProjectImage as dbRemoveProjectImage, getProjectImageUrl } from '../services/storageService';
 import { updateProjectImage } from '../services/projectService';
+import { friendlyError } from '../lib/errors';
 
 async function loadProjectData(projectId: string): Promise<Partial<ProjectData>> {
   const [
@@ -141,7 +142,11 @@ export function useProjects() {
         return;
       }
       const enriched = await Promise.all(
-        dbProjects.map(async (p) => ({ ...p, ...(await loadProjectData(p.id)) }))
+        dbProjects.map(async (p) => ({
+          ...p,
+          ...(await loadProjectData(p.id)),
+          coverImage: await getProjectImageUrl(p.id, p.coverImage),
+        }))
       );
       setProjects(enriched);
       setSelectedProjectId((prev) => {
@@ -150,7 +155,7 @@ export function useProjects() {
       });
       setLoading(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao carregar projetos';
+      const msg = friendlyError(err, 'Erro ao carregar projetos');
       setError(msg);
       setProjects([]);
       setSelectedProjectId(null);
@@ -186,7 +191,7 @@ export function useProjects() {
       try {
         const path = await uploadProjectImage(created.id, data.imageFile);
         await updateProjectImage(created.id, path);
-        coverImage = getProjectImageUrl(created.id, path);
+        coverImage = await getProjectImageUrl(created.id, path);
       } catch {
         throw new Error('Projeto criado, mas não foi possível enviar a imagem.');
       }
@@ -210,7 +215,7 @@ export function useProjects() {
     if (data.imageFile) {
       const path = await uploadProjectImage(projectId, data.imageFile);
       await updateProjectImage(projectId, path);
-      coverImage = getProjectImageUrl(projectId, path);
+      coverImage = await getProjectImageUrl(projectId, path);
     } else {
       await dbUpdateProjectFull(projectId, data);
     }
@@ -233,7 +238,7 @@ export function useProjects() {
   const changeProjectImage = useCallback(async (projectId: string, file: File): Promise<void> => {
     const path = await uploadProjectImage(projectId, file);
     await updateProjectImage(projectId, path);
-    const url = getProjectImageUrl(projectId, path);
+    const url = await getProjectImageUrl(projectId, path);
     updateProjectState(projectId, (p) => ({ ...p, coverImage: url }));
   }, []);
 

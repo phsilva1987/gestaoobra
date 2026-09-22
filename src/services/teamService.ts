@@ -74,7 +74,7 @@ export async function inviteProjectMember(
   email: string,
   name: string,
   projectRole: string = 'operator'
-): Promise<{ ok: boolean; invited: boolean; message: string }> {
+): Promise<{ ok: boolean; message: string }> {
   const { data: session } = await supabase.auth.getSession();
   const token = session?.session?.access_token;
   if (!token) throw new Error('Sessão expirada. Faça login novamente.');
@@ -103,8 +103,7 @@ export async function inviteProjectMember(
 
   return {
     ok: true,
-    invited: result.invited,
-    message: result.message,
+    message: result.message || 'Convite processado.',
   };
 }
 
@@ -143,7 +142,7 @@ export async function createSystemUser(
   email: string,
   password: string,
   role: string
-): Promise<{ ok: boolean; message: string }> {
+): Promise<{ ok: boolean; userId: string | null; message: string }> {
   const { data: session } = await supabase.auth.getSession();
   const token = session?.session?.access_token;
   if (!token) throw new Error('Sessão expirada. Faça login novamente.');
@@ -167,6 +166,7 @@ export async function createSystemUser(
 
   return {
     ok: true,
+    userId: (result.user_id as string) || null,
     message: result.message || 'Usuário criado com sucesso.',
   };
 }

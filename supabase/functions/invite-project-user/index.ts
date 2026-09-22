@@ -127,8 +127,9 @@ Deno.serve(async (req: Request) => {
       );
 
       if (inviteError) {
+        console.error("inviteUserByEmail failed", inviteError);
         return new Response(
-          JSON.stringify({ error: "Não foi possível enviar o convite: " + inviteError.message }),
+          JSON.stringify({ error: "Não foi possível enviar o convite." }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
@@ -155,20 +156,18 @@ Deno.serve(async (req: Request) => {
       throw insertError;
     }
 
+    // Neutral response: it must not reveal whether the address already has an account.
     return new Response(
       JSON.stringify({
         ok: true,
-        invited: !existingUser,
-        user_id: userId,
-        message: existingUser
-          ? "Usuário adicionado ao projeto."
-          : "Convite enviado por e-mail.",
+        message: "Convite processado. O usuário receberá acesso ao projeto.",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    console.error("invite-project-user failed", err);
     return new Response(
-      JSON.stringify({ error: err.message || "Erro interno do servidor." }),
+      JSON.stringify({ error: "Erro interno do servidor." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

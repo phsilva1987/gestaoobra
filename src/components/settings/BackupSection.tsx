@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ProjectData } from '../../types';
 import { downloadBackup, parseBackup, readFileAsText, type RestoreSummary } from '../../lib/backup';
 import { restoreBackupToDb, type RestoreResultRow } from '../../services/restoreService';
+import { friendlyError } from '../../lib/errors';
 
 interface BackupSectionProps {
   projects: ProjectData[];
@@ -23,7 +24,7 @@ export function BackupSection({ projects, selectedProjectId, onRestored, showToa
       downloadBackup(projects, selectedProjectId);
       showToast('Backup exportado com sucesso.', 'success');
     } catch (e) {
-      showToast('Não foi possível gerar o backup: ' + (e as Error).message, 'error');
+      showToast(friendlyError(e, 'Não foi possível gerar o backup.'), 'error');
     }
   };
 
@@ -43,8 +44,9 @@ export function BackupSection({ projects, selectedProjectId, onRestored, showToa
       setSummary(result.summary);
       setPendingText(text);
     } catch (e) {
-      setError((e as Error).message);
-      showToast((e as Error).message, 'error');
+      const msg = friendlyError(e, 'Não foi possível ler o arquivo de backup.');
+      setError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -59,7 +61,7 @@ export function BackupSection({ projects, selectedProjectId, onRestored, showToa
       setPendingText(null);
       await onRestored();
     } catch (e) {
-      const msg = (e as Error).message || 'Não foi possível importar o backup.';
+      const msg = friendlyError(e, 'Não foi possível importar o backup.');
       setError('Não foi possível importar o backup. Nenhum dado foi alterado.');
       showToast(msg, 'error');
     } finally {

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ProjectData } from '../../types';
 import { ALLOWED_TYPES, MAX_SIZE } from '../../services/storageService';
+import { friendlyError } from '../../lib/errors';
 
 interface ProjectImageManagerProps {
   project: ProjectData;
@@ -34,7 +35,7 @@ export function ProjectImageManager({ project, onImageChange, onImageRemove, isA
     try {
       await onImageChange(file);
     } catch (err) {
-      setError((err as Error).message || 'Não foi possível enviar a imagem.');
+      setError(friendlyError(err, 'Não foi possível enviar a imagem.'));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -46,16 +47,14 @@ export function ProjectImageManager({ project, onImageChange, onImageRemove, isA
     try {
       await onImageRemove();
     } catch (err) {
-      setError((err as Error).message || 'Não foi possível remover a imagem.');
+      setError(friendlyError(err, 'Não foi possível remover a imagem.'));
     } finally {
       setUploading(false);
     }
   }
 
-  const coverUrl = project.coverImage
-    + (project.coverImage && !project.coverImage.startsWith('data:') && !project.coverImage.startsWith('/')
-      ? `?t=${Date.now()}`
-      : '');
+  // Signed URLs already carry their own query string; do not append a cache buster.
+  const coverUrl = project.coverImage;
 
   return (
     <div className="card section">

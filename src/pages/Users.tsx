@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { friendlyError } from '../lib/errors';
 import type { ProjectData } from '../types';
 import {
   getAdminUsersOverview,
@@ -90,7 +91,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
       const data = await getAdminUsersOverview();
       setRows(data);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao carregar usuários.';
+      const msg = friendlyError(err, 'Erro ao carregar usuários.');
       setError(msg);
       setRows([]);
     } finally {
@@ -134,15 +135,13 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
     setCreating(true);
     try {
       const result = await createSystemUser(newName.trim(), newEmail.trim(), newPassword, newRole);
-      if (newProject) {
-        const overview = await getAdminUsersOverview();
-        const created = overview.find((r) => r.email === newEmail.trim().toLowerCase());
-        if (created) {
-          try {
-            await addProjectMember(newProject, created.user_id, newProjectRole);
-          } catch {
-            // membership is optional — user created successfully
-          }
+      // Use the id returned by the server: matching by e-mail could attach the
+      // project to a different account that happens to share the address.
+      if (newProject && result.userId) {
+        try {
+          await addProjectMember(newProject, result.userId, newProjectRole);
+        } catch {
+          // membership is optional — user created successfully
         }
       }
       showToast(result.message, 'success');
@@ -151,7 +150,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
       setNewRole('operator'); setNewProject(''); setNewProjectRole('operator');
       await load();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar usuário.';
+      const msg = friendlyError(err, 'Erro ao criar usuário.');
       showToast(msg, 'error');
     } finally {
       setCreating(false);
@@ -172,7 +171,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
       }
       setManageUser(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao salvar.';
+      const msg = friendlyError(err, 'Erro ao salvar.');
       showToast(msg, 'error');
     } finally {
       setSavingProfile(false);
@@ -191,7 +190,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
         ),
       } : null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar permissão.';
+      const msg = friendlyError(err, 'Erro ao atualizar permissão.');
       showToast(msg, 'error');
     }
   }
@@ -206,7 +205,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
         memberships: prev.memberships.filter((mm) => mm.projectId !== projectId),
       } : null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao remover acesso.';
+      const msg = friendlyError(err, 'Erro ao remover acesso.');
       showToast(msg, 'error');
     }
   }
@@ -225,7 +224,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
       setAddRole('operator');
       await load();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao adicionar acesso.';
+      const msg = friendlyError(err, 'Erro ao adicionar acesso.');
       showToast(msg, 'error');
     }
   }
@@ -495,7 +494,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                             setResetPwd('');
                             setResetPwdConfirm('');
                           } catch (err) {
-                            const msg = err instanceof Error ? err.message : 'Erro ao redefinir senha.';
+                            const msg = friendlyError(err, 'Erro ao redefinir senha.');
                             showToast(msg, 'error');
                           } finally {
                             setResetting(false);
@@ -531,7 +530,7 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
                               setConfirmDelete(false);
                               await load();
                             } catch (err) {
-                              const msg = err instanceof Error ? err.message : 'Erro ao excluir usuário.';
+                              const msg = friendlyError(err, 'Erro ao excluir usuário.');
                               showToast(msg, 'error');
                             } finally {
                               setDeleting(false);

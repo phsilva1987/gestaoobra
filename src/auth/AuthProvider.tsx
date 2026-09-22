@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { friendlyAuthError } from '../lib/errors';
 
 export interface Profile {
   id: string;
@@ -94,8 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setState((s) => ({ ...s, loading: false, error: error.message }));
-      return { error: error.message };
+      const message = friendlyAuthError(error);
+      setState((s) => ({ ...s, loading: false, error: message }));
+      return { error: message };
     }
 
     return { error: null };

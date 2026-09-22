@@ -1,5 +1,5 @@
 import type { ProjectData, ProjectConfig, Supplier } from '../types';
-import { getProjectImageUrl } from './storageService';
+import { isStoragePath } from './storageService';
 
 export interface ProjectRow {
   id: string;
@@ -63,7 +63,7 @@ export function mapProjectFromDb(row: ProjectRow): ProjectData {
     nome: row.name,
     tipo: row.type || '',
     status: row.status || 'Planejamento',
-    coverImage: getProjectImageUrl(row.id, row.cover_image_path || ''),
+    coverImage: row.cover_image_path || '',
     legacyKey: row.legacy_key || null,
     config,
     obra: [],
@@ -105,7 +105,8 @@ export function mapProjectToDb(data: {
     orcamento: data.config.orcamento,
     data_inicio: data.config.inicio || null,
     data_fim: data.config.fim || null,
-    cover_image_path: data.coverImage || '',
+    // Never persist a rendered URL (signed link or data: preview) as the stored path.
+    cover_image_path: isStoragePath(data.coverImage || '') ? (data.coverImage as string) : '',
   };
 }
 

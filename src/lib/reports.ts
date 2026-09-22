@@ -160,7 +160,8 @@ export function exportFinanceiroExcel(project: ProjectData): void {
   const r = buildReportData(project);
   const escH = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
   const m = (v: number) => money(Number(v || 0));
-  const tr = (cells: string[], th = false) => `<tr>${cells.map((c) => `<${th ? 'th' : 'td'}>${c}</${th ? 'th' : 'td'}>`).join('')}</tr>`;
+  // Every cell is escaped: report values come from user-entered data.
+  const tr = (cells: string[], th = false) => `<tr>${cells.map((c) => `<${th ? 'th' : 'td'}>${escH(c)}</${th ? 'th' : 'td'}>`).join('')}</tr>`;
 
   let body = `<h1>Relatório Financeiro - Reforma</h1>
   <p><b>Empresa:</b> ${escH(r.empresa.nome)}<br><b>CNPJ/CPF:</b> ${escH(r.empresa.cnpj)}<br><b>Responsável:</b> ${escH(r.empresa.responsavel)}<br><b>Período:</b> ${escH(r.empresa.periodo)}<br><b>Gerado em:</b> ${escH(r.geradoEm)}</p>

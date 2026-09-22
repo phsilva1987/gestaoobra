@@ -25,14 +25,7 @@ import type { ProjectSettingsFormData } from './components/settings/ProjectSetti
 import type { UnforeseenFormData } from './components/finance/UnforeseenForm';
 import type { PaymentFormData } from './components/finance/PaymentForm';
 import type { AdminFormData } from './components/finance/AdminForm';
-
-function friendlyError(err: unknown, fallback: string): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (msg.includes('foreign_key_violation') || msg.includes('23503')) return 'Este registro possui vínculos e não pode ser excluído.';
-  if (msg.includes('42501') || msg.includes('permission') || msg.includes('policy')) return 'Você não possui permissão para executar esta ação.';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return 'Não foi possível acessar o banco. Tente novamente.';
-  return fallback;
-}
+import { friendlyError } from './lib/errors';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<PageKey>('dashboard');
