@@ -24,7 +24,7 @@ export interface EquipmentFormData {
 interface EquipmentFormProps {
   equipment: Equipment | null;
   project: ProjectData;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onSave: (data: EquipmentFormData) => void;
   onCancel: () => void;
 }

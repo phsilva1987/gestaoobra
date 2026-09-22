@@ -14,7 +14,7 @@ interface SettingsProps {
   onImageChange: (base64: string) => void;
   onAddCategory: (kind: 'obra' | 'material', name: string) => void;
   onRemoveCategory: (kind: 'obra' | 'material', name: string) => void;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onUpdateSupplier: (id: string, data: SupplierFormData) => void;
   onDeleteSupplier: (id: string) => void;
   allProjects: ProjectData[];

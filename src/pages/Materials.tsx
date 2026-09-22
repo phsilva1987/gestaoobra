@@ -9,7 +9,7 @@ interface MaterialsProps {
   onAddMaterial: (data: MaterialFormData) => void;
   onUpdateMaterial: (id: string, data: MaterialFormData) => void;
   onDeleteMaterial: (id: string) => void;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
 }
 
 type Modal =

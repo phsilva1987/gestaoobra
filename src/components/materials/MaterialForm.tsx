@@ -23,7 +23,7 @@ export interface MaterialFormData {
 interface MaterialFormProps {
   material: Material | null;
   project: ProjectData;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onSave: (data: MaterialFormData) => void;
   onCancel: () => void;
 }

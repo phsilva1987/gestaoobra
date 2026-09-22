@@ -9,9 +9,10 @@ interface ProjectsProps {
   selectedProjectId: string;
   onSelectProject: (id: string) => void;
   onNavigate: (page: 'dashboard') => void;
-  onAddProject: (data: ProjectFormData) => string;
-  onUpdateProject: (id: string, data: ProjectFormData) => void;
-  onDeleteProject: (id: string) => void;
+  onAddProject: (data: ProjectFormData) => Promise<string>;
+  onUpdateProject: (id: string, data: ProjectFormData) => Promise<void>;
+  onDeleteProject: (id: string) => Promise<void>;
+  canCreate?: boolean;
 }
 
 type Modal =
@@ -28,28 +29,55 @@ export function Projects({
   onAddProject,
   onUpdateProject,
   onDeleteProject,
+  canCreate = true,
 }: ProjectsProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
 
-  function handleCreate(data: ProjectFormData) {
-    const newId = onAddProject(data);
-    setModal(null);
-    onSelectProject(newId);
-    onNavigate('dashboard');
+  async function handleCreate(data: ProjectFormData) {
+    setSaving(true);
+    try {
+      const newId = await onAddProject(data);
+      setModal(null);
+      onSelectProject(newId);
+      onNavigate('dashboard');
+    } catch {
+      // error toast handled by caller
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleEdit(data: ProjectFormData) {
+  async function handleEdit(data: ProjectFormData) {
     if (modal?.type === 'edit') {
-      onUpdateProject(modal.project.id, data);
+      setSaving(true);
+      try {
+        await onUpdateProject(modal.project.id, data);
+        setModal(null);
+      } catch {
+        // error toast handled by caller
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      setModal(null);
     }
-    setModal(null);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (modal?.type === 'delete') {
-      onDeleteProject(modal.project.id);
+      setSaving(true);
+      try {
+        await onDeleteProject(modal.project.id);
+        setModal(null);
+      } catch {
+        // error toast handled by caller
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      setModal(null);
     }
-    setModal(null);
   }
 
   return (
@@ -59,7 +87,7 @@ export function Projects({
           <h1>Projetos</h1>
           <p>Gerencie todos os seus projetos de reforma</p>
         </div>
-        <button className="btn" onClick={() => setModal({ type: 'create' })}>+ Novo Projeto</button>
+        {canCreate && <button className="btn" onClick={() => setModal({ type: 'create' })}>+ Novo Projeto</button>}
       </div>
 
       <div className="projects-grid">
@@ -98,16 +126,20 @@ export function Projects({
                   <button className="btn" onClick={() => { onSelectProject(p.id); onNavigate('dashboard'); }}>
                     Abrir projeto
                   </button>
-                  <button className="btn secondary" onClick={() => setModal({ type: 'edit', project: p })}>
-                    Editar
-                  </button>
-                  <button
-                    className="btn secondary"
-                    disabled={projects.length <= 1}
-                    onClick={() => setModal({ type: 'delete', project: p })}
-                  >
-                    Excluir
-                  </button>
+                  {canCreate && (
+                    <>
+                      <button className="btn secondary" onClick={() => setModal({ type: 'edit', project: p })}>
+                        Editar
+                      </button>
+                      <button
+                        className="btn secondary"
+                        disabled={projects.length <= 1}
+                        onClick={() => setModal({ type: 'delete', project: p })}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -116,11 +148,11 @@ export function Projects({
       </div>
 
       {modal?.type === 'create' && (
-        <ProjectForm project={null} onSave={handleCreate} onCancel={() => setModal(null)} />
+        <ProjectForm project={null} onSave={handleCreate} onCancel={() => setModal(null)} saving={saving} />
       )}
 
       {modal?.type === 'edit' && (
-        <ProjectForm project={modal.project} onSave={handleEdit} onCancel={() => setModal(null)} />
+        <ProjectForm project={modal.project} onSave={handleEdit} onCancel={() => setModal(null)} saving={saving} />
       )}
 
       {modal?.type === 'delete' && (
@@ -133,8 +165,8 @@ export function Projects({
               Esta ação não pode ser desfeita.
             </p>
             <div className="modal-actions">
-              <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
-              <button className="btn danger" onClick={handleDelete}>Excluir projeto</button>
+              <button className="btn secondary" onClick={() => setModal(null)} disabled={saving}>Cancelar</button>
+              <button className="btn danger" onClick={handleDelete} disabled={saving}>{saving ? 'Excluindo...' : 'Excluir projeto'}</button>
             </div>
           </div>
         </div>

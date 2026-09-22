@@ -6,17 +6,24 @@ interface SupplierSelectProps {
   value: string;
   onChange: (fornecedorId: string) => void;
   project: ProjectData;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
 }
 
 export function SupplierSelect({ value, onChange, project, onAddSupplier }: SupplierSelectProps) {
   const [showForm, setShowForm] = useState(false);
 
-  function handleSave(data: SupplierFormData): Supplier {
-    const newSupplier = onAddSupplier(data);
-    onChange(newSupplier.id);
+  function handleSave(data: SupplierFormData): Promise<Supplier> {
+    const result = onAddSupplier(data);
+    if (result instanceof Promise) {
+      return result.then((newSupplier) => {
+        onChange(newSupplier.id);
+        setShowForm(false);
+        return newSupplier;
+      });
+    }
+    onChange(result.id);
     setShowForm(false);
-    return newSupplier;
+    return Promise.resolve(result);
   }
 
   return (

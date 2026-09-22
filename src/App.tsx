@@ -11,7 +11,7 @@ import { Equipment as EquipmentPage } from './pages/Equipment';
 import { Schedule } from './pages/Schedule';
 import { Finance } from './pages/Finance';
 import { Settings } from './pages/Settings';
-import { mockProjects } from './lib/mockProjects';
+import { useProjects } from './hooks/useProjects';
 import type { ProjectFormData } from './components/projects/ProjectForm';
 import { type RestoreSummary } from './lib/backup';
 import type { ProjectData, Stage, Professional, Job, Material, Equipment, Supplier, Unforeseen, Payment, AdminItem } from './types';
@@ -34,13 +34,25 @@ function genId(prefix: string): string {
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<PageKey>('dashboard');
-  const [selectedProjectId, setSelectedProjectId] = useState(mockProjects[0].id);
-  const [projects, setProjects] = useState<ProjectData[]>(() =>
-    mockProjects.map((p) => ({ ...p, obra: [...p.obra] }))
-  );
+  const {
+    projects,
+    selectedProjectId,
+    setSelectedProjectId,
+    loading,
+    error: projectsError,
+    profile,
+    addProject,
+    updateProject,
+    updateProjectFull,
+    removeProject,
+    changeProjectImage,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier,
+    addCategory,
+    removeCategory,
+  } = useProjects();
 
-  const selectedProject =
-    projects.find((p) => p.id === selectedProjectId) || projects[0];
   const projectOptions = projects.map((p) => ({ id: p.id, nome: p.nome, tipo: p.tipo }));
 
   const [toasts, setToasts] = useState<ToastMsg[]>([]);
@@ -53,100 +65,111 @@ export function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addProject = useCallback((data: ProjectFormData): string => {
-    const newId = genId('proj');
-    setProjects((prev) => [
-      ...prev,
-      {
-        id: newId,
-        nome: data.nome,
-        tipo: data.tipo,
-        status: data.status,
-        coverImage: data.coverImage,
-        config: data.config,
-        obra: [],
-        profissionais: [],
-        jobs: [],
-        materiais: [],
-        equipamentos: [],
-        fornecedores: [],
-        categoriasObra: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Limpeza', 'Acabamentos', 'Imprevistos'],
-        categoriasObraExtra: [],
-        categoriasMaterial: ['Demolição', 'Alvenaria', 'Elétrica', 'Hidráulica', 'Iluminação', 'Pintura', 'Piso', 'Climatização', 'Banheiros', 'Acabamentos', 'Limpeza', 'Ferragens e fixação', 'Outros'],
-        categoriasMaterialExtra: [],
-        imprevistos: [],
-        pagamentos: [],
-        admin: [],
-        checklist: [],
-      },
-    ]);
-    return newId;
-  }, []);
+  // Local overlay for mock collections that aren't migrated yet.
+  // Keyed by projectId. Each entry contains mock collection overrides.
+  const [mockOverrides, setMockOverrides] = useState<
+    Record<string, Partial<Pick<ProjectData, 'obra' | 'profissionais' | 'jobs' | 'materiais' | 'equipamentos' | 'imprevistos' | 'pagamentos' | 'admin' | 'checklist'>>>
+  >({});
 
-  const updateProjectFull = useCallback((projectId: string, data: ProjectFormData) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === projectId
-          ? { ...p, nome: data.nome, tipo: data.tipo, status: data.status, coverImage: data.coverImage, config: { ...data.config, projeto: data.nome } }
-          : p
-      )
-    );
-  }, []);
+  // Merge DB project with mock overrides
+  const mergedProjects = projects.map((p) => {
+    const override = mockOverrides[p.id];
+    if (!override) return p;
+    return { ...p, ...override };
+  });
 
-  const deleteProject = useCallback((projectId: string) => {
-    setProjects((prev) => {
-      const remaining = prev.filter((p) => p.id !== projectId);
-      return remaining;
-    });
-    setSelectedProjectId((prev) => {
-      const remaining = projects.filter((p) => p.id !== projectId);
-      if (prev === projectId && remaining.length > 0) {
-        return remaining[0].id;
+  const mergedSelectedProject =
+    mergedProjects.find((p) => p.id === selectedProjectId) || mergedProjects[0] || null;
+
+  // ---- Project CRUD (delegates to useProjects hook with DB) ----
+  const handleAddProject = useCallback(
+    async (data: ProjectFormData): Promise<string> => {
+      try {
+        const newId = await addProject(data);
+        showToast('Projeto criado com sucesso!', 'success');
+        return newId;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao criar projeto';
+        showToast(msg, 'error');
+        throw err;
       }
-      return prev;
-    });
-  }, [projects]);
+    },
+    [addProject, showToast]
+  );
 
-  const handleRestore = useCallback((summary: RestoreSummary) => {
-    setProjects(summary.projects);
-    setSelectedProjectId(summary.selectedProjectId);
+  const handleUpdateProjectFull = useCallback(
+    async (projectId: string, data: ProjectFormData) => {
+      try {
+        await updateProjectFull(projectId, data);
+        showToast('Projeto atualizado!', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao atualizar projeto';
+        showToast(msg, 'error');
+      }
+    },
+    [updateProjectFull, showToast]
+  );
+
+  const handleDeleteProject = useCallback(
+    async (projectId: string) => {
+      try {
+        await removeProject(projectId);
+        showToast('Projeto excluído.', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao excluir projeto';
+        showToast(msg, 'error');
+      }
+    },
+    [removeProject, showToast]
+  );
+
+  const handleRestore = useCallback((_summary: RestoreSummary) => {
+    showToast('Restauração de backup será reativada após migração completa.', 'info');
   }, []);
 
+  // ---- Mock collection operations (local state only, not persisted) ----
   const addStage = useCallback((projectId: string, data: StageFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const newStage: Stage = {
-          id: genId('s'),
-          nome: data.nome,
-          categoria: data.categoria,
-          prioridade: data.prioridade,
-          dependencia: data.dependencia,
-          status: data.status,
-          progresso: data.progresso,
-          previsto: 0,
-          inicio: data.inicio,
-          fim: data.fim,
-          profissionalId: null,
-          observacao: data.observacao,
-          fimReal: '',
-          checkServico: false,
-          checkConferido: false,
-          checkLimpo: false,
-          checkPagamento: false,
-          checkPendencias: false,
-        };
-        return { ...p, obra: [...p.obra, newStage] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const newStage: Stage = {
+        id: genId('s'),
+        nome: data.nome,
+        categoria: data.categoria,
+        prioridade: data.prioridade,
+        dependencia: data.dependencia,
+        status: data.status,
+        progresso: data.progresso,
+        previsto: 0,
+        inicio: data.inicio,
+        fim: data.fim,
+        profissionalId: null,
+        observacao: data.observacao,
+        fimReal: '',
+        checkServico: false,
+        checkConferido: false,
+        checkLimpo: false,
+        checkPagamento: false,
+        checkPendencias: false,
+      };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          obra: [...p.obra, newStage],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateStage = useCallback((projectId: string, stageId: string, data: StageFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           obra: p.obra.map((s) =>
             s.id === stageId
               ? {
@@ -163,119 +186,147 @@ export function App() {
                 }
               : s
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteStage = useCallback((projectId: string, stageId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, obra: p.obra.filter((s) => s.id !== stageId) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          obra: p.obra.filter((s) => s.id !== stageId),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const toggleCheck = useCallback((projectId: string, stageId: string, key: keyof Stage, checked: boolean) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           obra: p.obra.map((s) => (s.id === stageId ? { ...s, [key]: checked } : s)),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const finishStage = useCallback((projectId: string, stageId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           obra: p.obra.map((s) =>
             s.id === stageId
               ? { ...s, status: 'Concluído', progresso: 100, fimReal: isoToday() }
               : s
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addProfessional = useCallback((projectId: string, data: ProfessionalFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const newProf: Professional = {
-          id: genId('p'),
-          nome: data.nome,
-          servico: data.servico,
-          telefone: data.telefone,
-          email: data.email,
-          status: data.status,
-        };
-        return { ...p, profissionais: [...p.profissionais, newProf] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const newProf: Professional = {
+        id: genId('p'),
+        nome: data.nome,
+        servico: data.servico,
+        telefone: data.telefone,
+        email: data.email,
+        status: data.status,
+      };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          profissionais: [...p.profissionais, newProf],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateProfessional = useCallback((projectId: string, profId: string, data: ProfessionalFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           profissionais: p.profissionais.map((pr) =>
             pr.id === profId
               ? { ...pr, nome: data.nome, servico: data.servico, telefone: data.telefone, email: data.email, status: data.status }
               : pr
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteProfessional = useCallback((projectId: string, profId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, profissionais: p.profissionais.filter((pr) => pr.id !== profId) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          profissionais: p.profissionais.filter((pr) => pr.id !== profId),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addJob = useCallback((projectId: string, data: JobFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const n = parseInt(data.parcelas) || 1;
-        const newJob: Job = {
-          id: genId('j'),
-          etapa_id: data.etapa_id,
-          profissional_id: data.profissional_id,
-          valor: data.valor,
-          pago: data.pago,
-          forma: data.forma,
-          parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
-          chavePix: data.forma === 'Pix' ? data.chavePix : '',
-          valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
-          status: data.status,
-        };
-        return { ...p, jobs: [...p.jobs, newJob] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const n = parseInt(data.parcelas) || 1;
+      const newJob: Job = {
+        id: genId('j'),
+        etapa_id: data.etapa_id,
+        profissional_id: data.profissional_id,
+        valor: data.valor,
+        pago: data.pago,
+        forma: data.forma,
+        parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+        chavePix: data.forma === 'Pix' ? data.chavePix : '',
+        valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+        status: data.status,
+      };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          jobs: [...p.jobs, newJob],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateJob = useCallback((projectId: string, jobId: string, data: JobFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const n = parseInt(data.parcelas) || 1;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const n = parseInt(data.parcelas) || 1;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           jobs: p.jobs.map((j) =>
             j.id === jobId
               ? {
@@ -292,65 +343,73 @@ export function App() {
                 }
               : j
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteJob = useCallback((projectId: string, jobId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, jobs: p.jobs.filter((j) => j.id !== jobId) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          jobs: p.jobs.filter((j) => j.id !== jobId),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
-  const addSupplier = useCallback((projectId: string, data: SupplierFormData): Supplier => {
-    const newSupplier: Supplier = {
-      id: genId('f'),
-      nome: data.nome,
-      telefone: data.telefone,
-      email: data.email,
-      site: data.site,
-    };
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, fornecedores: [...p.fornecedores, newSupplier] };
-      })
-    );
-    return newSupplier;
-  }, []);
+  const handleAddSupplier = useCallback(
+    async (projectId: string, data: SupplierFormData): Promise<Supplier> => {
+      try {
+        return await addSupplier(projectId, data);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao salvar fornecedor';
+        showToast(msg, 'error');
+        throw err;
+      }
+    },
+    [addSupplier, showToast]
+  );
 
   const addMaterial = useCallback((projectId: string, data: MaterialFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const newMaterial: Material = {
-          id: genId('m'),
-          etapa_id: data.etapa_id,
-          nome: data.nome,
-          categoria: data.categoria,
-          fornecedorId: data.fornecedorId,
-          quantidade: data.quantidade,
-          unidade: data.unidade,
-          unitario: data.unitario,
-          pago: data.pago,
-          data: data.data,
-          status: data.status,
-        };
-        return { ...p, materiais: [...p.materiais, newMaterial] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const newMaterial: Material = {
+        id: genId('m'),
+        etapa_id: data.etapa_id,
+        nome: data.nome,
+        categoria: data.categoria,
+        fornecedorId: data.fornecedorId,
+        quantidade: data.quantidade,
+        unidade: data.unidade,
+        unitario: data.unitario,
+        pago: data.pago,
+        data: data.data,
+        status: data.status,
+      };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          materiais: [...p.materiais, newMaterial],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateMaterial = useCallback((projectId: string, materialId: string, data: MaterialFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           materiais: p.materiais.map((m) =>
             m.id === materialId
               ? {
@@ -368,52 +427,64 @@ export function App() {
                 }
               : m
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteMaterial = useCallback((projectId: string, materialId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, materiais: p.materiais.filter((m) => m.id !== materialId) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          materiais: p.materiais.filter((m) => m.id !== materialId),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addEquipment = useCallback((projectId: string, data: EquipmentFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const n = parseInt(data.parcelas) || 1;
-        const newEq: Equipment = {
-          id: genId('e'),
-          etapa_id: data.etapa_id,
-          nome: data.nome,
-          quantidade: data.quantidade,
-          valor: data.valor,
-          fornecedorId: data.fornecedorId,
-          forma: data.forma,
-          chavePix: data.forma === 'Pix' ? data.chavePix : '',
-          parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
-          valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
-          compra: data.compra,
-          entrega: data.entrega,
-          status: data.status,
-        };
-        return { ...p, equipamentos: [...p.equipamentos, newEq] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const n = parseInt(data.parcelas) || 1;
+      const newEq: Equipment = {
+        id: genId('e'),
+        etapa_id: data.etapa_id,
+        nome: data.nome,
+        quantidade: data.quantidade,
+        valor: data.valor,
+        fornecedorId: data.fornecedorId,
+        forma: data.forma,
+        chavePix: data.forma === 'Pix' ? data.chavePix : '',
+        parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
+        valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null,
+        compra: data.compra,
+        entrega: data.entrega,
+        status: data.status,
+      };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          equipamentos: [...p.equipamentos, newEq],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateEquipment = useCallback((projectId: string, eqId: string, data: EquipmentFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const n = parseInt(data.parcelas) || 1;
-        return {
-          ...p,
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const n = parseInt(data.parcelas) || 1;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
           equipamentos: p.equipamentos.map((e) =>
             e.id === eqId
               ? {
@@ -433,265 +504,379 @@ export function App() {
                 }
               : e
           ),
-        };
-      })
-    );
-  }, []);
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteEquipment = useCallback((projectId: string, eqId: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, equipamentos: p.equipamentos.filter((e) => e.id !== eqId) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          equipamentos: p.equipamentos.filter((e) => e.id !== eqId),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addUnforeseen = useCallback((projectId: string, data: UnforeseenFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const item: Unforeseen = { id: genId('i'), ...data };
-        return { ...p, imprevistos: [...p.imprevistos, item] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const item: Unforeseen = { id: genId('i'), ...data };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          imprevistos: [...p.imprevistos, item],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateUnforeseen = useCallback((projectId: string, id: string, data: UnforeseenFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, imprevistos: p.imprevistos.map((u) => u.id === id ? { ...u, ...data } : u) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          imprevistos: p.imprevistos.map((u) => (u.id === id ? { ...u, ...data } : u)),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteUnforeseen = useCallback((projectId: string, id: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, imprevistos: p.imprevistos.filter((u) => u.id !== id) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          imprevistos: p.imprevistos.filter((u) => u.id !== id),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addPayment = useCallback((projectId: string, data: PaymentFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const item: Payment = { id: genId('pa'), ...data };
-        return { ...p, pagamentos: [...p.pagamentos, item] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const item: Payment = { id: genId('pa'), ...data };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          pagamentos: [...p.pagamentos, item],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updatePayment = useCallback((projectId: string, id: string, data: PaymentFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, pagamentos: p.pagamentos.map((pa) => pa.id === id ? { ...pa, ...data } : pa) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          pagamentos: p.pagamentos.map((pa) => (pa.id === id ? { ...pa, ...data } : pa)),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deletePayment = useCallback((projectId: string, id: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, pagamentos: p.pagamentos.filter((pa) => pa.id !== id) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          pagamentos: p.pagamentos.filter((pa) => pa.id !== id),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const addAdmin = useCallback((projectId: string, data: AdminFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const item: AdminItem = { id: genId('a'), ...data };
-        return { ...p, admin: [...p.admin, item] };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      const item: AdminItem = { id: genId('a'), ...data };
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          admin: [...p.admin, item],
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const updateAdmin = useCallback((projectId: string, id: string, data: AdminFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, admin: p.admin.map((a) => a.id === id ? { ...a, ...data } : a) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          admin: p.admin.map((a) => (a.id === id ? { ...a, ...data } : a)),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
   const deleteAdmin = useCallback((projectId: string, id: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, admin: p.admin.filter((a) => a.id !== id) };
-      })
-    );
-  }, []);
+    setMockOverrides((prev) => {
+      const p = mergedProjects.find((mp) => mp.id === projectId);
+      if (!p) return prev;
+      return {
+        ...prev,
+        [projectId]: {
+          ...(prev[projectId] || {}),
+          admin: p.admin.filter((a) => a.id !== id),
+        },
+      };
+    });
+  }, [mergedProjects]);
 
-  const updateProject = useCallback((projectId: string, data: ProjectSettingsFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
-          nome: data.nome,
-          tipo: data.tipo,
-          status: data.status,
-          config: { ...data.config, projeto: data.nome },
-        };
-      })
-    );
-  }, []);
+  const handleUpdateProject = useCallback(
+    async (projectId: string, data: ProjectSettingsFormData) => {
+      try {
+        await updateProject(projectId, data);
+        showToast('Configurações salvas!', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao salvar configurações';
+        showToast(msg, 'error');
+      }
+    },
+    [updateProject, showToast]
+  );
 
-  const updateProjectImage = useCallback((projectId: string, base64: string) => {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, coverImage: base64 } : p)));
-  }, []);
+  const handleImageChange = useCallback(
+    async (projectId: string, base64: string) => {
+      await changeProjectImage(projectId, base64);
+    },
+    [changeProjectImage]
+  );
 
-  const addCategory = useCallback((projectId: string, kind: 'obra' | 'material', name: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const baseKey = kind === 'obra' ? 'categoriasObra' : 'categoriasMaterial';
-        const extraKey = kind === 'obra' ? 'categoriasObraExtra' : 'categoriasMaterialExtra';
-        const all = [...(p[baseKey] || []), ...(p[extraKey] || [])];
-        if (all.some((c) => c.toLowerCase() === name.toLowerCase())) return p;
-        return { ...p, [baseKey]: [...(p[baseKey] || []), name] };
-      })
-    );
-  }, []);
+  const handleAddCategory = useCallback(
+    async (projectId: string, kind: 'obra' | 'material', name: string) => {
+      try {
+        await addCategory(projectId, kind, name);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao adicionar categoria';
+        showToast(msg, 'error');
+      }
+    },
+    [addCategory, showToast]
+  );
 
-  const removeCategory = useCallback((projectId: string, kind: 'obra' | 'material', name: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        const baseKey = kind === 'obra' ? 'categoriasObra' : 'categoriasMaterial';
-        const extraKey = kind === 'obra' ? 'categoriasObraExtra' : 'categoriasMaterialExtra';
-        const inUse = kind === 'obra'
-          ? p.obra.some((s) => s.categoria === name)
-          : p.materiais.some((m) => m.categoria === name);
-        if (inUse) return p;
-        return {
-          ...p,
-          [baseKey]: (p[baseKey] || []).filter((c) => c !== name),
-          [extraKey]: (p[extraKey] || []).filter((c) => c !== name),
-        };
-      })
-    );
-  }, []);
+  const handleRemoveCategory = useCallback(
+    async (projectId: string, kind: 'obra' | 'material', name: string) => {
+      try {
+        await removeCategory(projectId, kind, name);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao remover categoria';
+        showToast(msg, 'error');
+      }
+    },
+    [removeCategory, showToast]
+  );
 
-  const updateSupplier = useCallback((projectId: string, id: string, data: SupplierFormData) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return {
-          ...p,
-          fornecedores: p.fornecedores.map((f) =>
-            f.id === id ? { ...f, nome: data.nome, telefone: data.telefone, email: data.email, site: data.site } : f
-          ),
-        };
-      })
-    );
-  }, []);
+  const handleUpdateSupplier = useCallback(
+    async (projectId: string, id: string, data: SupplierFormData) => {
+      try {
+        await updateSupplier(projectId, id, data);
+        showToast('Fornecedor atualizado!', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao atualizar fornecedor';
+        showToast(msg, 'error');
+      }
+    },
+    [updateSupplier, showToast]
+  );
 
-  const deleteSupplier = useCallback((projectId: string, id: string) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id !== projectId) return p;
-        return { ...p, fornecedores: p.fornecedores.filter((f) => f.id !== id) };
-      })
+  const handleDeleteSupplier = useCallback(
+    async (projectId: string, id: string) => {
+      try {
+        await deleteSupplier(projectId, id);
+        showToast('Fornecedor excluído.', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro ao excluir fornecedor';
+        showToast(msg, 'error');
+      }
+    },
+    [deleteSupplier, showToast]
+  );
+
+  // ---- Loading / empty state ----
+  if (loading) {
+    return (
+      <ProtectedApp>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <p style={{ color: 'var(--muted)', fontSize: 16 }}>Carregando projetos...</p>
+        </div>
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      </ProtectedApp>
     );
-  }, []);
+  }
+
+  if (projectsError) {
+    return (
+      <ProtectedApp>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16 }}>
+          <p style={{ color: 'var(--error, #d94a3a)', fontSize: 16, fontWeight: 600 }}>
+            Erro ao carregar projetos: {projectsError}
+          </p>
+          <button className="btn" onClick={() => window.location.reload()}>Tentar novamente</button>
+        </div>
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      </ProtectedApp>
+    );
+  }
+
+  if (mergedProjects.length === 0 || !mergedSelectedProject) {
+    return (
+      <ProtectedApp>
+        <AppShell
+          current={currentPage}
+          onNavigate={setCurrentPage}
+          projects={[]}
+          selectedProjectId=""
+          onSelectProject={() => {}}
+          coverImage=""
+          projectName=""
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center' }}>
+            <div>
+              <h2 style={{ marginBottom: 8 }}>Nenhum projeto disponível</h2>
+              <p style={{ color: 'var(--muted)', maxWidth: 400 }}>
+                {profile?.role === 'admin'
+                  ? 'Crie seu primeiro projeto para começar a gerenciar sua reforma.'
+                  : 'Entre em contato com um administrador para receber acesso a um projeto.'}
+              </p>
+            </div>
+            {profile?.role === 'admin' && (
+              <Projects
+                projects={[]}
+                selectedProjectId=""
+                onSelectProject={() => {}}
+                onNavigate={setCurrentPage}
+                onAddProject={handleAddProject}
+                onUpdateProject={handleUpdateProjectFull}
+                onDeleteProject={handleDeleteProject}
+                canCreate={true}
+              />
+            )}
+          </div>
+        </AppShell>
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      </ProtectedApp>
+    );
+  }
+
+  const isAdmin = profile?.role === 'admin';
 
   const pages: Record<PageKey, React.ReactNode> = {
-    dashboard: <Dashboard project={selectedProject} />,
+    dashboard: <Dashboard project={mergedSelectedProject} />,
     projetos: (
       <Projects
-        projects={projects}
-        selectedProjectId={selectedProjectId}
+        projects={mergedProjects}
+        selectedProjectId={selectedProjectId || ''}
         onSelectProject={setSelectedProjectId}
         onNavigate={setCurrentPage}
-        onAddProject={addProject}
-        onUpdateProject={updateProjectFull}
-        onDeleteProject={deleteProject}
+        onAddProject={handleAddProject}
+        onUpdateProject={handleUpdateProjectFull}
+        onDeleteProject={handleDeleteProject}
+        canCreate={isAdmin}
       />
     ),
     obra: (
       <Stages
-        project={selectedProject}
-        onAddStage={(data) => addStage(selectedProject.id, data)}
-        onUpdateStage={(id, data) => updateStage(selectedProject.id, id, data)}
-        onDeleteStage={(id) => deleteStage(selectedProject.id, id)}
-        onToggleCheck={(id, key, checked) => toggleCheck(selectedProject.id, id, key, checked)}
-        onFinishStage={(id) => finishStage(selectedProject.id, id)}
+        project={mergedSelectedProject}
+        onAddStage={(data) => addStage(mergedSelectedProject.id, data)}
+        onUpdateStage={(id, data) => updateStage(mergedSelectedProject.id, id, data)}
+        onDeleteStage={(id) => deleteStage(mergedSelectedProject.id, id)}
+        onToggleCheck={(id, key, checked) => toggleCheck(mergedSelectedProject.id, id, key, checked)}
+        onFinishStage={(id) => finishStage(mergedSelectedProject.id, id)}
       />
     ),
     profissionais: (
       <Professionals
-        project={selectedProject}
-        onAddProfessional={(data) => addProfessional(selectedProject.id, data)}
-        onUpdateProfessional={(id, data) => updateProfessional(selectedProject.id, id, data)}
-        onDeleteProfessional={(id) => deleteProfessional(selectedProject.id, id)}
-        onAddJob={(data) => addJob(selectedProject.id, data)}
-        onUpdateJob={(id, data) => updateJob(selectedProject.id, id, data)}
-        onDeleteJob={(id) => deleteJob(selectedProject.id, id)}
+        project={mergedSelectedProject}
+        onAddProfessional={(data) => addProfessional(mergedSelectedProject.id, data)}
+        onUpdateProfessional={(id, data) => updateProfessional(mergedSelectedProject.id, id, data)}
+        onDeleteProfessional={(id) => deleteProfessional(mergedSelectedProject.id, id)}
+        onAddJob={(data) => addJob(mergedSelectedProject.id, data)}
+        onUpdateJob={(id, data) => updateJob(mergedSelectedProject.id, id, data)}
+        onDeleteJob={(id) => deleteJob(mergedSelectedProject.id, id)}
       />
     ),
     materiais: (
       <Materials
-        project={selectedProject}
-        onAddMaterial={(data) => addMaterial(selectedProject.id, data)}
-        onUpdateMaterial={(id, data) => updateMaterial(selectedProject.id, id, data)}
-        onDeleteMaterial={(id) => deleteMaterial(selectedProject.id, id)}
-        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
+        project={mergedSelectedProject}
+        onAddMaterial={(data) => addMaterial(mergedSelectedProject.id, data)}
+        onUpdateMaterial={(id, data) => updateMaterial(mergedSelectedProject.id, id, data)}
+        onDeleteMaterial={(id) => deleteMaterial(mergedSelectedProject.id, id)}
+        onAddSupplier={(data) => handleAddSupplier(mergedSelectedProject.id, data)}
       />
     ),
     equipamentos: (
       <EquipmentPage
-        project={selectedProject}
-        onAddEquipment={(data) => addEquipment(selectedProject.id, data)}
-        onUpdateEquipment={(id, data) => updateEquipment(selectedProject.id, id, data)}
-        onDeleteEquipment={(id) => deleteEquipment(selectedProject.id, id)}
-        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
+        project={mergedSelectedProject}
+        onAddEquipment={(data) => addEquipment(mergedSelectedProject.id, data)}
+        onUpdateEquipment={(id, data) => updateEquipment(mergedSelectedProject.id, id, data)}
+        onDeleteEquipment={(id) => deleteEquipment(mergedSelectedProject.id, id)}
+        onAddSupplier={(data) => handleAddSupplier(mergedSelectedProject.id, data)}
       />
     ),
     cronograma: (
       <Schedule
-        project={selectedProject}
-        onUpdateStage={(id, data) => updateStage(selectedProject.id, id, data)}
-        onToggleCheck={(id, key, checked) => toggleCheck(selectedProject.id, id, key, checked)}
-        onFinishStage={(id) => finishStage(selectedProject.id, id)}
+        project={mergedSelectedProject}
+        onUpdateStage={(id, data) => updateStage(mergedSelectedProject.id, id, data)}
+        onToggleCheck={(id, key, checked) => toggleCheck(mergedSelectedProject.id, id, key, checked)}
+        onFinishStage={(id) => finishStage(mergedSelectedProject.id, id)}
       />
     ),
     financeiro: (
       <Finance
-        project={selectedProject}
-        onAddUnforeseen={(data) => addUnforeseen(selectedProject.id, data)}
-        onUpdateUnforeseen={(id, data) => updateUnforeseen(selectedProject.id, id, data)}
-        onDeleteUnforeseen={(id) => deleteUnforeseen(selectedProject.id, id)}
-        onAddPayment={(data) => addPayment(selectedProject.id, data)}
-        onUpdatePayment={(id, data) => updatePayment(selectedProject.id, id, data)}
-        onDeletePayment={(id) => deletePayment(selectedProject.id, id)}
-        onAddAdmin={(data) => addAdmin(selectedProject.id, data)}
-        onUpdateAdmin={(id, data) => updateAdmin(selectedProject.id, id, data)}
-        onDeleteAdmin={(id) => deleteAdmin(selectedProject.id, id)}
+        project={mergedSelectedProject}
+        onAddUnforeseen={(data) => addUnforeseen(mergedSelectedProject.id, data)}
+        onUpdateUnforeseen={(id, data) => updateUnforeseen(mergedSelectedProject.id, id, data)}
+        onDeleteUnforeseen={(id) => deleteUnforeseen(mergedSelectedProject.id, id)}
+        onAddPayment={(data) => addPayment(mergedSelectedProject.id, data)}
+        onUpdatePayment={(id, data) => updatePayment(mergedSelectedProject.id, id, data)}
+        onDeletePayment={(id) => deletePayment(mergedSelectedProject.id, id)}
+        onAddAdmin={(data) => addAdmin(mergedSelectedProject.id, data)}
+        onUpdateAdmin={(id, data) => updateAdmin(mergedSelectedProject.id, id, data)}
+        onDeleteAdmin={(id) => deleteAdmin(mergedSelectedProject.id, id)}
       />
     ),
     config: (
       <Settings
-        project={selectedProject}
-        onUpdateProject={(data) => updateProject(selectedProject.id, data)}
-        onImageChange={(base64) => updateProjectImage(selectedProject.id, base64)}
-        onAddCategory={(kind, name) => addCategory(selectedProject.id, kind, name)}
-        onRemoveCategory={(kind, name) => removeCategory(selectedProject.id, kind, name)}
-        onAddSupplier={(data) => addSupplier(selectedProject.id, data)}
-        onUpdateSupplier={(id, data) => updateSupplier(selectedProject.id, id, data)}
-        onDeleteSupplier={(id) => deleteSupplier(selectedProject.id, id)}
-        allProjects={projects}
-        selectedProjectId={selectedProjectId}
+        project={mergedSelectedProject}
+        onUpdateProject={(data) => handleUpdateProject(mergedSelectedProject.id, data)}
+        onImageChange={(base64) => handleImageChange(mergedSelectedProject.id, base64)}
+        onAddCategory={(kind, name) => handleAddCategory(mergedSelectedProject.id, kind, name)}
+        onRemoveCategory={(kind, name) => handleRemoveCategory(mergedSelectedProject.id, kind, name)}
+        onAddSupplier={(data) => handleAddSupplier(mergedSelectedProject.id, data)}
+        onUpdateSupplier={(id, data) => handleUpdateSupplier(mergedSelectedProject.id, id, data)}
+        onDeleteSupplier={(id) => handleDeleteSupplier(mergedSelectedProject.id, id)}
+        allProjects={mergedProjects}
+        selectedProjectId={selectedProjectId || ''}
         onRestore={handleRestore}
         showToast={showToast}
       />
@@ -704,10 +889,10 @@ export function App() {
         current={currentPage}
         onNavigate={setCurrentPage}
         projects={projectOptions}
-        selectedProjectId={selectedProjectId}
+        selectedProjectId={selectedProjectId || ''}
         onSelectProject={setSelectedProjectId}
-        coverImage={selectedProject.coverImage}
-        projectName={selectedProject.nome}
+        coverImage={mergedSelectedProject.coverImage}
+        projectName={mergedSelectedProject.nome}
       >
         {pages[currentPage]}
       </AppShell>

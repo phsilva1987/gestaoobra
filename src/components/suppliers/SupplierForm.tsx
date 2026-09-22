@@ -10,7 +10,7 @@ export interface SupplierFormData {
 
 interface SupplierFormProps {
   supplier?: Supplier | null;
-  onSave: (data: SupplierFormData) => Supplier;
+  onSave: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onCancel: () => void;
 }
 

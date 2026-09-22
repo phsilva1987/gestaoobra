@@ -16,6 +16,7 @@ interface ProjectFormProps {
   project: ProjectData | null;
   onSave: (data: ProjectFormData) => void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
 function emptyConfig(): ProjectConfig {
@@ -26,7 +27,7 @@ function emptyConfig(): ProjectConfig {
   };
 }
 
-export function ProjectForm({ project, onSave, onCancel }: ProjectFormProps) {
+export function ProjectForm({ project, onSave, onCancel, saving = false }: ProjectFormProps) {
   const [form, setForm] = useState<ProjectFormData>({
     nome: project?.nome || '',
     tipo: project?.tipo || 'Apartamento',
@@ -180,8 +181,8 @@ export function ProjectForm({ project, onSave, onCancel }: ProjectFormProps) {
             </div>
           </div>
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">{project ? 'Salvar alterações' : 'Criar projeto'}</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>{project ? (saving ? 'Salvando...' : 'Salvar alterações') : (saving ? 'Criando...' : 'Criar projeto')}</button>
           </div>
         </form>
       </div>

@@ -9,7 +9,7 @@ interface EquipmentProps {
   onAddEquipment: (data: EquipmentFormData) => void;
   onUpdateEquipment: (id: string, data: EquipmentFormData) => void;
   onDeleteEquipment: (id: string) => void;
-  onAddSupplier: (data: SupplierFormData) => Supplier;
+  onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
 }
 
 type Modal =

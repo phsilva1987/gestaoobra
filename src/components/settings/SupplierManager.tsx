@@ -4,7 +4,7 @@ import { SupplierForm, type SupplierFormData } from '../suppliers/SupplierForm';
 
 interface SupplierManagerProps {
   project: ProjectData;
-  onAdd: (data: SupplierFormData) => Supplier;
+  onAdd: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onUpdate: (id: string, data: SupplierFormData) => void;
   onDelete: (id: string) => void;
 }
@@ -14,8 +14,8 @@ export function SupplierManager({ project, onAdd, onUpdate, onDelete }: Supplier
   const [editing, setEditing] = useState<Supplier | null>(null);
   const [deleting, setDeleting] = useState<Supplier | null>(null);
 
-  function handleSave(data: SupplierFormData): Supplier {
-    let result: Supplier;
+  function handleSave(data: SupplierFormData): Supplier | Promise<Supplier> {
+    let result: Supplier | Promise<Supplier>;
     if (editing) {
       onUpdate(editing.id, data);
       result = { ...editing, ...data };
