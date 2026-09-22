@@ -68,6 +68,10 @@ textarea {
   padding: 0 20px 18px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fffdf8;
 }
 
 .brand-logo {
