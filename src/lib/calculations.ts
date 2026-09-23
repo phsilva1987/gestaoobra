@@ -148,7 +148,7 @@ export function projectTotals(project: ProjectData): ProjectTotals {
     previsto: contratado,
     contratado,
     pago,
-    apagar: Math.max(0, contratado - pago),
+    apagar: Math.max(0, contratado + extras - pago),
     eq,
     eqPago,
     adm,
