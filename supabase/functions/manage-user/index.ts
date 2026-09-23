@@ -86,6 +86,7 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      // Try the Auth Admin API first.
       const { error: updateError } = await adminClient.auth.admin.updateUserById(
         targetUserId,
         { password: newPassword },
@@ -93,10 +94,22 @@ Deno.serve(async (req: Request) => {
 
       if (updateError) {
         console.error("updateUserById failed for", targetUserId, updateError);
-        return new Response(
-          JSON.stringify({ error: "Não foi possível redefinir a senha. Verifique se o usuário está ativo." }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+
+        // Fallback: update the password hash directly via RPC. The Auth Admin
+        // API can fail with "Database error loading user" when the auth.users
+        // row was not created by GoTrue itself (e.g. manually inserted).
+        const { error: rpcError } = await adminClient.rpc(
+          "admin_set_user_password" as never,
+          { p_user_id: targetUserId, p_password: newPassword } as never,
         );
+
+        if (rpcError) {
+          console.error("admin_set_user_password fallback failed", rpcError);
+          return new Response(
+            JSON.stringify({ error: "Não foi possível redefinir a senha." }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
       }
 
       return new Response(
