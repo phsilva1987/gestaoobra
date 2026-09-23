@@ -43,25 +43,19 @@ textarea {
 .app {
   display: grid;
   grid-template-columns: 226px 1fr;
-  min-height: 100vh;
-  align-items: start;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* ===== Sidebar ===== */
 .side {
   border-right: 1px solid var(--line);
   padding: 18px 12px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   height: 100dvh;
   background: #fffdf8;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: #d8c7aa transparent;
+  overflow: hidden;
   box-shadow: 8px 0 30px rgba(95, 67, 29, 0.04);
 }
 
@@ -91,7 +85,12 @@ textarea {
 }
 
 .nav {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #d8c7aa transparent;
 }
 
 .nav-section {
@@ -184,6 +183,9 @@ textarea {
 main {
   padding: 0 30px 32px;
   min-width: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .appbar {
@@ -1720,6 +1722,8 @@ th {
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr !important;
+    height: auto;
+    overflow: visible;
   }
   .side {
     display: none;
@@ -1729,6 +1733,8 @@ th {
   }
   main {
     padding: 18px;
+    height: auto;
+    overflow: visible;
   }
 }
 

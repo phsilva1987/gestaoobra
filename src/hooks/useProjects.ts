@@ -174,7 +174,7 @@ export function useProjects() {
       loadedRef.current = true;
       refresh();
     }
-    if (!profile) {
+    if (!profile && loadedRef.current) {
       loadedRef.current = false;
       setProjects([]);
       setSelectedProjectId(null);
