@@ -1761,11 +1761,11 @@ th {
 }
 
 /* ===== Project Image ===== */
-.brand.project-photo {
+img.project-photo {
   display: block;
-  width: 175px;
-  height: 175px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 175px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   object-position: center;
   border-radius: 10px;

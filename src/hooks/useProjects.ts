@@ -125,7 +125,9 @@ async function loadProjectData(projectId: string): Promise<Partial<ProjectData>>
 export function useProjects() {
   const { profile } = useAuth();
   const [projects, setProjects] = useState<ProjectData[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    () => typeof localStorage !== 'undefined' ? localStorage.getItem('selectedProjectId') : null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const loadedRef = useRef(false);
@@ -151,7 +153,9 @@ export function useProjects() {
       setProjects(enriched);
       setSelectedProjectId((prev) => {
         if (prev && enriched.some((p) => p.id === prev)) return prev;
-        return enriched[0].id;
+        const fallback = enriched[0].id;
+        try { localStorage.setItem('selectedProjectId', fallback); } catch { /* ignore */ }
+        return fallback;
       });
       setLoading(false);
     } catch (err) {
@@ -172,11 +176,17 @@ export function useProjects() {
       loadedRef.current = false;
       setProjects([]);
       setSelectedProjectId(null);
+      try { localStorage.removeItem('selectedProjectId'); } catch { /* ignore */ }
       setLoading(true);
     }
   }, [profile, refresh]);
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || null;
+
+  const selectProject = useCallback((id: string) => {
+    setSelectedProjectId(id);
+    try { localStorage.setItem('selectedProjectId', id); } catch { /* ignore */ }
+  }, []);
 
   function updateProjectState(projectId: string, updater: (p: ProjectData) => ProjectData) {
     setProjects((prev) => prev.map((p) => (p.id === projectId ? updater(p) : p)));
@@ -199,6 +209,7 @@ export function useProjects() {
     const full = { ...created, ...projectData, coverImage };
     setProjects((prev) => [...prev, full]);
     setSelectedProjectId(created.id);
+    try { localStorage.setItem('selectedProjectId', created.id); } catch { /* ignore */ }
     return created.id;
   }, []);
 
@@ -229,8 +240,14 @@ export function useProjects() {
     await dbDeleteProject(projectId);
     setProjects((prev) => {
       const remaining = prev.filter((p) => p.id !== projectId);
-      if (remaining.length === 0) setSelectedProjectId(null);
-      else if (projectId === selectedProjectId) setSelectedProjectId(remaining[0].id);
+      if (remaining.length === 0) {
+        setSelectedProjectId(null);
+        try { localStorage.removeItem('selectedProjectId'); } catch { /* ignore */ }
+      }
+      else if (projectId === selectedProjectId) {
+        setSelectedProjectId(remaining[0].id);
+        try { localStorage.setItem('selectedProjectId', remaining[0].id); } catch { /* ignore */ }
+      }
       return remaining;
     });
   }, [selectedProjectId]);
@@ -475,7 +492,7 @@ export function useProjects() {
   }, []);
 
   return {
-    projects, selectedProject, selectedProjectId, setSelectedProjectId,
+    projects, selectedProject, selectedProjectId, setSelectedProjectId: selectProject,
     loading, error, refresh, profile,
     // Project CRUD
     addProject, updateProject, updateProjectFull, removeProject, changeProjectImage, removeProjectImageHandler,

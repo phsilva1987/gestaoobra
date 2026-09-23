@@ -20,7 +20,7 @@ export function Sidebar({ current, onNavigate, coverImage, projectName, isAdmin 
           <img
             src={coverImage}
             alt={`Imagem do projeto ${projectName || ''}`}
-            className="brand project-photo"
+            className="project-photo"
           />
         ) : (
           <span className="brand-tag">GESTÃO DA REFORMA</span>
