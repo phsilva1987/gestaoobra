@@ -44,6 +44,7 @@ textarea {
   display: grid;
   grid-template-columns: 226px 1fr;
   min-height: 100vh;
+  align-items: start;
 }
 
 /* ===== Sidebar ===== */
@@ -68,9 +69,6 @@ textarea {
   padding: 0 20px 18px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
   background: #fffdf8;
 }
 
@@ -1766,9 +1764,11 @@ img.project-photo {
   width: 100%;
   max-width: 175px;
   aspect-ratio: 1 / 1;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   border-radius: 10px;
+  padding: 6px;
+  background: #fffdf8;
 }
 
 .project-cover-preview {

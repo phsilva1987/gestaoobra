@@ -90,6 +90,8 @@ import { uploadProjectImage, removeProjectImage as dbRemoveProjectImage, getProj
 import { updateProjectImage } from '../services/projectService';
 import { friendlyError } from '../lib/errors';
 
+const PROJECT_KEY = 'gestao-reforma:selected-project-id';
+
 async function loadProjectData(projectId: string): Promise<Partial<ProjectData>> {
   const [
     cats, suppliers, stages, professionals, jobs, materials, equipment,
@@ -126,7 +128,7 @@ export function useProjects() {
   const { profile } = useAuth();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    () => typeof localStorage !== 'undefined' ? localStorage.getItem('selectedProjectId') : null
+    () => typeof localStorage !== 'undefined' ? localStorage.getItem(PROJECT_KEY) : null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,7 +156,7 @@ export function useProjects() {
       setSelectedProjectId((prev) => {
         if (prev && enriched.some((p) => p.id === prev)) return prev;
         const fallback = enriched[0].id;
-        try { localStorage.setItem('selectedProjectId', fallback); } catch { /* ignore */ }
+        try { localStorage.setItem(PROJECT_KEY, fallback); } catch { /* ignore */ }
         return fallback;
       });
       setLoading(false);
@@ -176,7 +178,7 @@ export function useProjects() {
       loadedRef.current = false;
       setProjects([]);
       setSelectedProjectId(null);
-      try { localStorage.removeItem('selectedProjectId'); } catch { /* ignore */ }
+      try { localStorage.removeItem(PROJECT_KEY); } catch { /* ignore */ }
       setLoading(true);
     }
   }, [profile, refresh]);
@@ -185,7 +187,7 @@ export function useProjects() {
 
   const selectProject = useCallback((id: string) => {
     setSelectedProjectId(id);
-    try { localStorage.setItem('selectedProjectId', id); } catch { /* ignore */ }
+    try { localStorage.setItem(PROJECT_KEY, id); } catch { /* ignore */ }
   }, []);
 
   function updateProjectState(projectId: string, updater: (p: ProjectData) => ProjectData) {
@@ -209,7 +211,7 @@ export function useProjects() {
     const full = { ...created, ...projectData, coverImage };
     setProjects((prev) => [...prev, full]);
     setSelectedProjectId(created.id);
-    try { localStorage.setItem('selectedProjectId', created.id); } catch { /* ignore */ }
+    try { localStorage.setItem(PROJECT_KEY, created.id); } catch { /* ignore */ }
     return created.id;
   }, []);
 
@@ -242,11 +244,11 @@ export function useProjects() {
       const remaining = prev.filter((p) => p.id !== projectId);
       if (remaining.length === 0) {
         setSelectedProjectId(null);
-        try { localStorage.removeItem('selectedProjectId'); } catch { /* ignore */ }
+        try { localStorage.removeItem(PROJECT_KEY); } catch { /* ignore */ }
       }
       else if (projectId === selectedProjectId) {
         setSelectedProjectId(remaining[0].id);
-        try { localStorage.setItem('selectedProjectId', remaining[0].id); } catch { /* ignore */ }
+        try { localStorage.setItem(PROJECT_KEY, remaining[0].id); } catch { /* ignore */ }
       }
       return remaining;
     });
