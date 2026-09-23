@@ -9,6 +9,7 @@ export function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setLocalError(null);
 
     if (!email.trim() || !password) {
@@ -82,6 +83,9 @@ export function LoginPage() {
             {displayError && <div className="login-error">{displayError}</div>}
 
             <button type="submit" className="btn login-btn" disabled={loading}>
+              {loading && (
+                <span className="login-spinner" aria-hidden="true" />
+              )}
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
