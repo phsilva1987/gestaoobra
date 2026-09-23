@@ -11,8 +11,8 @@ export function ProtectedApp({ children }: { children: ReactNode }) {
         <div className="login-card">
           <div className="login-brand">
             <div className="login-logo">GR</div>
-            <h1>Gestão da Reforma</h1>
-            <p>Carregando...</p>
+            <h1>Gestão da Obra</h1>
+            <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
           </div>
         </div>
       </div>

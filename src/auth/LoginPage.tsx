@@ -23,44 +23,63 @@ export function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">
-          <div className="login-logo">GR</div>
-          <h1>Gestão da Reforma</h1>
+      <section className="login-visual" aria-label="Gestão da Obra">
+        <img src="/apartamento-porto.webp" alt="Identidade visual Gestão da Obra" />
+        <div className="login-visual-overlay" />
+        <div className="login-visual-copy">
+          <strong>Gestão da Obra</strong>
+          <h1>Sua obra organizada<br />do planejamento à entrega.</h1>
           <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
         </div>
+      </section>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="login-field">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              autoFocus
-              disabled={loading}
-            />
+      <section className="login-panel">
+        <div className="login-card">
+          <div className="login-brand">
+            <div className="login-logo">GR</div>
+            <h1>Gestão da Obra</h1>
+            <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
           </div>
 
-          <div className="login-field">
-            <label>Senha</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              disabled={loading}
-            />
+          <div className="login-intro">
+            <h2>Bem-vindo</h2>
+            <p>Acesse sua conta para continuar.</p>
           </div>
 
-          {displayError && <div className="login-error">{displayError}</div>}
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="login-field">
+              <label htmlFor="login-email">E-mail</label>
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                autoFocus
+                disabled={loading}
+              />
+            </div>
 
-          <button type="submit" className="btn login-btn" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
-      </div>
+            <div className="login-field">
+              <label htmlFor="login-password">Senha</label>
+              <input
+                id="login-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                disabled={loading}
+              />
+            </div>
+
+            {displayError && <div className="login-error">{displayError}</div>}
+
+            <button type="submit" className="btn login-btn" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
+      </section>
     </div>
   );
 }

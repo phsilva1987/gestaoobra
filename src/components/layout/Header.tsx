@@ -30,7 +30,7 @@ export function Header({ projects, selectedProjectId, onSelectProject }: HeaderP
   return (
     <div className="appbar">
       <div className="appbar-left">
-        <div className="appbar-title">Gestão da Reforma</div>
+        <div className="appbar-title">Gestão da Obra</div>
         <div className="appbar-sub">Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</div>
       </div>
       <div className="appbar-right">

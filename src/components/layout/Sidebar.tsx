@@ -16,15 +16,11 @@ export function Sidebar({ current, onNavigate, coverImage, projectName, isAdmin 
   return (
     <aside className="side">
       <div className="brand">
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={`Imagem do projeto ${projectName || ''}`}
-            className="project-photo"
-          />
-        ) : (
-          <span className="brand-tag">GESTÃO DA REFORMA</span>
-        )}
+        <img
+          src={coverImage || '/apartamento-porto.webp'}
+          alt={coverImage ? `Imagem do projeto ${projectName || ''}` : 'Imagem institucional Gestão da Obra'}
+          className={`project-photo${coverImage ? '' : ' project-photo-fallback'}`}
+        />
       </div>
       <nav className="nav">
         {groups.map((group) => (
