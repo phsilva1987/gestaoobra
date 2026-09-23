@@ -24,7 +24,7 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <section className="login-visual" aria-label="Gestão da Obra">
-        <img src="/apartamento-porto.webp" alt="Identidade visual Gestão da Obra" />
+        <img src="/gestao-obra-login.webp" alt="Identidade visual Gestão da Obra" />
         <div className="login-visual-overlay" />
         <div className="login-visual-copy">
           <strong>Gestão da Obra</strong>

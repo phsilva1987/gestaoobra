@@ -17,7 +17,7 @@ export function Sidebar({ current, onNavigate, coverImage, projectName, isAdmin 
     <aside className="side">
       <div className="brand">
         <img
-          src={coverImage || '/apartamento-porto.webp'}
+          src={coverImage || '/gestao-obra-login.webp'}
           alt={coverImage ? `Imagem do projeto ${projectName || ''}` : 'Imagem institucional Gestão da Obra'}
           className={`project-photo${coverImage ? '' : ' project-photo-fallback'}`}
         />
