@@ -5,11 +5,11 @@ import { StageForm, type StageFormData } from '../components/stages/StageForm';
 import { StageChecklist } from '../components/stages/StageChecklist';
 interface StagesProps {
   project: ProjectData;
-  onAddStage: (data: StageFormData) => void;
-  onUpdateStage: (id: string, data: StageFormData) => void;
-  onDeleteStage: (id: string) => void;
+  onAddStage: (data: StageFormData) => Promise<void> | void;
+  onUpdateStage: (id: string, data: StageFormData) => Promise<void> | void;
+  onDeleteStage: (id: string) => Promise<void> | void;
   onToggleCheck: (id: string, key: keyof Stage, checked: boolean) => void;
-  onFinishStage: (id: string) => void;
+  onFinishStage: (id: string) => Promise<void> | void;
 }
 
 type Modal =
@@ -27,20 +27,29 @@ export function Stages({
   onFinishStage,
 }: StagesProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [finishing, setFinishing] = useState(false);
 
-  function handleSave(data: StageFormData) {
-    if (modal?.type === 'form' && modal.stage) {
-      onUpdateStage(modal.stage.id, data);
-    } else {
-      onAddStage(data);
+  async function handleSave(data: StageFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'form' && modal.stage) {
+        await onUpdateStage(modal.stage.id, data);
+      } else {
+        await onAddStage(data);
+      }
+      setModal(null);
+    } catch {
+      setSaving(false);
     }
-    setModal(null);
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     if (modal?.type === 'checklist') {
-      onFinishStage(modal.stage.id);
-      setModal(null);
+      setFinishing(true);
+      try { await onFinishStage(modal.stage.id); setModal(null); }
+      catch { setFinishing(false); }
     }
   }
 
@@ -84,6 +93,7 @@ export function Stages({
           project={project}
           onSave={handleSave}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
@@ -93,6 +103,7 @@ export function Stages({
           onToggle={(key, checked) => onToggleCheck(modal.stage.id, key, checked)}
           onFinish={handleFinish}
           onCancel={() => setModal(null)}
+          finishing={finishing}
         />
       )}
 
@@ -107,9 +118,14 @@ export function Stages({
                   <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
                   <button
                     className="btn danger"
-                    onClick={() => { onDeleteStage(modal.stage.id); setModal(null); }}
+                    disabled={deleting}
+                    onClick={async () => {
+                      setDeleting(true);
+                      try { await onDeleteStage(modal.stage.id); setModal(null); }
+                      catch { setDeleting(false); }
+                    }}
                   >
-                    Excluir
+                    {deleting ? 'Excluindo...' : 'Excluir'}
                   </button>
                 </div>
               </>

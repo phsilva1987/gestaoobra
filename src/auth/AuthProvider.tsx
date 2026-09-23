@@ -76,13 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     initialize();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        if (!session) {
-          setState({ session: null, user: null, profile: null, loading: false, error: null });
-          return;
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        setState({ session: null, user: null, profile: null, loading: false, error: null });
+        return;
+      }
 
+      if (event === 'TOKEN_REFRESHED' && session) {
+        setState((s) => s.session ? { ...s, session, user: session.user } : s);
+        return;
+      }
+
+      (async () => {
         const profile = await loadProfile(session.user.id);
         setState({
           session,
@@ -102,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
     setState((s) => ({ ...s, loading: true, error: null }));
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       const message = friendlyAuthError(error);
@@ -110,8 +115,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: message };
     }
 
+    if (data.user) {
+      const profile = await loadProfile(data.user.id);
+      setState({
+        session: data.session,
+        user: data.user,
+        profile,
+        loading: false,
+        error: null,
+      });
+    }
+
     return { error: null };
-  }, []);
+  }, [loadProfile]);
 
   const signOut = useCallback(async () => {
     setState((s) => ({ ...s, loading: true }));

@@ -17,11 +17,12 @@ export interface PaymentFormData {
 
 interface PaymentFormProps {
   payment: Payment | null;
-  onSave: (data: PaymentFormData) => void;
+  onSave: (data: PaymentFormData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-export function PaymentForm({ payment, onSave, onCancel }: PaymentFormProps) {
+export function PaymentForm({ payment, onSave, onCancel, saving = false }: PaymentFormProps) {
   const [form, setForm] = useState<PaymentFormData>({
     referencia: payment?.referencia || '',
     tipo: payment?.tipo || TIPOS_PAGAMENTO[0],
@@ -97,8 +98,8 @@ export function PaymentForm({ payment, onSave, onCancel }: PaymentFormProps) {
             </div>
           </div>
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</button>
           </div>
         </form>
       </div>

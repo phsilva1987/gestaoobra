@@ -7,9 +7,9 @@ import { StageChecklist } from '../components/stages/StageChecklist';
 
 interface ScheduleProps {
   project: ProjectData;
-  onUpdateStage: (id: string, data: StageFormData) => void;
+  onUpdateStage: (id: string, data: StageFormData) => Promise<void> | void;
   onToggleCheck: (id: string, key: keyof Stage, checked: boolean) => void;
-  onFinishStage: (id: string) => void;
+  onFinishStage: (id: string) => Promise<void> | void;
 }
 
 type Modal =
@@ -24,18 +24,22 @@ export function Schedule({
   onFinishStage,
 }: ScheduleProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
+  const [finishing, setFinishing] = useState(false);
 
-  function handleSave(data: StageFormData) {
+  async function handleSave(data: StageFormData) {
     if (modal?.type === 'form') {
-      onUpdateStage(modal.stage.id, data);
+      setSaving(true);
+      try { await onUpdateStage(modal.stage.id, data); setModal(null); }
+      catch { setSaving(false); }
     }
-    setModal(null);
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     if (modal?.type === 'checklist') {
-      onFinishStage(modal.stage.id);
-      setModal(null);
+      setFinishing(true);
+      try { await onFinishStage(modal.stage.id); setModal(null); }
+      catch { setFinishing(false); }
     }
   }
 
@@ -62,6 +66,7 @@ export function Schedule({
           project={project}
           onSave={handleSave}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
@@ -71,6 +76,7 @@ export function Schedule({
           onToggle={(key, checked) => onToggleCheck(modal.stage.id, key, checked)}
           onFinish={handleFinish}
           onCancel={() => setModal(null)}
+          finishing={finishing}
         />
       )}
     </>

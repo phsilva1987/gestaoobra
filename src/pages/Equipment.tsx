@@ -6,9 +6,9 @@ import type { SupplierFormData } from '../components/suppliers/SupplierForm';
 
 interface EquipmentProps {
   project: ProjectData;
-  onAddEquipment: (data: EquipmentFormData) => void;
-  onUpdateEquipment: (id: string, data: EquipmentFormData) => void;
-  onDeleteEquipment: (id: string) => void;
+  onAddEquipment: (data: EquipmentFormData) => Promise<void> | void;
+  onUpdateEquipment: (id: string, data: EquipmentFormData) => Promise<void> | void;
+  onDeleteEquipment: (id: string) => Promise<void> | void;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
 }
 
@@ -25,14 +25,21 @@ export function Equipment({
   onAddSupplier,
 }: EquipmentProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleSave(data: EquipmentFormData) {
-    if (modal?.type === 'form' && modal.equipment) {
-      onUpdateEquipment(modal.equipment.id, data);
-    } else {
-      onAddEquipment(data);
+  async function handleSave(data: EquipmentFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'form' && modal.equipment) {
+        await onUpdateEquipment(modal.equipment.id, data);
+      } else {
+        await onAddEquipment(data);
+      }
+      setModal(null);
+    } catch {
+      setSaving(false);
     }
-    setModal(null);
   }
 
   return (
@@ -60,6 +67,7 @@ export function Equipment({
           onAddSupplier={onAddSupplier}
           onSave={handleSave}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
@@ -72,9 +80,14 @@ export function Equipment({
               <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
               <button
                 className="btn danger"
-                onClick={() => { onDeleteEquipment(modal.equipment.id); setModal(null); }}
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try { await onDeleteEquipment(modal.equipment.id); setModal(null); }
+                  catch { setDeleting(false); }
+                }}
               >
-                Excluir
+                {deleting ? 'Excluindo...' : 'Excluir'}
               </button>
             </div>
           </div>

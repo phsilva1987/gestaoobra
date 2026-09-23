@@ -21,11 +21,12 @@ interface JobFormProps {
   job: Job | null;
   presetProfId: string | null;
   project: ProjectData;
-  onSave: (data: JobFormData) => void;
+  onSave: (data: JobFormData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-export function JobForm({ job, presetProfId, project, onSave, onCancel }: JobFormProps) {
+export function JobForm({ job, presetProfId, project, onSave, onCancel, saving = false }: JobFormProps) {
   const [form, setForm] = useState<JobFormData>({
     profissional_id: job?.profissional_id || presetProfId || '',
     etapa_id: job?.etapa_id || '',
@@ -159,8 +160,10 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel }: JobFor
             )}
           </div>
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? 'Salvando...' : 'Salvar'}
+            </button>
           </div>
         </form>
       </div>

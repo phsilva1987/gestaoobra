@@ -13,11 +13,12 @@ const CHECKLIST_ITEMS: { key: keyof Stage; label: string }[] = [
 interface StageChecklistProps {
   stage: Stage;
   onToggle: (key: keyof Stage, checked: boolean) => void;
-  onFinish: () => void;
+  onFinish: () => Promise<void> | void;
   onCancel: () => void;
+  finishing?: boolean;
 }
 
-export function StageChecklist({ stage, onToggle, onFinish, onCancel }: StageChecklistProps) {
+export function StageChecklist({ stage, onToggle, onFinish, onCancel, finishing = false }: StageChecklistProps) {
   const [checks, setChecks] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -65,10 +66,10 @@ export function StageChecklist({ stage, onToggle, onFinish, onCancel }: StageChe
             type="button"
             className="btn"
             onClick={onFinish}
-            disabled={!allDone}
+            disabled={!allDone || finishing}
             title={allDone ? 'Finalizar etapa' : 'Marque todos os itens para finalizar'}
           >
-            Finalizar etapa
+            {finishing ? 'Finalizando...' : 'Finalizar etapa'}
           </button>
         </div>
       </div>

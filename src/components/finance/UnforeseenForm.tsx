@@ -15,11 +15,12 @@ export interface UnforeseenFormData {
 
 interface UnforeseenFormProps {
   unforeseen: Unforeseen | null;
-  onSave: (data: UnforeseenFormData) => void;
+  onSave: (data: UnforeseenFormData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-export function UnforeseenForm({ unforeseen, onSave, onCancel }: UnforeseenFormProps) {
+export function UnforeseenForm({ unforeseen, onSave, onCancel, saving = false }: UnforeseenFormProps) {
   const [form, setForm] = useState<UnforeseenFormData>({
     nome: unforeseen?.nome || '',
     categoria: unforeseen?.categoria || CATEGORIAS_IMPREVISTO[0],
@@ -91,8 +92,8 @@ export function UnforeseenForm({ unforeseen, onSave, onCancel }: UnforeseenFormP
             </div>
           </div>
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</button>
           </div>
         </form>
       </div>

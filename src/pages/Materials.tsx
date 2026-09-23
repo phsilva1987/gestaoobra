@@ -6,9 +6,9 @@ import type { SupplierFormData } from '../components/suppliers/SupplierForm';
 
 interface MaterialsProps {
   project: ProjectData;
-  onAddMaterial: (data: MaterialFormData) => void;
-  onUpdateMaterial: (id: string, data: MaterialFormData) => void;
-  onDeleteMaterial: (id: string) => void;
+  onAddMaterial: (data: MaterialFormData) => Promise<void> | void;
+  onUpdateMaterial: (id: string, data: MaterialFormData) => Promise<void> | void;
+  onDeleteMaterial: (id: string) => Promise<void> | void;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
 }
 
@@ -25,14 +25,21 @@ export function Materials({
   onAddSupplier,
 }: MaterialsProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleSave(data: MaterialFormData) {
-    if (modal?.type === 'form' && modal.material) {
-      onUpdateMaterial(modal.material.id, data);
-    } else {
-      onAddMaterial(data);
+  async function handleSave(data: MaterialFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'form' && modal.material) {
+        await onUpdateMaterial(modal.material.id, data);
+      } else {
+        await onAddMaterial(data);
+      }
+      setModal(null);
+    } catch {
+      setSaving(false);
     }
-    setModal(null);
   }
 
   return (
@@ -60,6 +67,7 @@ export function Materials({
           onAddSupplier={onAddSupplier}
           onSave={handleSave}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
@@ -72,9 +80,14 @@ export function Materials({
               <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
               <button
                 className="btn danger"
-                onClick={() => { onDeleteMaterial(modal.material.id); setModal(null); }}
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try { await onDeleteMaterial(modal.material.id); setModal(null); }
+                  catch { setDeleting(false); }
+                }}
               >
-                Excluir
+                {deleting ? 'Excluindo...' : 'Excluir'}
               </button>
             </div>
           </div>

@@ -13,11 +13,12 @@ export interface AdminFormData {
 
 interface AdminFormProps {
   item: AdminItem | null;
-  onSave: (data: AdminFormData) => void;
+  onSave: (data: AdminFormData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-export function AdminForm({ item, onSave, onCancel }: AdminFormProps) {
+export function AdminForm({ item, onSave, onCancel, saving = false }: AdminFormProps) {
   const [form, setForm] = useState<AdminFormData>({
     nome: item?.nome || '',
     valor: item?.valor || 0,
@@ -77,8 +78,8 @@ export function AdminForm({ item, onSave, onCancel }: AdminFormProps) {
             </div>
           </div>
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</button>
           </div>
         </form>
       </div>

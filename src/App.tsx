@@ -74,6 +74,7 @@ export function App() {
           if (successMsg) showToast(successMsg, 'success');
         } catch (err) {
           showToast(friendlyError(err, errorFallback), 'error');
+          throw err;
         }
       }) as T;
     },
@@ -150,10 +151,15 @@ export function App() {
   if (loading) {
     return (
       <ProtectedApp>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-          <p style={{ color: 'var(--muted)', fontSize: 16 }}>Carregando projetos...</p>
+        <div className="login-page">
+          <div className="login-card">
+            <div className="login-brand">
+              <div className="login-logo">GR</div>
+              <h1>Gestão da Obra</h1>
+              <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
+            </div>
+          </div>
         </div>
-        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       </ProtectedApp>
     );
   }

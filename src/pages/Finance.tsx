@@ -11,15 +11,15 @@ import { AdminForm, type AdminFormData } from '../components/finance/AdminForm';
 
 interface FinanceProps {
   project: ProjectData;
-  onAddUnforeseen: (data: UnforeseenFormData) => void;
-  onUpdateUnforeseen: (id: string, data: UnforeseenFormData) => void;
-  onDeleteUnforeseen: (id: string) => void;
-  onAddPayment: (data: PaymentFormData) => void;
-  onUpdatePayment: (id: string, data: PaymentFormData) => void;
-  onDeletePayment: (id: string) => void;
-  onAddAdmin: (data: AdminFormData) => void;
-  onUpdateAdmin: (id: string, data: AdminFormData) => void;
-  onDeleteAdmin: (id: string) => void;
+  onAddUnforeseen: (data: UnforeseenFormData) => Promise<void> | void;
+  onUpdateUnforeseen: (id: string, data: UnforeseenFormData) => Promise<void> | void;
+  onDeleteUnforeseen: (id: string) => Promise<void> | void;
+  onAddPayment: (data: PaymentFormData) => Promise<void> | void;
+  onUpdatePayment: (id: string, data: PaymentFormData) => Promise<void> | void;
+  onDeletePayment: (id: string) => Promise<void> | void;
+  onAddAdmin: (data: AdminFormData) => Promise<void> | void;
+  onUpdateAdmin: (id: string, data: AdminFormData) => Promise<void> | void;
+  onDeleteAdmin: (id: string) => Promise<void> | void;
 }
 
 type Modal =
@@ -44,6 +44,8 @@ export function Finance({
   onDeleteAdmin,
 }: FinanceProps) {
   const [modal, setModal] = useState<Modal>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const labelOf = (m: Modal) => {
     if (m?.type === 'unforeseen' || m?.type === 'delete-unforeseen') return 'imprevisto';
@@ -51,6 +53,44 @@ export function Finance({
     if (m?.type === 'admin' || m?.type === 'delete-admin') return 'item';
     return '';
   };
+
+  async function handleSaveUnforeseen(data: UnforeseenFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'unforeseen' && modal.item) await onUpdateUnforeseen(modal.item.id, data);
+      else await onAddUnforeseen(data);
+      setModal(null);
+    } catch { setSaving(false); }
+  }
+
+  async function handleSavePayment(data: PaymentFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'payment' && modal.item) await onUpdatePayment(modal.item.id, data);
+      else await onAddPayment(data);
+      setModal(null);
+    } catch { setSaving(false); }
+  }
+
+  async function handleSaveAdmin(data: AdminFormData) {
+    setSaving(true);
+    try {
+      if (modal?.type === 'admin' && modal.item) await onUpdateAdmin(modal.item.id, data);
+      else await onAddAdmin(data);
+      setModal(null);
+    } catch { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    if (!modal) return;
+    setDeleting(true);
+    try {
+      if (modal.type === 'delete-unforeseen') await onDeleteUnforeseen(modal.item.id);
+      else if (modal.type === 'delete-payment') await onDeletePayment(modal.item.id);
+      else if (modal.type === 'delete-admin') await onDeleteAdmin(modal.item.id);
+      setModal(null);
+    } catch { setDeleting(false); }
+  }
 
   return (
     <>
@@ -111,36 +151,27 @@ export function Finance({
       {modal?.type === 'unforeseen' && (
         <UnforeseenForm
           unforeseen={modal.item}
-          onSave={(data) => {
-            if (modal.item) onUpdateUnforeseen(modal.item.id, data);
-            else onAddUnforeseen(data);
-            setModal(null);
-          }}
+          onSave={handleSaveUnforeseen}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
       {modal?.type === 'payment' && (
         <PaymentForm
           payment={modal.item}
-          onSave={(data) => {
-            if (modal.item) onUpdatePayment(modal.item.id, data);
-            else onAddPayment(data);
-            setModal(null);
-          }}
+          onSave={handleSavePayment}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
       {modal?.type === 'admin' && (
         <AdminForm
           item={modal.item}
-          onSave={(data) => {
-            if (modal.item) onUpdateAdmin(modal.item.id, data);
-            else onAddAdmin(data);
-            setModal(null);
-          }}
+          onSave={handleSaveAdmin}
           onCancel={() => setModal(null)}
+          saving={saving}
         />
       )}
 
@@ -151,16 +182,8 @@ export function Finance({
             <p>Confirma a exclusão deste registro?</p>
             <div className="modal-actions">
               <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
-              <button
-                className="btn danger"
-                onClick={() => {
-                  if (modal.type === 'delete-unforeseen') onDeleteUnforeseen(modal.item.id);
-                  else if (modal.type === 'delete-payment') onDeletePayment(modal.item.id);
-                  else if (modal.type === 'delete-admin') onDeleteAdmin(modal.item.id);
-                  setModal(null);
-                }}
-              >
-                Excluir
+              <button className="btn danger" disabled={deleting} onClick={handleDelete}>
+                {deleting ? 'Excluindo...' : 'Excluir'}
               </button>
             </div>
           </div>

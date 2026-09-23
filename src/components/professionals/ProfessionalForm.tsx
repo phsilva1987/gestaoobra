@@ -14,11 +14,12 @@ export interface ProfessionalFormData {
 interface ProfessionalFormProps {
   professional: Professional | null;
   project: ProjectData;
-  onSave: (data: ProfessionalFormData) => void;
+  onSave: (data: ProfessionalFormData) => Promise<void> | void;
   onCancel: () => void;
   onAddJob: () => void;
   onEditJob: (job: Job) => void;
   onDeleteJob: (jobId: string) => void;
+  saving?: boolean;
 }
 
 const STATUS_TRABALHO = ['Cotação', 'Contratado', 'Em andamento', 'Concluído'];
@@ -43,6 +44,7 @@ export function ProfessionalForm({
   onAddJob,
   onEditJob,
   onDeleteJob,
+  saving = false,
 }: ProfessionalFormProps) {
   const [form, setForm] = useState<ProfessionalFormData>({
     nome: professional?.nome || '',
@@ -175,8 +177,10 @@ export function ProfessionalForm({
           )}
 
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? 'Salvando...' : 'Salvar'}
+            </button>
           </div>
         </form>
       </div>

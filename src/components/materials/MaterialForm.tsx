@@ -25,11 +25,12 @@ interface MaterialFormProps {
   material: Material | null;
   project: ProjectData;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
-  onSave: (data: MaterialFormData) => void;
+  onSave: (data: MaterialFormData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel }: MaterialFormProps) {
+export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel, saving = false }: MaterialFormProps) {
   const categorias = [...new Set([...(project.categoriasMaterial || CATEGORIAS_MATERIAL_DEFAULT), ...(project.categoriasMaterialExtra || [])])];
 
   const [form, setForm] = useState<MaterialFormData>({
@@ -150,8 +151,8 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
             onAddSupplier={onAddSupplier}
           />
           <div className="modal-actions">
-            <button type="button" className="btn secondary" onClick={onCancel}>Cancelar</button>
-            <button type="submit" className="btn">Salvar</button>
+            <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
+            <button type="submit" className="btn" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</button>
           </div>
         </form>
       </div>
