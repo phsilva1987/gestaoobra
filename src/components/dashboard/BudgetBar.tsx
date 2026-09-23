@@ -1,5 +1,5 @@
 import type { ProjectData } from '../../types';
-import { projectTotals } from '../../lib/calculations';
+import { financeMetrics } from '../../lib/calculations';
 import { money } from '../../lib/format';
 
 interface BudgetBarProps {
@@ -7,10 +7,9 @@ interface BudgetBarProps {
 }
 
 export function BudgetBar({ project }: BudgetBarProps) {
-  const t = projectTotals(project);
-  const budget = t.budget;
-  const usedPct = budget ? Math.min(100, Math.round((t.pago / budget) * 100)) : 0;
-  const commPct = budget ? Math.min(100, Math.round((t.contratado / budget) * 100)) : 0;
+  const m = financeMetrics(project);
+  const budget = m.budget;
+  const usedPct = budget ? Math.min(100, Math.round((m.pago / budget) * 100)) : 0;
 
   return (
     <div className="card" style={{ marginTop: 14 }}>
@@ -25,9 +24,9 @@ export function BudgetBar({ project }: BudgetBarProps) {
         <i style={{ width: `${usedPct}%` }} />
       </div>
       <div className="budgetmeta">
-        <span>Pago: {money(t.pago)}</span>
-        <span>Contratado: {commPct}% do orçamento</span>
-        <span>Disponível: {money(t.available)}</span>
+        <span>Pago: {money(m.pago)}</span>
+        <span>Comprometido: {m.comprometidoPct}% do orçamento</span>
+        <span>Saldo projetado: {money(m.saldoProjetado)}</span>
       </div>
     </div>
   );

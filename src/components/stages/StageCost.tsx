@@ -1,5 +1,5 @@
-import type { Stage, Job, Material, Equipment } from '../../types';
-import { stageContratado, stagePago } from '../../lib/calculations';
+import type { Stage, Job, Material, Equipment, Payment } from '../../types';
+import { stageContratado, stagePago, stageEquipmentPago } from '../../lib/calculations';
 import { money } from '../../lib/format';
 
 interface StageCostProps {
@@ -7,11 +7,12 @@ interface StageCostProps {
   jobs: Job[];
   materials: Material[];
   equipments: Equipment[];
+  payments: Payment[];
 }
 
-export function StageCost({ stage, jobs, materials, equipments }: StageCostProps) {
+export function StageCost({ stage, jobs, materials, equipments, payments }: StageCostProps) {
   const contratado = stageContratado(stage, jobs, materials, equipments);
-  const pago = stagePago(stage, jobs, materials);
+  const pago = stagePago(stage, jobs, materials) + stageEquipmentPago(stage, equipments, payments);
   return (
     <td>
       <b>{money(contratado)}</b>

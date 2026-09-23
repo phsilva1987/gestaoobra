@@ -87,6 +87,7 @@ export function StageTable({ project, onEdit, onChecklist, onDelete }: StageTabl
                     jobs={project.jobs}
                     materials={project.materiais}
                     equipments={project.equipamentos}
+                    payments={project.pagamentos}
                   />
                   <td>{stage.prioridade}</td>
                   <td>

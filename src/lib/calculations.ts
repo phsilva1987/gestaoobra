@@ -41,6 +41,24 @@ export function stageContratado(
   return jobsTotal + matsTotal + eqTotal;
 }
 
+export function equipmentPago(payments: Payment[]): number {
+  return payments
+    .filter((x) => x.tipo === 'Equipamento' && x.status === 'Pago')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
+}
+
+export function stageEquipmentPago(
+  stage: Stage,
+  equipments: Equipment[],
+  payments: Payment[]
+): number {
+  const eqIds = equipments.filter((e) => e.etapa_id === stage.id);
+  if (!eqIds.length) return 0;
+  return payments
+    .filter((x) => x.tipo === 'Equipamento' && x.status === 'Pago')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
+}
+
 export function stagePago(
   stage: Stage,
   jobs: Job[],
@@ -55,8 +73,6 @@ export function stagePago(
   return jobsPago + matsPago;
 }
 
-/* V14: equipamentos não possuem campo "pago" no modelo atual —
-   entram no contratado mas não no pago. Dívida/modelo futuro. */
 export function stageEquipment(
   stage: Stage,
   equipments: Equipment[]
@@ -96,14 +112,17 @@ export interface ProjectTotals {
   pago: number;
   apagar: number;
   eq: number;
+  eqPago: number;
   adm: number;
   prog: number;
   materiais: number;
   maoDeObra: number;
   maoDeObraPago: number;
+  materiaisPago: number;
   extras: number;
   budget: number;
   available: number;
+  saldoFinanceiro: number;
 }
 
 export function projectTotals(project: ProjectData): ProjectTotals {
@@ -112,10 +131,11 @@ export function projectTotals(project: ProjectData): ProjectTotals {
   const materiais = project.materiais.reduce((a, m) => a + materialTotal(m), 0);
   const materiaisPago = project.materiais.reduce((a, m) => a + (+m.pago || 0), 0);
   const eq = project.equipamentos.reduce((a, e) => a + (+e.valor || 0), 0);
+  const eqPago = equipmentPago(project.pagamentos);
   const adm = project.admin.reduce((a, x) => a + (+x.pago || 0), 0);
   const extras = unforeseenTotal(project.imprevistos);
   const contratado = maoDeObra + materiais + eq;
-  const pago = maoDeObraPago + materiaisPago;
+  const pago = maoDeObraPago + materiaisPago + eqPago;
   const prog = project.obra.length
     ? Math.round(
         project.obra.reduce((a, x) => a + (+x.progresso || 0), 0) /
@@ -130,14 +150,17 @@ export function projectTotals(project: ProjectData): ProjectTotals {
     pago,
     apagar: Math.max(0, contratado - pago),
     eq,
+    eqPago,
     adm,
     prog,
     materiais,
     maoDeObra,
     maoDeObraPago,
+    materiaisPago,
     extras,
     budget,
     available,
+    saldoFinanceiro: budget - pago,
   };
 }
 
@@ -183,21 +206,36 @@ export interface FinanceMetrics {
   budget: number;
   comprometido: number;
   pago: number;
+  apagar: number;
   imprevistos: number;
   apagarAgendado: number;
-  saldo: number;
+  saldoProjetado: number;
+  saldoFinanceiro: number;
+  adm: number;
+  over: boolean;
+  overAmount: number;
+  comprometidoPct: number;
 }
 
 export function financeMetrics(project: ProjectData): FinanceMetrics {
   const t = projectTotals(project);
   const imprevistos = unforeseenTotal(project.imprevistos);
+  const comprometido = t.contratado + imprevistos;
+  const over = t.budget > 0 && comprometido > t.budget;
+  const overAmount = over ? comprometido - t.budget : 0;
   return {
     budget: t.budget,
-    comprometido: t.contratado + imprevistos,
+    comprometido,
     pago: t.pago,
+    apagar: t.apagar,
     imprevistos,
     apagarAgendado: paymentDue(project.pagamentos),
-    saldo: t.available,
+    saldoProjetado: t.budget - comprometido,
+    saldoFinanceiro: t.saldoFinanceiro,
+    adm: t.adm,
+    over,
+    overAmount,
+    comprometidoPct: t.budget > 0 ? Math.round((comprometido / t.budget) * 100) : 0,
   };
 }
 
