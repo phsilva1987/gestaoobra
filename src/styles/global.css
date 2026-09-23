@@ -967,9 +967,6 @@ th {
 }
 
 @media (max-width: 650px) {
-  .kpis {
-    grid-template-columns: 1fr 1fr;
-  }
   .alert-grid,
   .health {
     grid-template-columns: 1fr;
@@ -985,6 +982,151 @@ th {
   }
   .dashboard-progress-scroll {
     max-height: 300px;
+  }
+}
+
+/* ===== Mobile responsive (<= 600px) ===== */
+@media (max-width: 600px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+  .kpi {
+    padding: 14px 14px 14px 52px;
+    min-height: 0;
+  }
+  .kpi strong {
+    font-size: clamp(1.4rem, 6vw, 1.6rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-actions {
+    flex-wrap: wrap;
+  }
+  .dash-actions > * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .report-btn,
+  .period-box {
+    width: 100%;
+  }
+  .budgetmeta {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  .budgetmeta span {
+    white-space: nowrap;
+  }
+  .chart-row {
+    grid-template-columns: minmax(60px, 90px) 1fr auto;
+    gap: 6px;
+  }
+  .chart-row > b {
+    font-size: 12px;
+  }
+  .report-menu {
+    min-width: 0;
+    width: calc(100vw - 36px);
+    max-width: 320px;
+  }
+  .page-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .page-top h1 {
+    font-size: 22px;
+  }
+  .page-top .btn {
+    width: 100%;
+  }
+  .modalbox {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    padding: 20px 16px;
+  }
+  .modalbox.modalbox-wide,
+  .modalbox.modalbox-sm {
+    max-width: calc(100vw - 24px);
+  }
+  .modal-overlay {
+    padding: 12px;
+  }
+  .form-field input,
+  .form-field select,
+  .form-field textarea,
+  .field input,
+  .field select {
+    width: 100%;
+    min-width: 0;
+  }
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+  .modal-actions .btn {
+    flex: 1 1 auto;
+  }
+  .project-card-finance {
+    grid-template-columns: 1fr 1fr;
+  }
+  .prof-job-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .prof-job-info {
+    font-size: 12px;
+  }
+}
+
+/* ===== Small phones (<= 430px) ===== */
+@media (max-width: 430px) {
+  .kpi {
+    padding: 12px 12px 12px 46px;
+  }
+  .kpi .kicon {
+    left: 12px;
+    top: 18px;
+    width: 24px;
+    height: 24px;
+  }
+  .kpi .kicon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .kpi strong {
+    font-size: clamp(1.3rem, 7vw, 1.5rem);
+  }
+  .project-card {
+    padding: 16px !important;
+  }
+  .project-title {
+    font-size: 19px;
+  }
+  .project-sub {
+    font-size: 14px;
+  }
+  main {
+    padding: 14px;
+  }
+  .card {
+    padding: 14px;
+  }
+  .project-card-finance {
+    grid-template-columns: 1fr;
+  }
+  .users-kpi-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .users-kpi-divider {
+    display: none;
+  }
+  .users-kpi-item {
+    flex: 1 1 40%;
   }
 }
 
