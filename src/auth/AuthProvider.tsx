@@ -53,6 +53,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Validate the access token before trusting it. A stale/invalid token
+    // (e.g. after the refresh token expired server-side) would otherwise let
+    // the user into the app only to have every authenticated request fail.
+    const { error: tokenError } = await supabase.auth.getUser(session.access_token);
+    if (tokenError) {
+      await supabase.auth.signOut();
+      setState({ session: null, user: null, profile: null, loading: false, error: null });
+      return;
+    }
+
     const profile = await loadProfile(session.user.id);
     setState({
       session,
