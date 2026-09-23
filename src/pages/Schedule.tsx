@@ -31,7 +31,8 @@ export function Schedule({
     if (modal?.type === 'form') {
       setSaving(true);
       try { await onUpdateStage(modal.stage.id, data); setModal(null); }
-      catch { setSaving(false); }
+      catch { /* toast shown by wrap */ }
+      finally { setSaving(false); }
     }
   }
 
@@ -39,7 +40,8 @@ export function Schedule({
     if (modal?.type === 'checklist') {
       setFinishing(true);
       try { await onFinishStage(modal.stage.id); setModal(null); }
-      catch { setFinishing(false); }
+      catch { /* toast shown by wrap */ }
+      finally { setFinishing(false); }
     }
   }
 

@@ -35,15 +35,13 @@ export function Professionals({
   const [deleting, setDeleting] = useState(false);
 
   async function handleProfSave(data: ProfessionalFormData) {
-    if (modal?.type === 'prof-form' && modal.prof) {
-      setSaving(true);
-      try { await onUpdateProfessional(modal.prof.id, data); setModal(null); }
-      catch { setSaving(false); }
-    } else {
-      setSaving(true);
-      try { await onAddProfessional(data); setModal(null); }
-      catch { setSaving(false); }
-    }
+    setSaving(true);
+    try {
+      if (modal?.type === 'prof-form' && modal.prof) await onUpdateProfessional(modal.prof.id, data);
+      else await onAddProfessional(data);
+      setModal(null);
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   async function handleJobSave(data: JobFormData) {
@@ -65,9 +63,8 @@ export function Professionals({
       } else {
         setModal(null);
       }
-    } catch {
-      setSaving(false);
-    }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   function canDeleteProf(prof: Professional): boolean {
@@ -93,9 +90,8 @@ export function Professionals({
         await onDeleteJob(modal.jobId);
         const prof = modal.prof;
         setModal({ type: 'prof-form', prof });
-      } catch {
-        setDeleting(false);
-      }
+      } catch { /* toast shown by wrap */ }
+      finally { setDeleting(false); }
     }
   }
 
@@ -164,7 +160,8 @@ export function Professionals({
                     onClick={async () => {
                       setDeleting(true);
                       try { await onDeleteProfessional(modal.prof.id); setModal(null); }
-                      catch { setDeleting(false); }
+                      catch { /* toast shown by wrap */ }
+                      finally { setDeleting(false); }
                     }}
                   >
                     {deleting ? 'Excluindo...' : 'Excluir'}

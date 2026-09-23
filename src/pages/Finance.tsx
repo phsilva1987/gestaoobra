@@ -60,7 +60,8 @@ export function Finance({
       if (modal?.type === 'unforeseen' && modal.item) await onUpdateUnforeseen(modal.item.id, data);
       else await onAddUnforeseen(data);
       setModal(null);
-    } catch { setSaving(false); }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   async function handleSavePayment(data: PaymentFormData) {
@@ -69,7 +70,8 @@ export function Finance({
       if (modal?.type === 'payment' && modal.item) await onUpdatePayment(modal.item.id, data);
       else await onAddPayment(data);
       setModal(null);
-    } catch { setSaving(false); }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   async function handleSaveAdmin(data: AdminFormData) {
@@ -78,7 +80,8 @@ export function Finance({
       if (modal?.type === 'admin' && modal.item) await onUpdateAdmin(modal.item.id, data);
       else await onAddAdmin(data);
       setModal(null);
-    } catch { setSaving(false); }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   async function handleDelete() {
@@ -89,7 +92,8 @@ export function Finance({
       else if (modal.type === 'delete-payment') await onDeletePayment(modal.item.id);
       else if (modal.type === 'delete-admin') await onDeleteAdmin(modal.item.id);
       setModal(null);
-    } catch { setDeleting(false); }
+    } catch { /* toast shown by wrap */ }
+    finally { setDeleting(false); }
   }
 
   return (

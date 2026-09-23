@@ -40,16 +40,16 @@ export function Stages({
         await onAddStage(data);
       }
       setModal(null);
-    } catch {
-      setSaving(false);
-    }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   async function handleFinish() {
     if (modal?.type === 'checklist') {
       setFinishing(true);
       try { await onFinishStage(modal.stage.id); setModal(null); }
-      catch { setFinishing(false); }
+      catch { /* toast shown by wrap */ }
+      finally { setFinishing(false); }
     }
   }
 
@@ -122,7 +122,8 @@ export function Stages({
                     onClick={async () => {
                       setDeleting(true);
                       try { await onDeleteStage(modal.stage.id); setModal(null); }
-                      catch { setDeleting(false); }
+                      catch { /* toast shown by wrap */ }
+                      finally { setDeleting(false); }
                     }}
                   >
                     {deleting ? 'Excluindo...' : 'Excluir'}

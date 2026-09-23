@@ -37,9 +37,8 @@ export function Equipment({
         await onAddEquipment(data);
       }
       setModal(null);
-    } catch {
-      setSaving(false);
-    }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
   }
 
   return (
@@ -84,7 +83,8 @@ export function Equipment({
                 onClick={async () => {
                   setDeleting(true);
                   try { await onDeleteEquipment(modal.equipment.id); setModal(null); }
-                  catch { setDeleting(false); }
+                  catch { /* toast shown by wrap */ }
+                  finally { setDeleting(false); }
                 }}
               >
                 {deleting ? 'Excluindo...' : 'Excluir'}
