@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Equipment, ProjectData, Supplier } from '../../types';
 import { SupplierSelect } from '../suppliers/SupplierSelect';
 import type { SupplierFormData } from '../suppliers/SupplierForm';
+import { CurrencyInput } from '../CurrencyInput';
 
 const FORMAS_PAGAMENTO = ['Pix', 'Cartão', 'Em Dinheiro'];
 const PARCELAS_OPTS = ['1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x', '11x', '12x'];
@@ -111,7 +112,7 @@ export function EquipmentForm({ equipment, project, onAddSupplier, onSave, onCan
             </div>
             <div className="form-field">
               <label>Valor total (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.valor} onChange={(e) => setForm({ ...form, valor: +e.target.value || 0 })} />
+              <CurrencyInput value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
               {errors.valor && <span className="field-error">{errors.valor}</span>}
             </div>
             <div className="form-field">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AdminItem } from '../../types';
+import { CurrencyInput } from '../CurrencyInput';
 
 const STATUS_ADMIN = ['Pendente', 'Em andamento', 'Pago'];
 
@@ -62,11 +63,11 @@ export function AdminForm({ item, onSave, onCancel }: AdminFormProps) {
             </div>
             <div className="form-field">
               <label>Valor (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.valor} onChange={(e) => setForm({ ...form, valor: +e.target.value || 0 })} />
+              <CurrencyInput value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
             <div className="form-field">
               <label>Pago (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.pago} onChange={(e) => setForm({ ...form, pago: +e.target.value || 0 })} />
+              <CurrencyInput value={form.pago} onChange={(v) => setForm({ ...form, pago: v })} />
             </div>
             <div className="form-field">
               <label>Status</label>

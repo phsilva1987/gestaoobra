@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { ProjectData, ProjectConfig } from '../../types';
+import { CurrencyInput } from '../CurrencyInput';
 
 const TIPOS = ['Studio / Comercial', 'Apartamento', 'Casa', 'Loja', 'Escritório', 'Residencial', 'Outro'];
 const STATUS = ['Planejamento', 'Em andamento', 'Pausada', 'Concluída', 'Cancelada'];
@@ -147,7 +148,7 @@ export function ProjectForm({ project, onSave, onCancel, saving = false }: Proje
             </div>
             <div className="form-field">
               <label>Orçamento total (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.config.orcamento} onChange={(e) => setCfg('orcamento', +e.target.value || 0)} />
+              <CurrencyInput value={form.config.orcamento} onChange={(v) => setCfg('orcamento', v)} />
               {errors.orcamento && <span className="field-error">{errors.orcamento}</span>}
             </div>
             <div className="form-field">

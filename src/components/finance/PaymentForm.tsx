@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Payment } from '../../types';
+import { CurrencyInput } from '../CurrencyInput';
 
 const TIPOS_PAGAMENTO = ['Profissional', 'Material', 'Equipamento', 'Administrativo', 'Imprevisto', 'Outros'];
 const FORMAS_PAGAMENTO = ['PIX', 'Boleto', 'Cartão', 'Em Dinheiro'];
@@ -76,7 +77,7 @@ export function PaymentForm({ payment, onSave, onCancel }: PaymentFormProps) {
             </div>
             <div className="form-field">
               <label>Valor (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.valor} onChange={(e) => setForm({ ...form, valor: +e.target.value || 0 })} />
+              <CurrencyInput value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
             <div className="form-field">
               <label>Vencimento</label>

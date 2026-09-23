@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Material, ProjectData, Supplier } from '../../types';
 import { SupplierSelect } from '../suppliers/SupplierSelect';
 import type { SupplierFormData } from '../suppliers/SupplierForm';
+import { CurrencyInput } from '../CurrencyInput';
 
 const UNIDADES = ['un', 'm²', 'm', 'kg', 'L', 'caixa', 'pacote'];
 const STATUS_MATERIAL = ['Pendente', 'Comprado', 'Entregue'];
@@ -115,12 +116,12 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
             </div>
             <div className="form-field">
               <label>Valor unitário (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.unitario} onChange={(e) => setForm({ ...form, unitario: +e.target.value || 0 })} />
+              <CurrencyInput value={form.unitario} onChange={(v) => setForm({ ...form, unitario: v })} />
               {errors.unitario && <span className="field-error">{errors.unitario}</span>}
             </div>
             <div className="form-field">
               <label>Valor pago (R$)</label>
-              <input type="number" min={0} step="0.01" value={form.pago} onChange={(e) => setForm({ ...form, pago: +e.target.value || 0 })} />
+              <CurrencyInput value={form.pago} onChange={(v) => setForm({ ...form, pago: v })} />
               {errors.pago && <span className="field-error">{errors.pago}</span>}
             </div>
             <div className="form-field">
