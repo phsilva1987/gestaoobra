@@ -524,6 +524,10 @@ main {
   margin-top: 14px;
 }
 
+.finance-grid > * {
+  min-width: 0;
+}
+
 @media (max-width: 1024px) {
   .finance-grid {
     grid-template-columns: 1fr;
@@ -1228,6 +1232,41 @@ th {
   padding: 12px 10px;
   vertical-align: top;
 }
+
+.unforeseen-card {
+  overflow: hidden;
+}
+
+.unforeseen-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c7a15b #f1e7d7;
+}
+
+.unforeseen-scroll table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.unforeseen-scroll th,
+.unforeseen-scroll td {
+  padding: 12px 10px;
+  vertical-align: top;
+}
+
+.unforeseen-scroll th:nth-child(1),
+.unforeseen-scroll td:nth-child(1) { width: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.unforeseen-scroll th:nth-child(2),
+.unforeseen-scroll td:nth-child(2) { width: 130px; }
+.unforeseen-scroll th:nth-child(3),
+.unforeseen-scroll td:nth-child(3) { width: 100px; white-space: nowrap; }
+.unforeseen-scroll th:nth-child(4),
+.unforeseen-scroll td:nth-child(4) { width: 90px; white-space: nowrap; }
+.unforeseen-scroll th:nth-child(5),
+.unforeseen-scroll td:nth-child(5) { width: 110px; }
+.unforeseen-scroll th:nth-child(6),
+.unforeseen-scroll td:nth-child(6) { width: 140px; }
 
 /* Modals */
 .modal-overlay {

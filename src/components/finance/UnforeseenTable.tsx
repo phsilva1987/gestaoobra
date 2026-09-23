@@ -15,8 +15,8 @@ function UnforeseenStatusBadge({ status }: { status: string }) {
 export function UnforeseenTable({ project, onEdit, onDelete }: UnforeseenTableProps) {
   if (!project.imprevistos.length) {
     return (
-      <div className="card section">
-        <div className="stage-table-scroll">
+      <div className="card section unforeseen-card">
+        <div className="unforeseen-scroll">
           <table>
             <thead>
               <tr><th>Item</th><th>Categoria</th><th>Valor</th><th>Impacto</th><th>Status</th><th></th></tr>
