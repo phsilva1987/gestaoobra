@@ -92,8 +92,9 @@ Deno.serve(async (req: Request) => {
       );
 
       if (updateError) {
+        console.error("updateUserById failed for", targetUserId, updateError);
         return new Response(
-          JSON.stringify({ error: "Não foi possível redefinir a senha." }),
+          JSON.stringify({ error: "Não foi possível redefinir a senha. Verifique se o usuário está ativo." }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
