@@ -1761,20 +1761,20 @@ th {
 }
 
 /* ===== Project Image ===== */
-.brand img.project-photo {
+.brand.project-photo {
   display: block;
   width: 175px;
+  height: 175px;
   max-width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
   object-fit: cover;
   object-position: center;
   border-radius: 10px;
 }
 
 .project-cover-preview {
-  width: 100%;
-  height: 150px;
+  width: min(100%, 320px);
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 10px;
   overflow: hidden;
   background: #f1e7d7;
@@ -1789,6 +1789,7 @@ th {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
