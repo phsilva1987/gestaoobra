@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { friendlyError } from '../lib/errors';
+import { friendlyError, friendlyAuthError } from '../lib/errors';
 import type { ProjectData } from '../types';
+import { supabase } from '../lib/supabase';
 import {
   getAdminUsersOverview,
   createSystemUser,
@@ -84,6 +85,12 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Self password change
+  const [selfCurrentPwd, setSelfCurrentPwd] = useState('');
+  const [selfNewPwd, setSelfNewPwd] = useState('');
+  const [selfNewPwdConfirm, setSelfNewPwdConfirm] = useState('');
+  const [selfSaving, setSelfSaving] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -123,6 +130,9 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
     setAddRole('operator');
     setResetPwd('');
     setResetPwdConfirm('');
+    setSelfCurrentPwd('');
+    setSelfNewPwd('');
+    setSelfNewPwdConfirm('');
     setConfirmDelete(false);
   }
 
@@ -553,9 +563,107 @@ export function UsersPage({ projects, currentUserId, showToast }: UsersPageProps
               )}
 
               {activeTab === 'security' && manageUser.userId === currentUserId && (
-                <p className="hint" style={{ padding: 16 }}>
-                  Você não pode alterar sua própria senha ou excluir sua própria conta por aqui.
-                </p>
+                <div className="manage-section">
+                  <h3>Alterar minha senha</h3>
+                  <div className="manage-form-grid">
+                    <label className="field">
+                      <span>Senha atual</span>
+                      <input
+                        type="password"
+                        value={selfCurrentPwd}
+                        onChange={(e) => setSelfCurrentPwd(e.target.value)}
+                        placeholder="Digite sua senha atual"
+                        autoComplete="current-password"
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Nova senha</span>
+                      <input
+                        type="password"
+                        value={selfNewPwd}
+                        onChange={(e) => setSelfNewPwd(e.target.value)}
+                        placeholder="Mínimo 8 caracteres com letras, números e símbolos"
+                        autoComplete="new-password"
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Confirmar nova senha</span>
+                      <input
+                        type="password"
+                        value={selfNewPwdConfirm}
+                        onChange={(e) => setSelfNewPwdConfirm(e.target.value)}
+                        placeholder="Repita a nova senha"
+                        autoComplete="new-password"
+                      />
+                    </label>
+                  </div>
+
+                  {selfNewPwd && selfNewPwd !== selfNewPwdConfirm && (
+                    <p className="hint" style={{ marginTop: 6, color: 'var(--bad)' }}>As senhas não conferem.</p>
+                  )}
+                  {selfNewPwd && selfNewPwd.length < 8 && (
+                    <p className="hint" style={{ marginTop: 6, color: 'var(--bad)' }}>A senha deve ter no mínimo 8 caracteres.</p>
+                  )}
+
+                  <div className="modal-actions" style={{ marginTop: 8 }}>
+                    <button
+                      className="btn"
+                      disabled={
+                        selfSaving ||
+                        !selfCurrentPwd ||
+                        !selfNewPwd ||
+                        selfNewPwd.length < 8 ||
+                        selfNewPwd !== selfNewPwdConfirm
+                      }
+                      onClick={async () => {
+                        if (!manageUser) return;
+                        setSelfSaving(true);
+                        try {
+                          // Verify current password before changing
+                          const { error: verifyError } = await supabase.auth.signInWithPassword({
+                            email: manageUser.email,
+                            password: selfCurrentPwd,
+                          });
+                          if (verifyError) {
+                            showToast('Senha atual incorreta.', 'error');
+                            setSelfSaving(false);
+                            return;
+                          }
+                          // Update password via the Auth API
+                          const { error: updateError } = await supabase.auth.updateUser({
+                            password: selfNewPwd,
+                          });
+                          if (updateError) {
+                            const msg = friendlyAuthError(updateError);
+                            showToast(msg, 'error');
+                          } else {
+                            showToast('Senha alterada com sucesso.', 'success');
+                            setSelfCurrentPwd('');
+                            setSelfNewPwd('');
+                            setSelfNewPwdConfirm('');
+                          }
+                        } catch (err) {
+                          const msg = friendlyError(err, 'Erro ao alterar senha.');
+                          showToast(msg, 'error');
+                        } finally {
+                          setSelfSaving(false);
+                        }
+                      }}
+                    >
+                      {selfSaving ? 'Salvando...' : 'Alterar senha'}
+                    </button>
+                  </div>
+
+                  <div className="manage-section danger-zone" style={{ marginTop: 24 }}>
+                    <h3>Excluir minha conta</h3>
+                    <p className="hint" style={{ margin: '0 0 10px' }}>
+                      A exclusão remove permanentemente sua conta, perfil e acessos a projetos. Esta ação não pode ser desfeita.
+                    </p>
+                    <p className="hint" style={{ color: 'var(--bad)' }}>
+                      Solicite a outro administrador que exclua sua conta, pois não é permitido excluir a própria conta por aqui.
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
