@@ -2143,6 +2143,65 @@ img.project-photo-fallback {
   }
 }
 
+/* ===== App Loader ===== */
+.app-loader {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fbf8f2;
+}
+
+.app-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-loader-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.app-loader-icon svg {
+  width: 36px;
+  height: 36px;
+  stroke: var(--gold);
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: app-loader-pulse 1.8s ease-in-out infinite;
+}
+
+.app-loader-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: app-loader-spin 0.7s linear infinite;
+}
+
+.app-loader-text {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+
+@keyframes app-loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes app-loader-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ===== Login Page ===== */
 .login-page {
   height: 100dvh;
@@ -2344,6 +2403,10 @@ img.project-photo-fallback {
   }
   .login-btn {
     transition: none !important;
+  }
+  .app-loader-icon svg,
+  .app-loader-spinner {
+    animation: none !important;
   }
 }
 

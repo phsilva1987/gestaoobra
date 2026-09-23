@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { ToastContainer, type ToastMsg } from './components/Toast';
+import { AppLoader } from './components/AppLoader';
 import { ProtectedApp } from './auth/ProtectedApp';
 import { useProjects } from './hooks/useProjects';
 
@@ -15,11 +16,7 @@ const Finance = lazy(() => import('./pages/Finance').then(m => ({ default: m.Fin
 const UsersPage = lazy(() => import('./pages/Users').then(m => ({ default: m.UsersPage })));
 const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
 
-const PageFallback = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
-    <p style={{ color: 'var(--muted)', fontSize: 15 }}>Carregando...</p>
-  </div>
-);
+const PageFallback = () => <AppLoader />;
 import type { ProjectFormData } from './components/projects/ProjectForm';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
@@ -151,15 +148,7 @@ export function App() {
   if (loading) {
     return (
       <ProtectedApp>
-        <div className="login-page">
-          <div className="login-card">
-            <div className="login-brand">
-              <div className="login-logo">GR</div>
-              <h1>Gestão da Obra</h1>
-              <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
-            </div>
-          </div>
-        </div>
+        <AppLoader />
       </ProtectedApp>
     );
   }
