@@ -1,18 +1,25 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { ToastContainer, type ToastMsg } from './components/Toast';
 import { ProtectedApp } from './auth/ProtectedApp';
-import { Dashboard } from './pages/Dashboard';
-import { Projects } from './pages/Projects';
-import { Stages } from './pages/Stages';
-import { Professionals } from './pages/Professionals';
-import { Materials } from './pages/Materials';
-import { Equipment as EquipmentPage } from './pages/Equipment';
-import { Schedule } from './pages/Schedule';
-import { Finance } from './pages/Finance';
-import { UsersPage } from './pages/Users';
-import { Settings } from './pages/Settings';
 import { useProjects } from './hooks/useProjects';
+
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Projects = lazy(() => import('./pages/Projects').then(m => ({ default: m.Projects })));
+const Stages = lazy(() => import('./pages/Stages').then(m => ({ default: m.Stages })));
+const Professionals = lazy(() => import('./pages/Professionals').then(m => ({ default: m.Professionals })));
+const Materials = lazy(() => import('./pages/Materials').then(m => ({ default: m.Materials })));
+const EquipmentPage = lazy(() => import('./pages/Equipment').then(m => ({ default: m.Equipment })));
+const Schedule = lazy(() => import('./pages/Schedule').then(m => ({ default: m.Schedule })));
+const Finance = lazy(() => import('./pages/Finance').then(m => ({ default: m.Finance })));
+const UsersPage = lazy(() => import('./pages/Users').then(m => ({ default: m.UsersPage })));
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+
+const PageFallback = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+    <p style={{ color: 'var(--muted)', fontSize: 15 }}>Carregando...</p>
+  </div>
+);
 import type { ProjectFormData } from './components/projects/ProjectForm';
 import type { PageKey } from './types/navigation';
 import type { StageFormData } from './components/stages/StageForm';
@@ -178,7 +185,9 @@ export function App() {
               </p>
             </div>
             {canCreateProject && (
-              <Projects projects={[]} selectedProjectId="" onSelectProject={() => {}} onNavigate={setCurrentPage} onAddProject={handleAddProject} onUpdateProject={handleUpdateProjectFull} onDeleteProject={handleDeleteProject} canCreate={true} />
+              <Suspense fallback={<PageFallback />}>
+                <Projects projects={[]} selectedProjectId="" onSelectProject={() => {}} onNavigate={setCurrentPage} onAddProject={handleAddProject} onUpdateProject={handleUpdateProjectFull} onDeleteProject={handleDeleteProject} canCreate={true} />
+              </Suspense>
             )}
           </div>
         </AppShell>
@@ -276,7 +285,9 @@ export function App() {
   return (
     <ProtectedApp>
       <AppShell current={currentPage} onNavigate={setCurrentPage} projects={projectOptions} selectedProjectId={selectedProjectId || ''} onSelectProject={setSelectedProjectId} coverImage={selectedProject.coverImage} projectName={selectedProject.nome} isAdmin={isAdmin}>
-        {pages[currentPage]}
+        <Suspense fallback={<PageFallback />}>
+          {pages[currentPage]}
+        </Suspense>
       </AppShell>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </ProtectedApp>
