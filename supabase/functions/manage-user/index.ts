@@ -95,6 +95,18 @@ Deno.serve(async (req: Request) => {
       if (updateError) {
         console.error("updateUserById failed for", targetUserId, updateError);
 
+        // If the password itself is weak, don't fall back to the RPC —
+        // tell the user to pick a stronger password.
+        if (
+          updateError.name === "AuthWeakPasswordError" ||
+          (updateError.message && updateError.message.toLowerCase().includes("weak"))
+        ) {
+          return new Response(
+            JSON.stringify({ error: "A senha é muito fraca. Use pelo menos 8 caracteres com letras, números e símbolos." }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
         // Fallback: update the password hash directly via RPC. The Auth Admin
         // API can fail with "Database error loading user" when the auth.users
         // row was not created by GoTrue itself (e.g. manually inserted).
