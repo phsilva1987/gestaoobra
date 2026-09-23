@@ -2024,6 +2024,7 @@ img.project-photo-fallback {
   object-fit: cover;
   object-position: center;
   display: block;
+  animation: login-img-zoom 8s ease-out both;
 }
 
 .login-visual-overlay {
@@ -2080,38 +2081,12 @@ img.project-photo-fallback {
   max-width: 390px;
 }
 
-.login-brand {
-  text-align: left;
-  margin-bottom: 28px;
-}
-
-.login-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: inline-grid;
-  place-items: center;
-  background: var(--gold);
-  color: #fff;
-  margin-bottom: 14px;
-}
-
-.login-brand h1 {
-  font-size: 23px;
-  color: #4a3826;
-  margin: 0 0 5px;
-  line-height: 1.2;
-}
-
-.login-brand p {
-  font-size: 11px;
-  color: var(--muted);
-  margin: 0;
-  letter-spacing: 0.5px;
+.login-card {
+  animation: login-fade-in 0.4s ease-out both;
 }
 
 .login-intro {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .login-intro h2 {
@@ -2185,6 +2160,15 @@ img.project-photo-fallback {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 .login-spinner {
@@ -2199,6 +2183,26 @@ img.project-photo-fallback {
 
 @keyframes login-spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes login-fade-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes login-img-zoom {
+  from { transform: scale(1.04); }
+  to   { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-card,
+  .login-visual > img {
+    animation: none !important;
+  }
+  .login-btn {
+    transition: none !important;
+  }
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
@@ -2253,10 +2257,6 @@ img.project-photo-fallback {
   .login-card {
     max-width: 420px;
     margin: 0 auto;
-  }
-
-  .login-brand {
-    margin-bottom: 24px;
   }
 }
 

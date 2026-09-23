@@ -36,22 +36,9 @@ export function LoginPage() {
 
       <section className="login-panel">
         <div className="login-card">
-          <div className="login-brand">
-            <div className="login-logo">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 21h18" />
-                <path d="M5 21V7l7-4 7 4v14" />
-                <path d="M9 21v-6h6v6" />
-                <path d="M9 11h.01M15 11h.01" />
-              </svg>
-            </div>
-            <h1>Gestão da Obra</h1>
-            <p>Planejamento &nbsp;•&nbsp; Controle &nbsp;•&nbsp; Resultado</p>
-          </div>
-
           <div className="login-intro">
             <h2>Bem-vindo</h2>
-            <p>Acesse sua conta para continuar.</p>
+            <p>Acesse sua conta para iniciar.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -60,6 +47,7 @@ export function LoginPage() {
               <input
                 id="login-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
@@ -73,6 +61,7 @@ export function LoginPage() {
               <input
                 id="login-password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
