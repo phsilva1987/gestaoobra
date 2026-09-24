@@ -31,8 +31,8 @@ export function UnforeseenTable({ project, onEdit, onDelete }: UnforeseenTablePr
   }
 
   return (
-    <div className="card section">
-      <div className="stage-table-scroll">
+    <div className="card section unforeseen-card">
+      <div className="unforeseen-scroll">
         <table>
           <thead>
             <tr><th>Item</th><th>Categoria</th><th>Valor</th><th>Impacto</th><th>Status</th><th></th></tr>
