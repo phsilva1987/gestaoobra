@@ -86,6 +86,8 @@ export interface Equipment {
   status: string;
 }
 
+export type PaymentSourceType = 'PROFESSIONAL' | 'MATERIAL' | 'EQUIPMENT' | 'LEGACY' | null;
+
 export interface Payment {
   id: string;
   referencia: string;
@@ -94,6 +96,27 @@ export interface Payment {
   vencimento: string;
   forma: string;
   status: string;
+  sourceType: PaymentSourceType;
+  sourceId: string | null;
+  stageId: string | null;
+  paidAt: string;
+  observacao: string;
+}
+
+export type CommitmentSourceType = 'PROFESSIONAL' | 'MATERIAL' | 'EQUIPMENT';
+
+export interface Commitment {
+  id: string;
+  sourceType: CommitmentSourceType;
+  sourceId: string;
+  referencia: string;
+  stageId: string;
+  stageName: string;
+  contratado: number;
+  pago: number;
+  saldo: number;
+  status: 'Pendente' | 'Parcial' | 'Pago';
+  vencimento: string;
 }
 
 export interface Unforeseen {

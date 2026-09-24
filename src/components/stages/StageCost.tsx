@@ -12,7 +12,7 @@ interface StageCostProps {
 
 export function StageCost({ stage, jobs, materials, equipments, payments }: StageCostProps) {
   const contratado = stageContratado(stage, jobs, materials, equipments);
-  const pago = stagePago(stage, jobs, materials) + stageEquipmentPago(stage, equipments, payments);
+  const pago = stagePago(stage, jobs, materials, payments) + stageEquipmentPago(stage, equipments, payments);
   return (
     <td>
       <b>{money(contratado)}</b>

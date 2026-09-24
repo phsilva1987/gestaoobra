@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import type { Professional, Job, ProjectData } from '../../types';
+import type { Professional, Job, ProjectData, Payment } from '../../types';
 import { money } from '../../lib/format';
 import { JobStatusBadge } from './JobStatusBadge';
+import { totalPaidForEntity } from '../../services/commitmentService';
 
 export interface ProfessionalFormData {
   nome: string;
@@ -32,8 +33,10 @@ function valorTotalProfissional(profId: string, jobs: Job[]): number {
   return jobsDoProfissional(profId, jobs).reduce((a, t) => a + (+t.valor || 0), 0);
 }
 
-function valorPagoProfissional(profId: string, jobs: Job[]): number {
-  return jobsDoProfissional(profId, jobs).reduce((a, t) => a + (+t.pago || 0), 0);
+function valorPagoProfissional(profId: string, jobs: Job[], payments: Payment[]): number {
+  return jobsDoProfissional(profId, jobs).reduce(
+    (a, t) => a + totalPaidForEntity(payments, 'PROFESSIONAL', t.id), 0
+  );
 }
 
 export function ProfessionalForm({
@@ -84,7 +87,7 @@ export function ProfessionalForm({
 
   const jobs = professional ? jobsDoProfissional(professional.id, project.jobs) : [];
   const total = professional ? valorTotalProfissional(professional.id, project.jobs) : 0;
-  const pago = professional ? valorPagoProfissional(professional.id, project.jobs) : 0;
+  const pago = professional ? valorPagoProfissional(professional.id, project.jobs, project.pagamentos) : 0;
 
 
   return (
@@ -154,7 +157,7 @@ export function ProfessionalForm({
                         <span className="prof-job-info">
                           <b>{etapa ? etapa.nome : '— etapa removida —'}</b>
                           {' — '}
-                          {money(job.valor)} (pago {money(job.pago)})
+                          {money(job.valor)} (pago {money(totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', job.id))})
                           {' · '}
                           {job.forma === 'Cartão' && job.valorParcela
                             ? `Cartão · ${parseInt(job.parcelas) || 1}x de ${money(job.valorParcela)}`

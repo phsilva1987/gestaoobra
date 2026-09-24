@@ -20,7 +20,9 @@ export function unforeseenTotal(items: Unforeseen[]): number {
 }
 
 export function paymentDue(payments: Payment[]): number {
-  return payments.filter((x) => x.status !== 'Pago').reduce((a, x) => a + (+x.valor || 0), 0);
+  return payments
+    .filter((x) => x.status !== 'Pago' && x.sourceType !== 'LEGACY' && x.sourceType !== null)
+    .reduce((a, x) => a + (+x.valor || 0), 0);
 }
 
 export function stageContratado(
@@ -43,34 +45,29 @@ export function stageContratado(
 
 export function equipmentPago(payments: Payment[]): number {
   return payments
-    .filter((x) => x.tipo === 'Equipamento' && x.status === 'Pago')
+    .filter((x) => x.sourceType === 'EQUIPMENT' && x.status === 'Pago')
     .reduce((a, x) => a + (+x.valor || 0), 0);
 }
 
 export function stageEquipmentPago(
   stage: Stage,
-  equipments: Equipment[],
+  _equipments: Equipment[],
   payments: Payment[]
 ): number {
-  const eqIds = equipments.filter((e) => e.etapa_id === stage.id);
-  if (!eqIds.length) return 0;
   return payments
-    .filter((x) => x.tipo === 'Equipamento' && x.status === 'Pago')
+    .filter((x) => x.sourceType === 'EQUIPMENT' && x.stageId === stage.id && x.status === 'Pago')
     .reduce((a, x) => a + (+x.valor || 0), 0);
 }
 
 export function stagePago(
   stage: Stage,
-  jobs: Job[],
-  materials: Material[]
+  _jobs: Job[],
+  _materials: Material[],
+  payments: Payment[]
 ): number {
-  const jobsPago = jobs
-    .filter((j) => j.etapa_id === stage.id)
-    .reduce((a, j) => a + (+j.pago || 0), 0);
-  const matsPago = materials
-    .filter((m) => m.etapa_id === stage.id)
-    .reduce((a, m) => a + (+m.pago || 0), 0);
-  return jobsPago + matsPago;
+  return payments
+    .filter((x) => x.stageId === stage.id && x.status === 'Pago' && x.sourceType !== 'LEGACY')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
 }
 
 export function stageEquipment(
@@ -127,15 +124,22 @@ export interface ProjectTotals {
 
 export function projectTotals(project: ProjectData): ProjectTotals {
   const maoDeObra = project.jobs.reduce((a, j) => a + (+j.valor || 0), 0);
-  const maoDeObraPago = project.jobs.reduce((a, j) => a + (+j.pago || 0), 0);
   const materiais = project.materiais.reduce((a, m) => a + materialTotal(m), 0);
-  const materiaisPago = project.materiais.reduce((a, m) => a + (+m.pago || 0), 0);
   const eq = project.equipamentos.reduce((a, e) => a + (+e.valor || 0), 0);
+  const pagoFromPayments = project.pagamentos
+    .filter((x) => x.status === 'Pago' && x.sourceType !== 'LEGACY')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
+  const maoDeObraPago = project.pagamentos
+    .filter((x) => x.sourceType === 'PROFESSIONAL' && x.status === 'Pago')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
+  const materiaisPago = project.pagamentos
+    .filter((x) => x.sourceType === 'MATERIAL' && x.status === 'Pago')
+    .reduce((a, x) => a + (+x.valor || 0), 0);
   const eqPago = equipmentPago(project.pagamentos);
   const adm = project.admin.reduce((a, x) => a + (+x.pago || 0), 0);
   const extras = unforeseenTotal(project.imprevistos);
   const contratado = maoDeObra + materiais + eq;
-  const pago = maoDeObraPago + materiaisPago + eqPago;
+  const pago = pagoFromPayments;
   const prog = project.obra.length
     ? Math.round(
         project.obra.reduce((a, x) => a + (+x.progresso || 0), 0) /

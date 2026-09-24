@@ -7,6 +7,7 @@ export * from './jobService';
 export * from './materialService';
 export * from './equipmentService';
 export * from './paymentService';
+export * from './commitmentService';
 export * from './unforeseenService';
 export * from './adminService';
 export * from './checklistService';

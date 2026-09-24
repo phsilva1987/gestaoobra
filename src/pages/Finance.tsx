@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import type { Unforeseen, Payment, AdminItem, ProjectData } from '../types';
+import type { Unforeseen, Payment, AdminItem, ProjectData, Commitment } from '../types';
 import { FinanceKpis } from '../components/finance/FinanceKpis';
 import { CategoryComparison } from '../components/finance/CategoryComparison';
 import { UnforeseenTable } from '../components/finance/UnforeseenTable';
 import { UnforeseenForm, type UnforeseenFormData } from '../components/finance/UnforeseenForm';
-import { PaymentsTable } from '../components/finance/PaymentsTable';
+import { CommitmentList } from '../components/finance/CommitmentList';
+import { PaymentHistory } from '../components/finance/PaymentHistory';
+import { CommitmentDetail } from '../components/finance/CommitmentDetail';
 import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
 import { AdminTable } from '../components/finance/AdminTable';
 import { AdminForm, type AdminFormData } from '../components/finance/AdminForm';
@@ -26,13 +28,15 @@ interface FinanceProps {
 type Modal =
   | { type: 'unforeseen'; item: Unforeseen | null }
   | { type: 'delete-unforeseen'; item: Unforeseen }
-  | { type: 'payment'; item: Payment | null }
+  | { type: 'payment'; item: Payment | null; commitment: Commitment | null }
+  | { type: 'commitment-detail'; commitment: Commitment }
   | { type: 'delete-payment'; item: Payment }
   | { type: 'admin'; item: AdminItem | null }
   | { type: 'delete-admin'; item: AdminItem }
   | null;
 
 type FinanceTab = 'obra' | 'administrativo';
+type PaymentSubTab = 'apagar' | 'historico';
 
 export function Finance({
   project,
@@ -50,6 +54,7 @@ export function Finance({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [tab, setTab] = useState<FinanceTab>('obra');
+  const [paySubTab, setPaySubTab] = useState<PaymentSubTab>('apagar');
 
   const labelOf = (m: Modal) => {
     if (m?.type === 'unforeseen' || m?.type === 'delete-unforeseen') return 'imprevisto';
@@ -151,14 +156,38 @@ export function Finance({
 
           <div className="card section" style={{ marginTop: 14 }}>
             <div className="finance-panel-head">
-              <h3>Histórico e próximos pagamentos</h3>
-              <button className="btn secondary" onClick={() => setModal({ type: 'payment', item: null })}>+ Pagamento</button>
+              <h3>Pagamentos da Obra</h3>
             </div>
-            <PaymentsTable
-              project={project}
-              onEdit={(item) => setModal({ type: 'payment', item })}
-              onDelete={(item) => setModal({ type: 'delete-payment', item })}
-            />
+            <div className="finance-subtabs">
+              <button
+                className={`finance-subtab ${paySubTab === 'apagar' ? 'active' : ''}`}
+                onClick={() => setPaySubTab('apagar')}
+              >
+                A pagar
+              </button>
+              <button
+                className={`finance-subtab ${paySubTab === 'historico' ? 'active' : ''}`}
+                onClick={() => setPaySubTab('historico')}
+              >
+                Histórico
+              </button>
+            </div>
+
+            {paySubTab === 'apagar' && (
+              <CommitmentList
+                project={project}
+                onPay={(c) => setModal({ type: 'payment', item: null, commitment: c })}
+                onView={(c) => setModal({ type: 'commitment-detail', commitment: c })}
+              />
+            )}
+
+            {paySubTab === 'historico' && (
+              <PaymentHistory
+                project={project}
+                onEdit={(item) => setModal({ type: 'payment', item, commitment: null })}
+                onDelete={(item) => setModal({ type: 'delete-payment', item })}
+              />
+            )}
           </div>
         </>
       )}
@@ -196,9 +225,21 @@ export function Finance({
       {modal?.type === 'payment' && (
         <PaymentForm
           payment={modal.item}
+          commitment={modal.commitment}
           onSave={handleSavePayment}
           onCancel={() => setModal(null)}
           saving={saving}
+        />
+      )}
+
+      {modal?.type === 'commitment-detail' && (
+        <CommitmentDetail
+          commitment={modal.commitment}
+          project={project}
+          onPay={(c) => setModal({ type: 'payment', item: null, commitment: c })}
+          onEditPayment={(item) => setModal({ type: 'payment', item, commitment: modal.commitment })}
+          onDeletePayment={(item) => setModal({ type: 'delete-payment', item })}
+          onClose={() => setModal(null)}
         />
       )}
 

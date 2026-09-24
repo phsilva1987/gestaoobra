@@ -453,7 +453,20 @@ export function useProjects() {
 
   const updatePayment = useCallback(async (projectId: string, id: string, data: PaymentFormData): Promise<void> => {
     await dbUpdatePayment(id, data);
-    updateProjectState(projectId, (p) => ({ ...p, pagamentos: p.pagamentos.map((pa) => pa.id === id ? { ...pa, ...data } : pa) }));
+    updateProjectState(projectId, (p) => ({ ...p, pagamentos: p.pagamentos.map((pa) => pa.id === id ? {
+      ...pa,
+      referencia: data.referencia,
+      tipo: data.tipo,
+      valor: data.valor,
+      vencimento: data.vencimento,
+      forma: data.forma,
+      status: data.status,
+      sourceType: data.sourceType,
+      sourceId: data.sourceId,
+      stageId: data.stageId,
+      paidAt: data.paidAt,
+      observacao: data.observacao,
+    } : pa) }));
   }, []);
 
   const deletePayment = useCallback(async (projectId: string, id: string): Promise<void> => {

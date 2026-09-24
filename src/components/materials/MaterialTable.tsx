@@ -1,6 +1,7 @@
 import type { Material, ProjectData } from '../../types';
 import { materialTotal } from '../../lib/calculations';
 import { money } from '../../lib/format';
+import { totalPaidForEntity } from '../../services/commitmentService';
 
 interface MaterialTableProps {
   project: ProjectData;
@@ -69,7 +70,7 @@ export function MaterialTable({ project, onEdit, onDelete }: MaterialTableProps)
                 <td>{m.quantidade} {m.unidade}</td>
                 <td>{money(m.unitario)}</td>
                 <td><b>{money(materialTotal(m))}</b></td>
-                <td>{money(m.pago)}</td>
+                <td>{money(totalPaidForEntity(project.pagamentos, 'MATERIAL', m.id))}</td>
                 <td><MaterialStatusBadge status={m.status} /></td>
                 <td className="rowactions">
                   <button onClick={() => onEdit(m)}>Editar</button>

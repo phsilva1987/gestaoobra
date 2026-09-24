@@ -1,6 +1,7 @@
 import type { Professional, Job, ProjectData } from '../../types';
 import { money } from '../../lib/format';
 import { JobStatusBadge } from './JobStatusBadge';
+import { totalPaidForEntity } from '../../services/commitmentService';
 
 interface ProfessionalTableProps {
   project: ProjectData;
@@ -55,7 +56,9 @@ export function ProfessionalTable({ project, onEdit, onDelete }: ProfessionalTab
             {project.profissionais.map((p) => {
               const jobs = jobsDoProfissional(p.id, project.jobs);
               const total = jobs.reduce((a, t) => a + (+t.valor || 0), 0);
-              const pago = jobs.reduce((a, t) => a + (+t.pago || 0), 0);
+              const pago = jobs.reduce(
+                (a, t) => a + totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', t.id), 0
+              );
               return (
                 <tr key={p.id}>
                   <td><b>{p.nome}</b></td>
