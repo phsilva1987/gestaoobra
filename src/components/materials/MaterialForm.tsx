@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { Material, ProjectData, Supplier } from '../../types';
+import type { Material, ProjectData, Supplier, Commitment } from '../../types';
 import { SupplierSelect } from '../suppliers/SupplierSelect';
 import type { SupplierFormData } from '../suppliers/SupplierForm';
 import { CurrencyInput } from '../CurrencyInput';
+import { totalPaidForEntity } from '../../services/commitmentService';
+import { money } from '../../lib/format';
 
 const UNIDADES = ['un', 'm²', 'm', 'kg', 'L', 'caixa', 'pacote'];
 const STATUS_MATERIAL = ['Pendente', 'Comprado', 'Entregue'];
@@ -15,7 +17,6 @@ export interface MaterialFormData {
   quantidade: number;
   unidade: string;
   unitario: number;
-  pago: number;
   data: string;
   status: string;
   etapa_id: string;
@@ -27,10 +28,11 @@ interface MaterialFormProps {
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onSave: (data: MaterialFormData) => Promise<void> | void;
   onCancel: () => void;
+  onPay: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
-export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel, saving = false }: MaterialFormProps) {
+export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel, onPay, saving = false }: MaterialFormProps) {
   const categorias = [...new Set([...(project.categoriasMaterial || CATEGORIAS_MATERIAL_DEFAULT), ...(project.categoriasMaterialExtra || [])])];
 
   const [form, setForm] = useState<MaterialFormData>({
@@ -40,7 +42,6 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
     quantidade: material?.quantidade || 1,
     unidade: material?.unidade || 'un',
     unitario: material?.unitario || 0,
-    pago: material?.pago || 0,
     data: material?.data || '',
     status: material?.status || 'Pendente',
     etapa_id: material?.etapa_id || '',
@@ -56,7 +57,6 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
         quantidade: material.quantidade,
         unidade: material.unidade,
         unitario: material.unitario,
-        pago: material.pago,
         data: material.data,
         status: material.status,
         etapa_id: material.etapa_id,
@@ -70,7 +70,6 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
     if (!form.etapa_id) e.etapa_id = 'Selecione a etapa vinculada.';
     if (form.quantidade < 0) e.quantidade = 'Quantidade não pode ser negativa.';
     if (form.unitario < 0) e.unitario = 'Valor unitário não pode ser negativo.';
-    if (form.pago < 0) e.pago = 'Pago não pode ser negativo.';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -79,6 +78,28 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
     ev.preventDefault();
     if (!validate()) return;
     onSave({ ...form, nome: form.nome.trim() });
+  }
+
+  const total = form.quantidade * form.unitario;
+  const pago = material ? totalPaidForEntity(project.pagamentos, 'MATERIAL', material.id) : 0;
+  const saldo = Math.max(0, total - pago);
+
+  function handlePay() {
+    if (!material) return;
+    const stage = project.obra.find((s) => s.id === material.etapa_id);
+    onPay({
+      id: `MATERIAL:${material.id}`,
+      sourceType: 'MATERIAL',
+      sourceId: material.id,
+      referencia: material.nome,
+      stageId: material.etapa_id,
+      stageName: stage?.nome || '—',
+      contratado: total,
+      pago,
+      saldo,
+      status: pago >= total && total > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+      vencimento: material.data || '',
+    });
   }
 
   return (
@@ -121,11 +142,6 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
               {errors.unitario && <span className="field-error">{errors.unitario}</span>}
             </div>
             <div className="form-field">
-              <label>Valor pago (R$)</label>
-              <CurrencyInput value={form.pago} onChange={(v) => setForm({ ...form, pago: v })} />
-              {errors.pago && <span className="field-error">{errors.pago}</span>}
-            </div>
-            <div className="form-field">
               <label>Data da compra</label>
               <input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
             </div>
@@ -144,6 +160,27 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
               {errors.etapa_id && <span className="field-error">{errors.etapa_id}</span>}
             </div>
           </div>
+
+          {material && (
+            <div className="entity-finance-summary">
+              <div className="entity-finance-item">
+                <small>Total</small>
+                <strong>{money(total)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Pago</small>
+                <strong>{money(pago)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Saldo</small>
+                <strong>{money(saldo)}</strong>
+              </div>
+              {saldo > 0 && (
+                <button type="button" className="btn secondary" onClick={handlePay}>Registrar pagamento</button>
+              )}
+            </div>
+          )}
+
           <SupplierSelect
             value={form.fornecedorId}
             onChange={(fornecedorId) => setForm({ ...form, fornecedorId })}

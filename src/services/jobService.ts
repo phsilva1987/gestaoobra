@@ -44,7 +44,6 @@ export async function createJob(projectId: string, data: {
   etapa_id: string;
   profissional_id: string;
   valor: number;
-  pago: number;
   forma: string;
   parcelas: string;
   chavePix: string;
@@ -58,7 +57,7 @@ export async function createJob(projectId: string, data: {
       professional_id: data.profissional_id,
       stage_id: data.etapa_id,
       valor: data.valor,
-      pago: data.pago,
+      pago: 0,
       forma: data.forma,
       chave_pix: data.forma === 'Pix' ? data.chavePix : '',
       parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',
@@ -74,7 +73,6 @@ export async function updateJob(id: string, data: {
   etapa_id: string;
   profissional_id: string;
   valor: number;
-  pago: number;
   forma: string;
   parcelas: string;
   chavePix: string;
@@ -87,7 +85,6 @@ export async function updateJob(id: string, data: {
       stage_id: data.etapa_id,
       professional_id: data.profissional_id,
       valor: data.valor,
-      pago: data.pago,
       forma: data.forma,
       chave_pix: data.forma === 'Pix' ? data.chavePix : '',
       parcelas: data.forma === 'Cartão' ? data.parcelas : '1x',

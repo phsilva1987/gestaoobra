@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import type { Job, ProjectData } from '../../types';
+import type { Job, ProjectData, Commitment } from '../../types';
 import { CurrencyInput } from '../CurrencyInput';
+import { totalPaidForEntity } from '../../services/commitmentService';
+import { money } from '../../lib/format';
 
 const FORMAS_PAGAMENTO = ['Pix', 'Cartão', 'Em Dinheiro'];
 const PARCELAS_OPTS = ['1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x', '11x', '12x'];
@@ -10,7 +12,6 @@ export interface JobFormData {
   profissional_id: string;
   etapa_id: string;
   valor: number;
-  pago: number;
   forma: string;
   parcelas: string;
   chavePix: string;
@@ -23,15 +24,15 @@ interface JobFormProps {
   project: ProjectData;
   onSave: (data: JobFormData) => Promise<void> | void;
   onCancel: () => void;
+  onPay: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
-export function JobForm({ job, presetProfId, project, onSave, onCancel, saving = false }: JobFormProps) {
+export function JobForm({ job, presetProfId, project, onSave, onCancel, onPay, saving = false }: JobFormProps) {
   const [form, setForm] = useState<JobFormData>({
     profissional_id: job?.profissional_id || presetProfId || '',
     etapa_id: job?.etapa_id || '',
     valor: job?.valor || 0,
-    pago: job?.pago || 0,
     forma: job?.forma || 'Pix',
     parcelas: job?.parcelas || '1x',
     chavePix: job?.chavePix || '',
@@ -45,7 +46,6 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, saving =
         profissional_id: job.profissional_id,
         etapa_id: job.etapa_id,
         valor: job.valor,
-        pago: job.pago,
         forma: job.forma,
         parcelas: job.parcelas,
         chavePix: job.chavePix,
@@ -68,7 +68,6 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, saving =
     if (!form.profissional_id) e.profissional_id = 'Selecione o profissional.';
     if (!form.etapa_id) e.etapa_id = 'Selecione a etapa vinculada.';
     if (form.valor < 0) e.valor = 'Valor não pode ser negativo.';
-    if (form.pago < 0) e.pago = 'Pago não pode ser negativo.';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -83,6 +82,28 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, saving =
     form.forma === 'Cartão' && form.valor > 0
       ? form.valor / (parseInt(form.parcelas) || 1)
       : null;
+
+  const pago = job ? totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', job.id) : 0;
+  const saldo = Math.max(0, form.valor - pago);
+
+  function handlePay() {
+    if (!job) return;
+    const prof = project.profissionais.find((p) => p.id === job.profissional_id);
+    const stage = project.obra.find((s) => s.id === job.etapa_id);
+    onPay({
+      id: `PROFESSIONAL:${job.id}`,
+      sourceType: 'PROFESSIONAL',
+      sourceId: job.id,
+      referencia: `${prof?.nome || 'Profissional'}${stage ? ' — ' + stage.nome : ''}`,
+      stageId: job.etapa_id,
+      stageName: stage?.nome || '—',
+      contratado: form.valor,
+      pago,
+      saldo,
+      status: pago >= form.valor && form.valor > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+      vencimento: '',
+    });
+  }
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
@@ -114,11 +135,6 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, saving =
               <label>Valor cobrado (R$)</label>
               <CurrencyInput value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
               {errors.valor && <span className="field-error">{errors.valor}</span>}
-            </div>
-            <div className="form-field">
-              <label>Valor pago (R$)</label>
-              <CurrencyInput value={form.pago} onChange={(v) => setForm({ ...form, pago: v })} />
-              {errors.pago && <span className="field-error">{errors.pago}</span>}
             </div>
             <div className="form-field">
               <label>Forma de pagamento</label>
@@ -159,6 +175,27 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, saving =
               </>
             )}
           </div>
+
+          {job && (
+            <div className="entity-finance-summary">
+              <div className="entity-finance-item">
+                <small>Contratado</small>
+                <strong>{money(form.valor)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Pago</small>
+                <strong>{money(pago)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Saldo</small>
+                <strong>{money(saldo)}</strong>
+              </div>
+              {saldo > 0 && (
+                <button type="button" className="btn secondary" onClick={handlePay}>Registrar pagamento</button>
+              )}
+            </div>
+          )}
+
           <div className="modal-actions">
             <button type="button" className="btn secondary" onClick={onCancel} disabled={saving}>Cancelar</button>
             <button type="submit" className="btn" disabled={saving}>

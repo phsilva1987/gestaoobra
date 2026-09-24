@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import type { Professional, Job, ProjectData } from '../types';
+import type { Professional, Job, ProjectData, Commitment } from '../types';
 import { ProfessionalTable } from '../components/professionals/ProfessionalTable';
 import { ProfessionalForm, type ProfessionalFormData } from '../components/professionals/ProfessionalForm';
 import { JobForm, type JobFormData } from '../components/professionals/JobForm';
+import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
 
 interface ProfessionalsProps {
   project: ProjectData;
@@ -12,6 +13,7 @@ interface ProfessionalsProps {
   onAddJob: (data: JobFormData) => void;
   onUpdateJob: (id: string, data: JobFormData) => void;
   onDeleteJob: (id: string) => void;
+  onAddPayment: (data: PaymentFormData) => Promise<void> | void;
 }
 
 type Modal =
@@ -19,6 +21,7 @@ type Modal =
   | { type: 'delete-prof'; prof: Professional }
   | { type: 'job-form'; job: Job | null; presetProfId: string | null }
   | { type: 'delete-job'; jobId: string; prof: Professional }
+  | { type: 'pay'; commitment: Commitment }
   | null;
 
 export function Professionals({
@@ -29,6 +32,7 @@ export function Professionals({
   onAddJob,
   onUpdateJob,
   onDeleteJob,
+  onAddPayment,
 }: ProfessionalsProps) {
   const [modal, setModal] = useState<Modal>(null);
   const [saving, setSaving] = useState(false);
@@ -63,6 +67,15 @@ export function Professionals({
       } else {
         setModal(null);
       }
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
+  }
+
+  async function handlePay(data: PaymentFormData) {
+    setSaving(true);
+    try {
+      await onAddPayment(data);
+      setModal(null);
     } catch { /* toast shown by wrap */ }
     finally { setSaving(false); }
   }
@@ -125,6 +138,7 @@ export function Professionals({
             const prof = modal.prof!;
             setModal({ type: 'delete-job', jobId, prof });
           }}
+          onPay={(commitment) => setModal({ type: 'pay', commitment })}
           saving={saving}
         />
       )}
@@ -138,6 +152,24 @@ export function Professionals({
           onCancel={() => {
             const profId = modal.presetProfId || modal.job?.profissional_id || '';
             const prof = project.profissionais.find((p) => p.id === profId);
+            if (prof) setModal({ type: 'prof-form', prof });
+            else setModal(null);
+          }}
+          onPay={(commitment) => setModal({ type: 'pay', commitment })}
+          saving={saving}
+        />
+      )}
+
+      {modal?.type === 'pay' && (
+        <PaymentForm
+          payment={null}
+          commitment={modal.commitment}
+          onSave={handlePay}
+          onCancel={() => {
+            const profId = modal.commitment.stageId
+              ? project.jobs.find((j) => j.id === modal.commitment.sourceId)?.profissional_id
+              : null;
+            const prof = profId ? project.profissionais.find((p) => p.id === profId) : null;
             if (prof) setModal({ type: 'prof-form', prof });
             else setModal(null);
           }}

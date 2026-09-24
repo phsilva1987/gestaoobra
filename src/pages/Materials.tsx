@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import type { Material, ProjectData, Supplier } from '../types';
+import type { Material, ProjectData, Supplier, Commitment } from '../types';
 import { MaterialTable } from '../components/materials/MaterialTable';
 import { MaterialForm, type MaterialFormData } from '../components/materials/MaterialForm';
+import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
 import type { SupplierFormData } from '../components/suppliers/SupplierForm';
 
 interface MaterialsProps {
@@ -10,11 +11,13 @@ interface MaterialsProps {
   onUpdateMaterial: (id: string, data: MaterialFormData) => Promise<void> | void;
   onDeleteMaterial: (id: string) => Promise<void> | void;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
+  onAddPayment: (data: PaymentFormData) => Promise<void> | void;
 }
 
 type Modal =
   | { type: 'form'; material: Material | null }
   | { type: 'delete'; material: Material }
+  | { type: 'pay'; commitment: Commitment }
   | null;
 
 export function Materials({
@@ -23,6 +26,7 @@ export function Materials({
   onUpdateMaterial,
   onDeleteMaterial,
   onAddSupplier,
+  onAddPayment,
 }: MaterialsProps) {
   const [modal, setModal] = useState<Modal>(null);
   const [saving, setSaving] = useState(false);
@@ -36,6 +40,15 @@ export function Materials({
       } else {
         await onAddMaterial(data);
       }
+      setModal(null);
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
+  }
+
+  async function handlePay(data: PaymentFormData) {
+    setSaving(true);
+    try {
+      await onAddPayment(data);
       setModal(null);
     } catch { /* toast shown by wrap */ }
     finally { setSaving(false); }
@@ -57,6 +70,7 @@ export function Materials({
         project={project}
         onEdit={(material) => setModal({ type: 'form', material })}
         onDelete={(material) => setModal({ type: 'delete', material })}
+        onPay={(commitment) => setModal({ type: 'pay', commitment })}
       />
 
       {modal?.type === 'form' && (
@@ -65,6 +79,17 @@ export function Materials({
           project={project}
           onAddSupplier={onAddSupplier}
           onSave={handleSave}
+          onCancel={() => setModal(null)}
+          onPay={(commitment) => setModal({ type: 'pay', commitment })}
+          saving={saving}
+        />
+      )}
+
+      {modal?.type === 'pay' && (
+        <PaymentForm
+          payment={null}
+          commitment={modal.commitment}
+          onSave={handlePay}
           onCancel={() => setModal(null)}
           saving={saving}
         />

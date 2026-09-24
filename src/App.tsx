@@ -215,6 +215,7 @@ export function App() {
         onAddJob={wrap((data: JobFormData) => addJob(pid, data), 'Trabalho adicionado!', 'Erro ao adicionar trabalho')}
         onUpdateJob={wrap((id: string, data: JobFormData) => updateJob(pid, id, data), 'Trabalho atualizado!', 'Erro ao atualizar trabalho')}
         onDeleteJob={wrap((id: string) => deleteJob(pid, id), 'Trabalho excluído.', 'Erro ao excluir trabalho')}
+        onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
       />
     ),
     materiais: (
@@ -223,6 +224,7 @@ export function App() {
         onUpdateMaterial={wrap((id: string, data: MaterialFormData) => updateMaterial(pid, id, data), 'Material atualizado!', 'Erro ao atualizar material')}
         onDeleteMaterial={wrap((id: string) => deleteMaterial(pid, id), 'Material excluído.', 'Erro ao excluir material')}
         onAddSupplier={handleAddSupplier.bind(null, pid)}
+        onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
       />
     ),
     equipamentos: (
@@ -231,6 +233,7 @@ export function App() {
         onUpdateEquipment={wrap((id: string, data: EquipmentFormData) => updateEquipment(pid, id, data), 'Equipamento atualizado!', 'Erro ao atualizar equipamento')}
         onDeleteEquipment={wrap((id: string) => deleteEquipment(pid, id), 'Equipamento excluído.', 'Erro ao excluir equipamento')}
         onAddSupplier={handleAddSupplier.bind(null, pid)}
+        onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
       />
     ),
     cronograma: (

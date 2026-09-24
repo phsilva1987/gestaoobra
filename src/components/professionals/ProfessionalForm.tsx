@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Professional, Job, ProjectData, Payment } from '../../types';
+import type { Professional, Job, ProjectData, Payment, Commitment } from '../../types';
 import { money } from '../../lib/format';
 import { JobStatusBadge } from './JobStatusBadge';
 import { totalPaidForEntity } from '../../services/commitmentService';
@@ -20,6 +20,7 @@ interface ProfessionalFormProps {
   onAddJob: () => void;
   onEditJob: (job: Job) => void;
   onDeleteJob: (jobId: string) => void;
+  onPay: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
@@ -47,6 +48,7 @@ export function ProfessionalForm({
   onAddJob,
   onEditJob,
   onDeleteJob,
+  onPay,
   saving = false,
 }: ProfessionalFormProps) {
   const [form, setForm] = useState<ProfessionalFormData>({
@@ -166,6 +168,15 @@ export function ProfessionalForm({
                           <JobStatusBadge status={job.status} />
                         </span>
                         <span className="rowactions">
+                          {(() => { const jp = totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', job.id); const js = Math.max(0, job.valor - jp); return js > 0 ? (
+                            <button type="button" onClick={() => onPay({
+                              id: `PROFESSIONAL:${job.id}`, sourceType: 'PROFESSIONAL', sourceId: job.id,
+                              referencia: `${professional?.nome || 'Profissional'}${etapa ? ' — ' + etapa.nome : ''}`,
+                              stageId: job.etapa_id, stageName: etapa?.nome || '—',
+                              contratado: job.valor, pago: jp, saldo: js,
+                              status: jp > 0 ? 'Parcial' : 'Pendente', vencimento: '',
+                            })}>Pagar</button>
+                          ) : null; })()}
                           <button type="button" onClick={() => onEditJob(job)}>Editar</button>
                           <button type="button" onClick={() => onDeleteJob(job.id)}>Excluir</button>
                         </span>

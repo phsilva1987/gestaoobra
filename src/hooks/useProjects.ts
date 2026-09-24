@@ -384,7 +384,7 @@ export function useProjects() {
     await dbUpdateJob(jobId, data);
     const n = parseInt(data.parcelas) || 1;
     updateProjectState(projectId, (p) => ({
-      ...p, jobs: p.jobs.map((j) => j.id === jobId ? { ...j, etapa_id: data.etapa_id, profissional_id: data.profissional_id, valor: data.valor, pago: data.pago, forma: data.forma, parcelas: data.forma === 'Cartão' ? data.parcelas : '1x', chavePix: data.forma === 'Pix' ? data.chavePix : '', valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null, status: data.status } : j),
+      ...p, jobs: p.jobs.map((j) => j.id === jobId ? { ...j, etapa_id: data.etapa_id, profissional_id: data.profissional_id, valor: data.valor, forma: data.forma, parcelas: data.forma === 'Cartão' ? data.parcelas : '1x', chavePix: data.forma === 'Pix' ? data.chavePix : '', valorParcela: data.forma === 'Cartão' && data.valor > 0 ? data.valor / n : null, status: data.status } : j),
     }));
   }, []);
 

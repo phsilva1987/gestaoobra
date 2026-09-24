@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import type { Equipment, ProjectData, Supplier } from '../types';
+import type { Equipment, ProjectData, Supplier, Commitment } from '../types';
 import { EquipmentTable } from '../components/equipment/EquipmentTable';
 import { EquipmentForm, type EquipmentFormData } from '../components/equipment/EquipmentForm';
+import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
 import type { SupplierFormData } from '../components/suppliers/SupplierForm';
 
 interface EquipmentProps {
@@ -10,11 +11,13 @@ interface EquipmentProps {
   onUpdateEquipment: (id: string, data: EquipmentFormData) => Promise<void> | void;
   onDeleteEquipment: (id: string) => Promise<void> | void;
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
+  onAddPayment: (data: PaymentFormData) => Promise<void> | void;
 }
 
 type Modal =
   | { type: 'form'; equipment: Equipment | null }
   | { type: 'delete'; equipment: Equipment }
+  | { type: 'pay'; commitment: Commitment }
   | null;
 
 export function Equipment({
@@ -23,6 +26,7 @@ export function Equipment({
   onUpdateEquipment,
   onDeleteEquipment,
   onAddSupplier,
+  onAddPayment,
 }: EquipmentProps) {
   const [modal, setModal] = useState<Modal>(null);
   const [saving, setSaving] = useState(false);
@@ -36,6 +40,15 @@ export function Equipment({
       } else {
         await onAddEquipment(data);
       }
+      setModal(null);
+    } catch { /* toast shown by wrap */ }
+    finally { setSaving(false); }
+  }
+
+  async function handlePay(data: PaymentFormData) {
+    setSaving(true);
+    try {
+      await onAddPayment(data);
       setModal(null);
     } catch { /* toast shown by wrap */ }
     finally { setSaving(false); }
@@ -57,6 +70,7 @@ export function Equipment({
         project={project}
         onEdit={(equipment) => setModal({ type: 'form', equipment })}
         onDelete={(equipment) => setModal({ type: 'delete', equipment })}
+        onPay={(commitment) => setModal({ type: 'pay', commitment })}
       />
 
       {modal?.type === 'form' && (
@@ -65,6 +79,16 @@ export function Equipment({
           project={project}
           onAddSupplier={onAddSupplier}
           onSave={handleSave}
+          onCancel={() => setModal(null)}
+          saving={saving}
+        />
+      )}
+
+      {modal?.type === 'pay' && (
+        <PaymentForm
+          payment={null}
+          commitment={modal.commitment}
+          onSave={handlePay}
           onCancel={() => setModal(null)}
           saving={saving}
         />

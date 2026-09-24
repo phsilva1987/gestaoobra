@@ -50,7 +50,6 @@ export async function createMaterial(projectId: string, data: {
   quantidade: number;
   unidade: string;
   unitario: number;
-  pago: number;
   data: string;
   status: string;
 }): Promise<Material> {
@@ -65,7 +64,7 @@ export async function createMaterial(projectId: string, data: {
       quantidade: data.quantidade,
       unidade: data.unidade,
       valor_unitario: data.unitario,
-      pago: data.pago,
+      pago: 0,
       data: data.data || null,
       status: data.status,
     })
@@ -82,7 +81,6 @@ export async function updateMaterial(id: string, data: {
   quantidade: number;
   unidade: string;
   unitario: number;
-  pago: number;
   data: string;
   status: string;
 }): Promise<void> {
@@ -96,7 +94,6 @@ export async function updateMaterial(id: string, data: {
       quantidade: data.quantidade,
       unidade: data.unidade,
       valor_unitario: data.unitario,
-      pago: data.pago,
       data: data.data || null,
       status: data.status,
     })
