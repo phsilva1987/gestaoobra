@@ -1435,6 +1435,16 @@ th {
   overflow: hidden;
 }
 
+.unforeseen-card-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.unforeseen-card-wrap .unforeseen-scroll {
+  flex: 1 1 auto;
+}
+
 .unforeseen-scroll {
   overflow-x: hidden;
 }

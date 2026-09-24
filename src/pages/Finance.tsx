@@ -107,11 +107,7 @@ export function Finance({
           <h1>Financeiro</h1>
           <p>Orçamento, pagamentos, imprevistos e administrativo do projeto</p>
         </div>
-        {tab === 'obra' && (
-          <button className="btn" onClick={() => setModal({ type: 'payment', item: null })}>
-            + Registrar pagamento
-          </button>
-        )}
+
         {tab === 'administrativo' && (
           <button className="btn" onClick={() => setModal({ type: 'admin', item: null })}>
             + Adicionar item
@@ -140,7 +136,7 @@ export function Finance({
 
           <div className="finance-grid">
             <CategoryComparison project={project} />
-            <div>
+            <div className="card section unforeseen-card-wrap">
               <div className="finance-panel-head">
                 <h3>Imprevistos</h3>
                 <button className="btn secondary" onClick={() => setModal({ type: 'unforeseen', item: null })}>+ Registrar</button>
