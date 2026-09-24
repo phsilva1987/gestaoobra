@@ -8,6 +8,7 @@ import { PaymentsTable } from '../components/finance/PaymentsTable';
 import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
 import { AdminTable } from '../components/finance/AdminTable';
 import { AdminForm, type AdminFormData } from '../components/finance/AdminForm';
+import { AdministrativeSummary } from '../components/finance/AdministrativeSummary';
 
 interface FinanceProps {
   project: ProjectData;
@@ -31,6 +32,8 @@ type Modal =
   | { type: 'delete-admin'; item: AdminItem }
   | null;
 
+type FinanceTab = 'obra' | 'administrativo';
+
 export function Finance({
   project,
   onAddUnforeseen,
@@ -46,6 +49,7 @@ export function Finance({
   const [modal, setModal] = useState<Modal>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [tab, setTab] = useState<FinanceTab>('obra');
 
   const labelOf = (m: Modal) => {
     if (m?.type === 'unforeseen' || m?.type === 'delete-unforeseen') return 'imprevisto';
@@ -101,56 +105,88 @@ export function Finance({
       <div className="page-top">
         <div>
           <h1>Financeiro</h1>
-          <p>Orçamento, pagamentos, imprevistos e comparativo por categoria</p>
+          <p>Orçamento, pagamentos, imprevistos e administrativo do projeto</p>
         </div>
-        <button className="btn" onClick={() => setModal({ type: 'payment', item: null })}>
-          + Registrar pagamento
+        {tab === 'obra' && (
+          <button className="btn" onClick={() => setModal({ type: 'payment', item: null })}>
+            + Registrar pagamento
+          </button>
+        )}
+        {tab === 'administrativo' && (
+          <button className="btn" onClick={() => setModal({ type: 'admin', item: null })}>
+            + Adicionar item
+          </button>
+        )}
+      </div>
+
+      <div className="finance-tabs">
+        <button
+          className={`finance-tab ${tab === 'obra' ? 'active' : ''}`}
+          onClick={() => setTab('obra')}
+        >
+          Financeiro da Obra
+        </button>
+        <button
+          className={`finance-tab ${tab === 'administrativo' ? 'active' : ''}`}
+          onClick={() => setTab('administrativo')}
+        >
+          Administrativo da Obra
         </button>
       </div>
 
-      <FinanceKpis project={project} />
+      {tab === 'obra' && (
+        <>
+          <FinanceKpis project={project} />
 
-      <div className="finance-grid">
-        <CategoryComparison project={project} />
-        <div>
-          <div className="finance-panel-head">
-            <h3>Imprevistos</h3>
-            <button className="btn secondary" onClick={() => setModal({ type: 'unforeseen', item: null })}>+ Registrar</button>
+          <div className="finance-grid">
+            <CategoryComparison project={project} />
+            <div>
+              <div className="finance-panel-head">
+                <h3>Imprevistos</h3>
+                <button className="btn secondary" onClick={() => setModal({ type: 'unforeseen', item: null })}>+ Registrar</button>
+              </div>
+              <UnforeseenTable
+                project={project}
+                onEdit={(item) => setModal({ type: 'unforeseen', item })}
+                onDelete={(item) => setModal({ type: 'delete-unforeseen', item })}
+              />
+            </div>
           </div>
-          <UnforeseenTable
+
+          <div className="card section" style={{ marginTop: 14 }}>
+            <div className="finance-panel-head">
+              <h3>Histórico e próximos pagamentos</h3>
+              <button className="btn secondary" onClick={() => setModal({ type: 'payment', item: null })}>+ Pagamento</button>
+            </div>
+            <PaymentsTable
+              project={project}
+              onEdit={(item) => setModal({ type: 'payment', item })}
+              onDelete={(item) => setModal({ type: 'delete-payment', item })}
+            />
+          </div>
+        </>
+      )}
+
+      {tab === 'administrativo' && (
+        <>
+          <AdministrativeSummary project={project} />
+
+          <div className="card section" style={{ marginTop: 14 }}>
+            <div className="finance-panel-head">
+              <div>
+                <h3>Administrativo da Obra</h3>
+                <span className="hint">Custos administrativos, recorrentes e operacionais do projeto.</span>
+              </div>
+            </div>
+          </div>
+
+          <AdminTable
             project={project}
-            onEdit={(item) => setModal({ type: 'unforeseen', item })}
-            onDelete={(item) => setModal({ type: 'delete-unforeseen', item })}
+            onEdit={(item) => setModal({ type: 'admin', item })}
+            onDelete={(item) => setModal({ type: 'delete-admin', item })}
           />
-        </div>
-      </div>
-
-      <div className="card section" style={{ marginTop: 14 }}>
-        <div className="finance-panel-head">
-          <h3>Histórico e próximos pagamentos</h3>
-          <button className="btn secondary" onClick={() => setModal({ type: 'payment', item: null })}>+ Pagamento</button>
-        </div>
-        <PaymentsTable
-          project={project}
-          onEdit={(item) => setModal({ type: 'payment', item })}
-          onDelete={(item) => setModal({ type: 'delete-payment', item })}
-        />
-      </div>
-
-      <div className="card section" style={{ marginTop: 14 }}>
-        <div className="finance-panel-head">
-          <div>
-            <h3>Administrativo separado da obra</h3>
-            <span className="hint">CNPJ, contador, certificado e taxas.</span>
-          </div>
-          <button className="btn secondary" onClick={() => setModal({ type: 'admin', item: null })}>+ Adicionar item</button>
-        </div>
-        <AdminTable
-          project={project}
-          onEdit={(item) => setModal({ type: 'admin', item })}
-          onDelete={(item) => setModal({ type: 'delete-admin', item })}
-        />
-      </div>
+        </>
+      )}
 
       {modal?.type === 'unforeseen' && (
         <UnforeseenForm

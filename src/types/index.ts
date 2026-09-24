@@ -113,12 +113,19 @@ export interface ChecklistItem {
   sourceObraId: string | null;
 }
 
+export type AdminRecurrenceType = 'ONE_TIME' | 'MONTHLY' | 'ANNUAL' | null;
+export type AdminStatus = 'ACTIVE' | 'INACTIVE';
+
 export interface AdminItem {
   id: string;
   nome: string;
   valor: number;
   pago: number;
   status: string;
+  category: string | null;
+  recurrenceType: AdminRecurrenceType;
+  adminStatus: AdminStatus;
+  notes: string | null;
 }
 
 export interface ProjectData {

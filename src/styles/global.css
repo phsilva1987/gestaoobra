@@ -534,6 +534,148 @@ main {
   }
 }
 
+/* Finance tabs */
+.finance-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 14px;
+  border-bottom: 2px solid var(--line);
+}
+
+.finance-tab {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.finance-tab:hover {
+  color: #3c3024;
+}
+
+.finance-tab.active {
+  color: var(--gold-dark);
+  border-bottom-color: var(--gold);
+}
+
+/* Admin KPI grid */
+.admin-kpi-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.kpi-card {
+  background: #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kpi-card .kpi-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.kpi-card .kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b2d20;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-card .kpi-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Recurrence badges */
+.recurrence-one_time {
+  background: #e8e0d0;
+  color: #6b5a42;
+}
+
+.recurrence-monthly {
+  background: #f0e5d4;
+  color: #8b6320;
+}
+
+.recurrence-annual {
+  background: #e0ddd4;
+  color: #5c5547;
+}
+
+/* Admin table */
+.admin-card {
+  overflow: hidden;
+}
+
+.admin-scroll {
+  overflow-x: hidden;
+}
+
+.admin-scroll table {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.admin-scroll th,
+.admin-scroll td {
+  padding: 12px 10px;
+  vertical-align: top;
+}
+
+.admin-scroll th:nth-child(1),
+.admin-scroll td:nth-child(1) { width: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-scroll th:nth-child(2),
+.admin-scroll td:nth-child(2) { width: 140px; }
+.admin-scroll th:nth-child(3),
+.admin-scroll td:nth-child(3) { width: 100px; white-space: nowrap; }
+.admin-scroll th:nth-child(4),
+.admin-scroll td:nth-child(4) { width: 110px; white-space: nowrap; }
+.admin-scroll th:nth-child(5),
+.admin-scroll td:nth-child(5) { width: 90px; }
+.admin-scroll th:nth-child(6),
+.admin-scroll td:nth-child(6) { width: 130px; }
+
+.admin-scroll .rowactions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .finance-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
 /* Category comparison chart rows */
 .chart-row {
   display: grid;
