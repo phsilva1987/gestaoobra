@@ -1,5 +1,6 @@
 import type { ProjectOption } from '../../types/navigation';
 import { ProjectSelector } from './ProjectSelector';
+import { DateTimeDisplay } from './DateTimeDisplay';
 import { useAuth } from '../../auth/AuthProvider';
 
 interface HeaderProps {
@@ -10,12 +11,6 @@ interface HeaderProps {
 
 export function Header({ projects, selectedProjectId, onSelectProject }: HeaderProps) {
   const { profile, signOut } = useAuth();
-  const today = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
 
   const initials = (profile?.name || profile?.email || '?')
     .split(' ')
@@ -39,7 +34,7 @@ export function Header({ projects, selectedProjectId, onSelectProject }: HeaderP
           selectedId={selectedProjectId}
           onSelect={onSelectProject}
         />
-        <div className="appbar-date">{today}</div>
+        <DateTimeDisplay />
         <div className="userbox">
           <div className="avatar">{initials}</div>
           <div className="usertext">
