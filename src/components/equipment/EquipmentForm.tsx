@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { Equipment, ProjectData, Supplier } from '../../types';
+import type { Equipment, ProjectData, Supplier, Commitment } from '../../types';
 import { SupplierSelect } from '../suppliers/SupplierSelect';
 import type { SupplierFormData } from '../suppliers/SupplierForm';
 import { CurrencyInput } from '../CurrencyInput';
+import { totalPaidForEntity } from '../../services/commitmentService';
+import { money } from '../../lib/format';
 
 const FORMAS_PAGAMENTO = ['Pix', 'Cartão', 'Em Dinheiro'];
 const PARCELAS_OPTS = ['1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x', '11x', '12x'];
@@ -28,10 +30,12 @@ interface EquipmentFormProps {
   onAddSupplier: (data: SupplierFormData) => Supplier | Promise<Supplier>;
   onSave: (data: EquipmentFormData) => Promise<void> | void;
   onCancel: () => void;
+  onPay: (commitment: Commitment) => void;
+  onViewPayments: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
-export function EquipmentForm({ equipment, project, onAddSupplier, onSave, onCancel, saving = false }: EquipmentFormProps) {
+export function EquipmentForm({ equipment, project, onAddSupplier, onSave, onCancel, onPay, onViewPayments, saving = false }: EquipmentFormProps) {
   const [form, setForm] = useState<EquipmentFormData>({
     nome: equipment?.nome || '',
     quantidade: equipment?.quantidade || 1,
@@ -95,6 +99,21 @@ export function EquipmentForm({ equipment, project, onAddSupplier, onSave, onCan
     form.forma === 'Cartão' && form.valor > 0
       ? form.valor / (parseInt(form.parcelas) || 1)
       : null;
+
+  const pago = equipment ? totalPaidForEntity(project.pagamentos, 'EQUIPMENT', equipment.id) : 0;
+  const saldo = Math.max(0, form.valor - pago);
+  const stage = equipment ? project.obra.find((s) => s.id === equipment.etapa_id) : null;
+
+  function handlePay() {
+    if (!equipment) return;
+    onPay({
+      id: `EQUIPMENT:${equipment.id}`, sourceType: 'EQUIPMENT', sourceId: equipment.id,
+      referencia: equipment.nome, stageId: equipment.etapa_id, stageName: stage?.nome || '—',
+      contratado: form.valor, pago, saldo,
+      status: pago >= form.valor && form.valor > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+      vencimento: equipment.entrega || '',
+    });
+  }
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
@@ -168,6 +187,34 @@ export function EquipmentForm({ equipment, project, onAddSupplier, onSave, onCan
               {errors.etapa_id && <span className="field-error">{errors.etapa_id}</span>}
             </div>
           </div>
+
+          {equipment && (
+            <div className="entity-finance-summary">
+              <div className="entity-finance-item">
+                <small>Total</small>
+                <strong>{money(form.valor)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Pago</small>
+                <strong>{money(pago)}</strong>
+              </div>
+              <div className="entity-finance-item">
+                <small>Saldo</small>
+                <strong>{money(saldo)}</strong>
+              </div>
+              {saldo > 0 && (
+                <button type="button" className="btn secondary" onClick={handlePay}>Registrar pagamento</button>
+              )}
+              <button type="button" className="btn secondary" onClick={() => onViewPayments({
+                id: `EQUIPMENT:${equipment.id}`, sourceType: 'EQUIPMENT', sourceId: equipment.id,
+                referencia: equipment.nome, stageId: equipment.etapa_id, stageName: stage?.nome || '—',
+                contratado: form.valor, pago, saldo,
+                status: pago >= form.valor && form.valor > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+                vencimento: equipment.entrega || '',
+              })}>Ver pagamentos</button>
+            </div>
+          )}
+
           <SupplierSelect
             value={form.fornecedorId}
             onChange={(fornecedorId) => setForm({ ...form, fornecedorId })}

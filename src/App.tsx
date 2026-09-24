@@ -216,6 +216,8 @@ export function App() {
         onUpdateJob={wrap((id: string, data: JobFormData) => updateJob(pid, id, data), 'Trabalho atualizado!', 'Erro ao atualizar trabalho')}
         onDeleteJob={wrap((id: string) => deleteJob(pid, id), 'Trabalho excluído.', 'Erro ao excluir trabalho')}
         onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
+        onUpdatePayment={wrap((id: string, data: PaymentFormData) => updatePayment(pid, id, data), 'Pagamento atualizado!', 'Erro ao atualizar pagamento')}
+        onDeletePayment={wrap((id: string) => deletePayment(pid, id), 'Pagamento excluído.', 'Erro ao excluir pagamento')}
       />
     ),
     materiais: (
@@ -225,6 +227,8 @@ export function App() {
         onDeleteMaterial={wrap((id: string) => deleteMaterial(pid, id), 'Material excluído.', 'Erro ao excluir material')}
         onAddSupplier={handleAddSupplier.bind(null, pid)}
         onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
+        onUpdatePayment={wrap((id: string, data: PaymentFormData) => updatePayment(pid, id, data), 'Pagamento atualizado!', 'Erro ao atualizar pagamento')}
+        onDeletePayment={wrap((id: string) => deletePayment(pid, id), 'Pagamento excluído.', 'Erro ao excluir pagamento')}
       />
     ),
     equipamentos: (
@@ -234,6 +238,8 @@ export function App() {
         onDeleteEquipment={wrap((id: string) => deleteEquipment(pid, id), 'Equipamento excluído.', 'Erro ao excluir equipamento')}
         onAddSupplier={handleAddSupplier.bind(null, pid)}
         onAddPayment={wrap((data: PaymentFormData) => addPayment(pid, data), 'Pagamento adicionado!', 'Erro ao adicionar pagamento')}
+        onUpdatePayment={wrap((id: string, data: PaymentFormData) => updatePayment(pid, id, data), 'Pagamento atualizado!', 'Erro ao atualizar pagamento')}
+        onDeletePayment={wrap((id: string) => deletePayment(pid, id), 'Pagamento excluído.', 'Erro ao excluir pagamento')}
       />
     ),
     cronograma: (

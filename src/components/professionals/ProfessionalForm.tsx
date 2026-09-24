@@ -21,6 +21,7 @@ interface ProfessionalFormProps {
   onEditJob: (job: Job) => void;
   onDeleteJob: (jobId: string) => void;
   onPay: (commitment: Commitment) => void;
+  onViewPayments: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
@@ -49,6 +50,7 @@ export function ProfessionalForm({
   onEditJob,
   onDeleteJob,
   onPay,
+  onViewPayments,
   saving = false,
 }: ProfessionalFormProps) {
   const [form, setForm] = useState<ProfessionalFormData>({
@@ -176,6 +178,16 @@ export function ProfessionalForm({
                               contratado: job.valor, pago: jp, saldo: js,
                               status: jp > 0 ? 'Parcial' : 'Pendente', vencimento: '',
                             })}>Pagar</button>
+                          ) : null; })()}
+                          {(() => { const jp2 = totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', job.id); return jp2 > 0 ? (
+                            <button type="button" onClick={() => onViewPayments({
+                              id: `PROFESSIONAL:${job.id}`, sourceType: 'PROFESSIONAL', sourceId: job.id,
+                              referencia: `${professional?.nome || 'Profissional'}${etapa ? ' — ' + etapa.nome : ''}`,
+                              stageId: job.etapa_id, stageName: etapa?.nome || '—',
+                              contratado: job.valor, pago: jp2, saldo: Math.max(0, job.valor - jp2),
+                              status: jp2 >= job.valor && job.valor > 0 ? 'Pago' : jp2 > 0 ? 'Parcial' : 'Pendente',
+                              vencimento: '',
+                            })}>Ver pagamentos</button>
                           ) : null; })()}
                           <button type="button" onClick={() => onEditJob(job)}>Editar</button>
                           <button type="button" onClick={() => onDeleteJob(job.id)}>Excluir</button>

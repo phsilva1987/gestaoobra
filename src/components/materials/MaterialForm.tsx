@@ -29,10 +29,11 @@ interface MaterialFormProps {
   onSave: (data: MaterialFormData) => Promise<void> | void;
   onCancel: () => void;
   onPay: (commitment: Commitment) => void;
+  onViewPayments: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
-export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel, onPay, saving = false }: MaterialFormProps) {
+export function MaterialForm({ material, project, onAddSupplier, onSave, onCancel, onPay, onViewPayments, saving = false }: MaterialFormProps) {
   const categorias = [...new Set([...(project.categoriasMaterial || CATEGORIAS_MATERIAL_DEFAULT), ...(project.categoriasMaterialExtra || [])])];
 
   const [form, setForm] = useState<MaterialFormData>({
@@ -83,10 +84,10 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
   const total = form.quantidade * form.unitario;
   const pago = material ? totalPaidForEntity(project.pagamentos, 'MATERIAL', material.id) : 0;
   const saldo = Math.max(0, total - pago);
+  const stage = material ? project.obra.find((s) => s.id === material.etapa_id) : null;
 
   function handlePay() {
     if (!material) return;
-    const stage = project.obra.find((s) => s.id === material.etapa_id);
     onPay({
       id: `MATERIAL:${material.id}`,
       sourceType: 'MATERIAL',
@@ -178,6 +179,13 @@ export function MaterialForm({ material, project, onAddSupplier, onSave, onCance
               {saldo > 0 && (
                 <button type="button" className="btn secondary" onClick={handlePay}>Registrar pagamento</button>
               )}
+              <button type="button" className="btn secondary" onClick={() => onViewPayments({
+                id: `MATERIAL:${material.id}`, sourceType: 'MATERIAL', sourceId: material.id,
+                referencia: material.nome, stageId: material.etapa_id, stageName: stage?.nome || '—',
+                contratado: total, pago, saldo,
+                status: pago >= total && total > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+                vencimento: material.data || '',
+              })}>Ver pagamentos</button>
             </div>
           )}
 

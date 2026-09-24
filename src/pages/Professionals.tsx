@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import type { Professional, Job, ProjectData, Commitment } from '../types';
+import type { Professional, Job, ProjectData, Commitment, Payment } from '../types';
 import { ProfessionalTable } from '../components/professionals/ProfessionalTable';
 import { ProfessionalForm, type ProfessionalFormData } from '../components/professionals/ProfessionalForm';
 import { JobForm, type JobFormData } from '../components/professionals/JobForm';
 import { PaymentForm, type PaymentFormData } from '../components/finance/PaymentForm';
+import { CommitmentDetail } from '../components/finance/CommitmentDetail';
+import { money, fmt } from '../lib/format';
 
 interface ProfessionalsProps {
   project: ProjectData;
@@ -14,6 +16,8 @@ interface ProfessionalsProps {
   onUpdateJob: (id: string, data: JobFormData) => void;
   onDeleteJob: (id: string) => void;
   onAddPayment: (data: PaymentFormData) => Promise<void> | void;
+  onUpdatePayment: (id: string, data: PaymentFormData) => Promise<void> | void;
+  onDeletePayment: (id: string) => Promise<void> | void;
 }
 
 type Modal =
@@ -22,7 +26,16 @@ type Modal =
   | { type: 'job-form'; job: Job | null; presetProfId: string | null }
   | { type: 'delete-job'; jobId: string; prof: Professional }
   | { type: 'pay'; commitment: Commitment }
+  | { type: 'view-payments'; commitment: Commitment }
+  | { type: 'edit-payment'; payment: Payment; commitment: Commitment | null }
+  | { type: 'delete-payment'; payment: Payment }
   | null;
+
+function profFromCommitment(project: ProjectData, commitment: Commitment): Professional | null {
+  const job = project.jobs.find((j) => j.id === commitment.sourceId);
+  if (!job) return null;
+  return project.profissionais.find((p) => p.id === job.profissional_id) || null;
+}
 
 export function Professionals({
   project,
@@ -33,6 +46,8 @@ export function Professionals({
   onUpdateJob,
   onDeleteJob,
   onAddPayment,
+  onUpdatePayment,
+  onDeletePayment,
 }: ProfessionalsProps) {
   const [modal, setModal] = useState<Modal>(null);
   const [saving, setSaving] = useState(false);
@@ -74,10 +89,30 @@ export function Professionals({
   async function handlePay(data: PaymentFormData) {
     setSaving(true);
     try {
-      await onAddPayment(data);
-      setModal(null);
+      if (modal?.type === 'edit-payment' && modal.payment) {
+        await onUpdatePayment(modal.payment.id, data);
+      } else {
+        await onAddPayment(data);
+      }
+      if (modal?.type === 'view-payments') {
+        setModal({ type: 'view-payments', commitment: modal.commitment });
+      } else {
+        const prof = modal?.type === 'pay' ? profFromCommitment(project, modal.commitment) : null;
+        if (prof) setModal({ type: 'prof-form', prof });
+        else setModal(null);
+      }
     } catch { /* toast shown by wrap */ }
     finally { setSaving(false); }
+  }
+
+  async function handleDeletePayment() {
+    if (modal?.type !== 'delete-payment') return;
+    setDeleting(true);
+    try {
+      await onDeletePayment(modal.payment.id);
+      setModal(null);
+    } catch { /* toast shown by wrap */ }
+    finally { setDeleting(false); }
   }
 
   function canDeleteProf(prof: Professional): boolean {
@@ -106,6 +141,12 @@ export function Professionals({
       } catch { /* toast shown by wrap */ }
       finally { setDeleting(false); }
     }
+  }
+
+  function backToProf(commitment: Commitment | null) {
+    const prof = commitment ? profFromCommitment(project, commitment) : null;
+    if (prof) setModal({ type: 'prof-form', prof });
+    else setModal(null);
   }
 
   return (
@@ -139,6 +180,7 @@ export function Professionals({
             setModal({ type: 'delete-job', jobId, prof });
           }}
           onPay={(commitment) => setModal({ type: 'pay', commitment })}
+          onViewPayments={(commitment) => setModal({ type: 'view-payments', commitment })}
           saving={saving}
         />
       )}
@@ -156,6 +198,7 @@ export function Professionals({
             else setModal(null);
           }}
           onPay={(commitment) => setModal({ type: 'pay', commitment })}
+          onViewPayments={(commitment) => setModal({ type: 'view-payments', commitment })}
           saving={saving}
         />
       )}
@@ -165,14 +208,28 @@ export function Professionals({
           payment={null}
           commitment={modal.commitment}
           onSave={handlePay}
-          onCancel={() => {
-            const profId = modal.commitment.stageId
-              ? project.jobs.find((j) => j.id === modal.commitment.sourceId)?.profissional_id
-              : null;
-            const prof = profId ? project.profissionais.find((p) => p.id === profId) : null;
-            if (prof) setModal({ type: 'prof-form', prof });
-            else setModal(null);
-          }}
+          onCancel={() => backToProf(modal.commitment)}
+          saving={saving}
+        />
+      )}
+
+      {modal?.type === 'view-payments' && (
+        <CommitmentDetail
+          commitment={modal.commitment}
+          project={project}
+          onPay={(c) => setModal({ type: 'pay', commitment: c })}
+          onEditPayment={(p) => setModal({ type: 'edit-payment', payment: p, commitment: modal.commitment })}
+          onDeletePayment={(p) => setModal({ type: 'delete-payment', payment: p })}
+          onClose={() => backToProf(modal.commitment)}
+        />
+      )}
+
+      {modal?.type === 'edit-payment' && modal.commitment && (
+        <PaymentForm
+          payment={modal.payment}
+          commitment={modal.commitment}
+          onSave={handlePay}
+          onCancel={() => setModal({ type: 'view-payments', commitment: modal.commitment! })}
           saving={saving}
         />
       )}
@@ -223,6 +280,23 @@ export function Professionals({
               <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
               <button className="btn danger" disabled={deleting} onClick={handleDeleteJob}>
                 {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal?.type === 'delete-payment' && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modalbox" onClick={(e) => e.stopPropagation()}>
+            <h2>Excluir pagamento?</h2>
+            <p>Você está prestes a excluir:</p>
+            <p><b>{modal.payment.referencia}</b><br />{money(modal.payment.valor)} — {fmt(modal.payment.paidAt)}</p>
+            <p className="hint">Essa ação atualizará o saldo pendente do compromisso.</p>
+            <div className="modal-actions">
+              <button className="btn secondary" onClick={() => setModal(null)}>Cancelar</button>
+              <button className="btn danger" disabled={deleting} onClick={handleDeletePayment}>
+                {deleting ? 'Excluindo...' : 'Excluir pagamento'}
               </button>
             </div>
           </div>

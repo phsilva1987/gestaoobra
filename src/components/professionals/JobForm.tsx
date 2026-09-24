@@ -25,10 +25,11 @@ interface JobFormProps {
   onSave: (data: JobFormData) => Promise<void> | void;
   onCancel: () => void;
   onPay: (commitment: Commitment) => void;
+  onViewPayments: (commitment: Commitment) => void;
   saving?: boolean;
 }
 
-export function JobForm({ job, presetProfId, project, onSave, onCancel, onPay, saving = false }: JobFormProps) {
+export function JobForm({ job, presetProfId, project, onSave, onCancel, onPay, onViewPayments, saving = false }: JobFormProps) {
   const [form, setForm] = useState<JobFormData>({
     profissional_id: job?.profissional_id || presetProfId || '',
     etapa_id: job?.etapa_id || '',
@@ -85,11 +86,11 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, onPay, s
 
   const pago = job ? totalPaidForEntity(project.pagamentos, 'PROFESSIONAL', job.id) : 0;
   const saldo = Math.max(0, form.valor - pago);
+  const prof = job ? project.profissionais.find((p) => p.id === job.profissional_id) : null;
+  const stage = job ? project.obra.find((s) => s.id === job.etapa_id) : null;
 
   function handlePay() {
     if (!job) return;
-    const prof = project.profissionais.find((p) => p.id === job.profissional_id);
-    const stage = project.obra.find((s) => s.id === job.etapa_id);
     onPay({
       id: `PROFESSIONAL:${job.id}`,
       sourceType: 'PROFESSIONAL',
@@ -193,6 +194,14 @@ export function JobForm({ job, presetProfId, project, onSave, onCancel, onPay, s
               {saldo > 0 && (
                 <button type="button" className="btn secondary" onClick={handlePay}>Registrar pagamento</button>
               )}
+              <button type="button" className="btn secondary" onClick={() => onViewPayments({
+                id: `PROFESSIONAL:${job.id}`, sourceType: 'PROFESSIONAL', sourceId: job.id,
+                referencia: `${prof?.nome || 'Profissional'}${stage ? ' — ' + stage.nome : ''}`,
+                stageId: job.etapa_id, stageName: stage?.nome || '—',
+                contratado: form.valor, pago, saldo,
+                status: pago >= form.valor && form.valor > 0 ? 'Pago' : pago > 0 ? 'Parcial' : 'Pendente',
+                vencimento: '',
+              })}>Ver pagamentos</button>
             </div>
           )}
 
