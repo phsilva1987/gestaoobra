@@ -10,7 +10,7 @@ export function FinanceKpis({ project }: FinanceKpisProps) {
   const m = financeMetrics(project);
   return (
     <>
-      <div className="grid kpis">
+      <div className="grid kpis finance-kpis">
         <div className="card kpi">
           <small>Investimento planejado</small>
           <strong>{money(m.budget)}</strong>
@@ -24,16 +24,16 @@ export function FinanceKpis({ project }: FinanceKpisProps) {
           <strong>{money(m.pago)}</strong>
         </div>
         <div className="card kpi">
-          <small>Imprevistos</small>
-          <strong>{money(m.imprevistos)}</strong>
-        </div>
-        <div className="card kpi">
           <small>A pagar</small>
           <strong>{money(m.apagar)}</strong>
         </div>
         <div className="card kpi">
           <small>A pagar (agendado)</small>
           <strong>{money(m.apagarAgendado)}</strong>
+        </div>
+        <div className="card kpi">
+          <small>Imprevistos</small>
+          <strong>{money(m.imprevistos)}</strong>
         </div>
       </div>
       {m.over && (
