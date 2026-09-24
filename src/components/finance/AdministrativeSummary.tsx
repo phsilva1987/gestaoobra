@@ -20,19 +20,25 @@ export function AdministrativeSummary({ project }: AdministrativeSummaryProps) {
     .filter((a) => a.recurrenceType === 'ANNUAL')
     .reduce((s, a) => s + a.valor, 0);
 
+  const oneTimeCount = active.filter((a) => a.recurrenceType === 'ONE_TIME').length;
+  const monthlyCount = active.filter((a) => a.recurrenceType === 'MONTHLY').length;
+  const annualCount = active.filter((a) => a.recurrenceType === 'ANNUAL').length;
+  const totalCount = project.admin.length;
+
   const kpis = [
-    { label: 'Custos únicos', value: money(oneTime), sub: '' },
-    { label: 'Custo fixo mensal', value: money(monthly), sub: '/ mês' },
-    { label: 'Custo anual', value: money(annual), sub: '/ ano' },
-    { label: 'Itens ativos', value: String(active.length), sub: '' },
+    { label: 'Custos únicos', value: money(oneTime), sub: '', aux: `${oneTimeCount} ${oneTimeCount === 1 ? 'item' : 'itens'}` },
+    { label: 'Custo fixo mensal', value: money(monthly), sub: '/ mês', aux: `${monthlyCount} ${monthlyCount === 1 ? 'item ativo' : 'itens ativos'}` },
+    { label: 'Custo anual', value: money(annual), sub: '/ ano', aux: `${annualCount} ${annualCount === 1 ? 'item' : 'itens'}` },
+    { label: 'Itens ativos', value: String(active.length), sub: '', aux: `${totalCount} cadastrados` },
   ];
 
   return (
-    <div className="kpi-grid admin-kpi-grid">
+    <div className="admin-kpi-grid">
       {kpis.map((k) => (
         <div key={k.label} className="kpi-card">
           <span className="kpi-label">{k.label}</span>
-          <span className="kpi-value">{k.value}<span className="kpi-sub">{k.sub}</span></span>
+          <span className="kpi-value">{k.value}{k.sub && <span className="kpi-sub">{k.sub}</span>}</span>
+          <span className="kpi-aux">{k.aux}</span>
         </div>
       ))}
     </div>
