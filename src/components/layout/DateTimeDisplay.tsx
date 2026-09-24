@@ -17,7 +17,7 @@ export function DateTimeDisplay() {
   const date = now.toLocaleDateString('pt-BR', {
     weekday: 'short',
     day: '2-digit',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   });
 
